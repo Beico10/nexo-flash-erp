@@ -1,0 +1,24 @@
+# Binários
+/bin/
+*.exe
+*.dll
+*.so
+
+# Secrets — NUNCA commitar
+deployments/docker/secrets/
+deployments/docker/traefik/acme.json
+*.env
+.env.*
+vault-token
+
+# Go
+vendor/
+*.test
+
+# IDE
+.idea/
+.vscode/
+*.swp
+
+# Logs
+*.log
