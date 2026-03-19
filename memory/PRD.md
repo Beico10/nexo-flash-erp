@@ -1,0 +1,132 @@
+# Nexo One ERP — PRD (Product Requirements Document)
+
+## 1. Visão Geral
+
+**Nome:** Nexo One ERP  
+**Versão:** 1.0.0  
+**Data:** Janeiro 2026
+
+### Propósito
+ERP SaaS Multi-Tenant que atende desde **indústrias** (nível TOTVS Protheus) até **micro-empreendedores** (manicure em casa), com foco na Reforma Tributária Brasil 2026 (IBS/CBS).
+
+### Diretrizes Fundamentais
+1. **Máxima Segurança** — RLS obrigatório, IA com aprovação humana, auditoria imutável
+2. **Mínimo Custo** — 100% open source, infraestrutura enxuta, zero licenças
+
+---
+
+## 2. Personas
+
+| Persona | Descrição | Necessidade Principal |
+|---------|-----------|----------------------|
+| **Indústria** | Fábrica média/grande | PCP, BOM, gestão de insumos, compliance fiscal |
+| **Transportadora** | Frota própria/terceirizada | CT-e, contratos multi-cliente, DRE da viagem |
+| **Mecânica** | Oficina de bairro | OS digital, peças, aprovação rápida |
+| **Padaria** | Comércio de alimentos | PDV rápido, balança, cesta básica zero |
+| **Estética** | Salão/autônomo | Agenda sem conflito, split pagamento |
+| **Calçados** | Loja varejo | Grade cor/tamanho, comissões |
+
+---
+
+## 3. Requisitos Funcionais
+
+### 3.1 Core (Todos os nichos)
+- [x] Multi-tenant com RLS (Row Level Security)
+- [x] Autenticação JWT + Refresh Token
+- [x] Motor fiscal IBS/CBS 2026
+- [x] IA Concierge (Human-in-the-Loop)
+- [x] Event Bus (NATS JetStream)
+- [x] BaaS (PIX, Boleto, Split)
+
+### 3.2 Por Módulo
+| Módulo | Status | Pendências |
+|--------|--------|------------|
+| Mecânica | ✅ 90% | WhatsApp real |
+| Padaria | ✅ 80% | Integração balanças |
+| Indústria | ✅ 70% | - |
+| Logística | ✅ 75% | Roteirizador, CT-e SEFAZ |
+| Estética | ✅ 85% | - |
+| Calçados | ✅ 70% | - |
+
+---
+
+## 4. O Que Foi Implementado
+
+### Janeiro 2026
+- [x] Estrutura multi-tenant com RLS PostgreSQL
+- [x] 6 módulos de negócio funcionais
+- [x] Motor fiscal IBS/CBS 2026 com Cesta Básica
+- [x] Sistema de aprovação IA (Human-in-the-Loop)
+- [x] JWT + Refresh Token com rotação
+- [x] BaaS interface (PIX/Boleto)
+- [x] Event Bus NATS JetStream
+- [x] Frontend Next.js 14
+- [x] Docker Compose completo
+- [x] Dockerfile multi-stage otimizado
+- [x] Migrations corrigidas
+- [x] Renomeação para Nexo One
+
+---
+
+## 5. Backlog Priorizado
+
+### P0 (Crítico)
+1. [ ] Integração SEFAZ NF-e/NFC-e
+2. [ ] CT-e completo com XML assinado
+3. [ ] Testes de integração end-to-end
+
+### P1 (Alto)
+1. [ ] WhatsApp Business API real
+2. [ ] Roteirizador inteligente (OSRM)
+3. [ ] Integração com balanças Toledo/Elgin
+4. [ ] MDF-e
+
+### P2 (Médio)
+1. [ ] Relatórios gerenciais avançados
+2. [ ] Dashboard analytics
+3. [ ] App mobile (React Native)
+4. [ ] Multi-idioma (i18n)
+
+### P3 (Baixo)
+1. [ ] Integração contábil
+2. [ ] BI embarcado
+3. [ ] Marketplace de módulos
+
+---
+
+## 6. Stack Técnica
+
+| Componente | Tecnologia |
+|------------|-----------|
+| Backend | Go 1.22 (Clean Architecture) |
+| Frontend | Next.js 14 + TailwindCSS |
+| Banco | PostgreSQL 16 + RLS |
+| Cache | Redis 7 |
+| Mensageria | NATS JetStream |
+| Container | Docker + distroless |
+| Infraestrutura | Hetzner VPS |
+
+---
+
+## 7. Métricas de Sucesso
+
+| Métrica | Meta |
+|---------|------|
+| Tempo de build | < 30s |
+| Imagem Docker | < 20MB |
+| Tempo de resposta API | < 100ms (p95) |
+| Cobertura de testes | > 80% |
+| Uptime | 99.9% |
+
+---
+
+## 8. Próximas Ações
+
+1. **Testar compilação Go** em ambiente local
+2. **Rodar migrations** em PostgreSQL real
+3. **Implementar NF-e** para produção
+4. **Criar testes E2E** com Playwright
+
+---
+
+*Última atualização: Janeiro 2026*

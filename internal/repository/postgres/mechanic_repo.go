@@ -25,7 +25,7 @@ func NewMechanicRepo(db *DB) *MechanicRepo {
 func (r *MechanicRepo) Create(ctx context.Context, os *mechanic.ServiceOrder) error {
 	return r.db.WithTenant(ctx, os.TenantID, func(tx *sql.Tx) error {
 		query := `
-			INSERT INTO mechanic_service_orders (
+			INSERT INTO nexo.mechanic_service_orders (
 				id, tenant_id, number, vehicle_plate, vehicle_km, vehicle_model,
 				vehicle_year, customer_id, customer_phone, status, complaint,
 				created_at, updated_at
@@ -46,7 +46,7 @@ func (r *MechanicRepo) Create(ctx context.Context, os *mechanic.ServiceOrder) er
 func (r *MechanicRepo) Update(ctx context.Context, os *mechanic.ServiceOrder) error {
 	return r.db.WithTenant(ctx, os.TenantID, func(tx *sql.Tx) error {
 		query := `
-			UPDATE mechanic_service_orders SET
+			UPDATE nexo.mechanic_service_orders SET
 				status         = $3,
 				diagnosis      = $4,
 				approval_token = $5,
@@ -80,7 +80,7 @@ func (r *MechanicRepo) GetByID(ctx context.Context, tenantID, id string) (*mecha
 			       COALESCE(approval_token,''), COALESCE(approval_url,''),
 			       approved_at, total_parts, total_labor, total_amount,
 			       created_at, updated_at
-			FROM mechanic_service_orders
+			FROM nexo.mechanic_service_orders
 			WHERE id = $1 AND tenant_id = $2`
 
 		var approvedAt sql.NullTime
@@ -124,7 +124,7 @@ func (r *MechanicRepo) GetByPlate(ctx context.Context, tenantID, plate string) (
 		rows, err := tx.QueryContext(ctx, `
 			SELECT id, number, vehicle_plate, vehicle_model, vehicle_km,
 			       status, total_amount, created_at
-			FROM mechanic_service_orders
+			FROM nexo.mechanic_service_orders
 			WHERE tenant_id = $1 AND vehicle_plate = $2
 			ORDER BY created_at DESC
 			LIMIT 50`, tenantID, plate)
@@ -155,7 +155,7 @@ func (r *MechanicRepo) ListOpen(ctx context.Context, tenantID string) ([]*mechan
 			SELECT id, number, vehicle_plate, vehicle_model, vehicle_km,
 			       COALESCE(customer_id::text,''), customer_phone,
 			       status, COALESCE(complaint,''), total_amount, created_at
-			FROM mechanic_service_orders
+			FROM nexo.mechanic_service_orders
 			WHERE tenant_id = $1
 			  AND status NOT IN ('done','invoiced')
 			ORDER BY created_at DESC`, tenantID)
@@ -185,7 +185,7 @@ func (r *MechanicRepo) loadParts(ctx context.Context, tx *sql.Tx, tenantID, osID
 	rows, err := tx.QueryContext(ctx, `
 		SELECT id, COALESCE(part_code,''), description, quantity,
 		       unit_cost, unit_price, total_price, COALESCE(ncm_code,'')
-		FROM mechanic_os_parts
+		FROM nexo.mechanic_os_parts
 		WHERE os_id = $1 AND tenant_id = $2`, osID, tenantID)
 	if err != nil {
 		return nil, err
@@ -208,7 +208,7 @@ func (r *MechanicRepo) loadLabor(ctx context.Context, tx *sql.Tx, tenantID, osID
 	rows, err := tx.QueryContext(ctx, `
 		SELECT id, description, hours, hourly_rate, total_price,
 		       COALESCE(technician_id::text,'')
-		FROM mechanic_os_labor
+		FROM nexo.mechanic_os_labor
 		WHERE os_id = $1 AND tenant_id = $2`, osID, tenantID)
 	if err != nil {
 		return nil, err
@@ -230,7 +230,7 @@ func (r *MechanicRepo) loadLabor(ctx context.Context, tx *sql.Tx, tenantID, osID
 func (r *MechanicRepo) AddPart(ctx context.Context, tenantID, osID string, part mechanic.OSPart) error {
 	return r.db.WithTenant(ctx, tenantID, func(tx *sql.Tx) error {
 		_, err := tx.ExecContext(ctx, `
-			INSERT INTO mechanic_os_parts
+			INSERT INTO nexo.mechanic_os_parts
 			(id, tenant_id, os_id, part_code, description, quantity, unit_cost, unit_price, total_price, ncm_code)
 			VALUES (gen_random_uuid(), $1, $2, $3, $4, $5, $6, $7, $8, $9)`,
 			tenantID, osID, nullString(part.PartCode), part.Description,
@@ -244,7 +244,7 @@ func (r *MechanicRepo) GetByApprovalToken(ctx context.Context, token string) (*m
 	// Esta query não usa tenant_id pois o token é o autenticador
 	// O tenant_id é resolvido a partir do token no banco
 	row := r.db.pool.QueryRowContext(ctx, `
-		SELECT id, tenant_id FROM mechanic_service_orders
+		SELECT id, tenant_id FROM nexo.mechanic_service_orders
 		WHERE approval_token = $1 AND status = 'await_approval'`, token)
 	var id, tenantID string
 	if err := row.Scan(&id, &tenantID); err != nil {

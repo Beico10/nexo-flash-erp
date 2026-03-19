@@ -33,7 +33,7 @@ func (r *AIRepo) CreatePending(ctx context.Context, s *ai.Suggestion) error {
 
 	return r.db.WithTenant(ctx, s.TenantID, func(tx *sql.Tx) error {
 		_, err := tx.ExecContext(ctx, `
-			INSERT INTO ai_suggestions (
+			INSERT INTO nexo.ai_suggestions (
 				id, tenant_id, suggestion_type, target_table, target_id,
 				suggested_data, reason, confidence, created_by_ai,
 				status, created_at, expires_at
@@ -57,7 +57,7 @@ func (r *AIRepo) GetPending(ctx context.Context, tenantID string) ([]*ai.Suggest
 			       COALESCE(target_id::text,''), suggested_data,
 			       reason, confidence, created_by_ai,
 			       status, created_at, expires_at
-			FROM ai_suggestions
+			FROM nexo.ai_suggestions
 			WHERE tenant_id = $1
 			  AND status = 'pending'
 			  AND expires_at > NOW()
@@ -98,7 +98,7 @@ func (r *AIRepo) GetByID(ctx context.Context, tenantID, id string) (*ai.Suggesti
 			       COALESCE(target_id::text,''), suggested_data,
 			       reason, confidence, created_by_ai,
 			       status, created_at, expires_at
-			FROM ai_suggestions
+			FROM nexo.ai_suggestions
 			WHERE id = $1 AND tenant_id = $2`, id, tenantID).
 			Scan(
 				&s.ID, &s.TenantID, &s.Type, &s.TargetTable,
@@ -124,7 +124,7 @@ func (r *AIRepo) Approve(ctx context.Context, suggestionID, approvedByUserID str
 	// Precisamos do tenant_id para usar WithTenant — buscamos sem RLS
 	// (a política de auditoria cobre isso)
 	row := r.db.pool.QueryRowContext(ctx,
-		`SELECT tenant_id FROM ai_suggestions WHERE id = $1 AND status = 'pending'`,
+		`SELECT tenant_id FROM nexo.ai_suggestions WHERE id = $1 AND status = 'pending'`,
 		suggestionID)
 	var tenantID string
 	if err := row.Scan(&tenantID); err != nil {
@@ -137,7 +137,7 @@ func (r *AIRepo) Approve(ctx context.Context, suggestionID, approvedByUserID str
 	now := time.Now().UTC()
 	return r.db.WithTenant(ctx, tenantID, func(tx *sql.Tx) error {
 		result, err := tx.ExecContext(ctx, `
-			UPDATE ai_suggestions SET
+			UPDATE nexo.ai_suggestions SET
 				status      = 'approved',
 				approved_by = $3,
 				approved_at = $4
@@ -157,7 +157,7 @@ func (r *AIRepo) Approve(ctx context.Context, suggestionID, approvedByUserID str
 // Reject rejeita uma sugestão sem nenhuma alteração nos dados de negócio.
 func (r *AIRepo) Reject(ctx context.Context, suggestionID, userID, reason string) error {
 	row := r.db.pool.QueryRowContext(ctx,
-		`SELECT tenant_id FROM ai_suggestions WHERE id = $1`, suggestionID)
+		`SELECT tenant_id FROM nexo.ai_suggestions WHERE id = $1`, suggestionID)
 	var tenantID string
 	if err := row.Scan(&tenantID); err != nil {
 		return fmt.Errorf("sugestão não encontrada: %w", err)
@@ -165,7 +165,7 @@ func (r *AIRepo) Reject(ctx context.Context, suggestionID, userID, reason string
 
 	return r.db.WithTenant(ctx, tenantID, func(tx *sql.Tx) error {
 		_, err := tx.ExecContext(ctx, `
-			UPDATE ai_suggestions SET
+			UPDATE nexo.ai_suggestions SET
 				status           = 'rejected',
 				rejection_reason = $3,
 				approved_by      = $4,
@@ -179,7 +179,7 @@ func (r *AIRepo) Reject(ctx context.Context, suggestionID, userID, reason string
 // ExpireStale expira sugestões que passaram do prazo (job periódico).
 func (r *AIRepo) ExpireStale(ctx context.Context) (int64, error) {
 	result, err := r.db.pool.ExecContext(ctx, `
-		UPDATE ai_suggestions SET status = 'expired'
+		UPDATE nexo.ai_suggestions SET status = 'expired'
 		WHERE status = 'pending' AND expires_at < NOW()`)
 	if err != nil {
 		return 0, err

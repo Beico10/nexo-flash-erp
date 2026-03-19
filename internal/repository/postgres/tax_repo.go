@@ -79,7 +79,7 @@ func (r *TaxRateRepo) fetchFromDB(ctx context.Context, ncm string, ref time.Time
 			basket_reduced, COALESCE(basket_type,''),
 			COALESCE(transition_year, 0),
 			COALESCE(transition_factor, 1.0)
-		FROM fiscal_ncm_rates
+		FROM nexo.fiscal_ncm_rates
 		WHERE ncm_code = $1
 		  AND valid_from <= $2
 		  AND (valid_until IS NULL OR valid_until >= $2)

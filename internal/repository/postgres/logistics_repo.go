@@ -36,7 +36,7 @@ func (r *LogisticsRepo) GetApplicable(ctx context.Context, tenantID, shipperID s
 			SELECT id, contract_name, shipper_id, vehicle_type,
 			       COALESCE(price_per_km, 0), COALESCE(price_per_kg, 0),
 			       COALESCE(minimum_charge, 0), toll_policy
-			FROM logistics_contracts
+			FROM nexo.logistics_contracts
 			WHERE tenant_id = $1
 			  AND vehicle_type = $2
 			  AND active = TRUE
@@ -71,7 +71,7 @@ func (r *LogisticsRepo) GetApplicable(ctx context.Context, tenantID, shipperID s
 func (r *LogisticsRepo) Create(ctx context.Context, c *logistics.Contract) error {
 	return r.db.WithTenant(ctx, c.TenantID, func(tx *sql.Tx) error {
 		return tx.QueryRowContext(ctx, `
-			INSERT INTO logistics_contracts
+			INSERT INTO nexo.logistics_contracts
 			(tenant_id, contract_name, shipper_id, vehicle_type,
 			 price_per_km, price_per_kg, minimum_charge, toll_policy)
 			VALUES ($1,$2,$3,$4,$5,$6,$7,$8)
@@ -113,7 +113,7 @@ func NewCTeRepo(db *DB) *CTeRepo { return &CTeRepo{db: db} }
 func (r *CTeRepo) Save(ctx context.Context, cte *CTe) error {
 	return r.db.WithTenant(ctx, cte.TenantID, func(tx *sql.Tx) error {
 		return tx.QueryRowContext(ctx, `
-			INSERT INTO logistics_ctes
+			INSERT INTO nexo.logistics_ctes
 			(tenant_id, chave_cte, num_cte, shipper_id,
 			 route_origin, route_dest, vehicle_type,
 			 distance_km, weight_kg, gross_value, status, issued_at, xml_path)
@@ -134,7 +134,7 @@ func (r *CTeRepo) ListByPeriod(ctx context.Context, tenantID string, from, to ti
 		rows, err := tx.QueryContext(ctx, `
 			SELECT id, chave_cte, num_cte, route_origin, route_dest,
 			       vehicle_type, gross_value, status, issued_at
-			FROM logistics_ctes
+			FROM nexo.logistics_ctes
 			WHERE tenant_id = $1
 			  AND issued_at BETWEEN $2 AND $3
 			ORDER BY issued_at DESC`, tenantID, from, to)

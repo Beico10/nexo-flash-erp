@@ -1,0 +1,179 @@
+# ============================================================
+# NEXO ONE ERP — Docker Compose (Desenvolvimento Local)
+# ============================================================
+# DIRETRIZES: Máxima segurança, Mínimo custo
+#
+# Uso:
+#   docker compose up -d        # Inicia tudo
+#   docker compose logs -f api  # Ver logs do backend
+#   docker compose down -v      # Para e remove volumes
+#
+# Serviços:
+#   - api:      Backend Go (porta 8080)
+#   - frontend: Next.js (porta 3000)
+#   - postgres: PostgreSQL 16 com RLS
+#   - redis:    Cache de sessões e alíquotas
+#   - nats:     Event bus (mensageria)
+# ============================================================
+
+services:
+  # ═══════════════════════════════════════════════════════════
+  # BACKEND API (Go)
+  # ═══════════════════════════════════════════════════════════
+  api:
+    build:
+      context: .
+      dockerfile: Dockerfile
+      args:
+        VERSION: ${VERSION:-dev}
+        BUILD_TIME: ${BUILD_TIME:-unknown}
+    container_name: nexo-one-api
+    restart: unless-stopped
+    ports:
+      - "8080:8080"
+    environment:
+      - APP_ENV=development
+      - PORT=8080
+      - DATABASE_URL=postgres://nexo_api:${DB_PASSWORD:-nexo_dev_2026}@postgres:5432/nexo_one?sslmode=disable
+      - REDIS_URL=redis://redis:6379/0
+      - NATS_URL=nats://nats:4222
+      - JWT_SECRET=${JWT_SECRET:-dev-secret-troque-em-producao-32chars}
+      - BASE_URL=http://localhost:8080
+      - LOG_LEVEL=debug
+    depends_on:
+      postgres:
+        condition: service_healthy
+      redis:
+        condition: service_healthy
+      nats:
+        condition: service_started
+    healthcheck:
+      test: ["CMD", "wget", "-q", "--spider", "http://localhost:8080/health"]
+      interval: 10s
+      timeout: 5s
+      retries: 3
+      start_period: 10s
+    # Segurança: read-only filesystem, drop all capabilities
+    read_only: true
+    cap_drop:
+      - ALL
+    security_opt:
+      - no-new-privileges:true
+    networks:
+      - nexo-network
+
+  # ═══════════════════════════════════════════════════════════
+  # FRONTEND (Next.js)
+  # ═══════════════════════════════════════════════════════════
+  frontend:
+    build:
+      context: ./frontend
+      dockerfile: Dockerfile.frontend
+    container_name: nexo-one-frontend
+    restart: unless-stopped
+    ports:
+      - "3000:3000"
+    environment:
+      - NODE_ENV=production
+      - NEXT_PUBLIC_API_URL=http://localhost:8080
+    depends_on:
+      - api
+    networks:
+      - nexo-network
+
+  # ═══════════════════════════════════════════════════════════
+  # POSTGRESQL 16 (com RLS ativo)
+  # ═══════════════════════════════════════════════════════════
+  postgres:
+    image: postgres:16-alpine
+    container_name: nexo-one-postgres
+    restart: unless-stopped
+    ports:
+      - "5432:5432"
+    environment:
+      POSTGRES_DB: nexo_one
+      POSTGRES_USER: nexo_api
+      POSTGRES_PASSWORD: ${DB_PASSWORD:-nexo_dev_2026}
+      # Performance tuning para dev
+      POSTGRES_INITDB_ARGS: "--encoding=UTF8 --locale=pt_BR.UTF-8"
+    volumes:
+      - postgres_data:/var/lib/postgresql/data
+      - ./migrations:/docker-entrypoint-initdb.d:ro
+    healthcheck:
+      test: ["CMD-SHELL", "pg_isready -U nexo_api -d nexo_one"]
+      interval: 5s
+      timeout: 5s
+      retries: 5
+    # Segurança
+    security_opt:
+      - no-new-privileges:true
+    networks:
+      - nexo-network
+
+  # ═══════════════════════════════════════════════════════════
+  # REDIS 7 (Cache de sessões e alíquotas NCM)
+  # ═══════════════════════════════════════════════════════════
+  redis:
+    image: redis:7-alpine
+    container_name: nexo-one-redis
+    restart: unless-stopped
+    ports:
+      - "6379:6379"
+    command: >
+      redis-server
+      --appendonly yes
+      --maxmemory 128mb
+      --maxmemory-policy allkeys-lru
+    volumes:
+      - redis_data:/data
+    healthcheck:
+      test: ["CMD", "redis-cli", "ping"]
+      interval: 5s
+      timeout: 3s
+      retries: 3
+    security_opt:
+      - no-new-privileges:true
+    networks:
+      - nexo-network
+
+  # ═══════════════════════════════════════════════════════════
+  # NATS (Event Bus - Mensageria)
+  # ═══════════════════════════════════════════════════════════
+  nats:
+    image: nats:2.10-alpine
+    container_name: nexo-one-nats
+    restart: unless-stopped
+    ports:
+      - "4222:4222"   # Client connections
+      - "8222:8222"   # HTTP monitoring
+    command: >
+      -js
+      -sd /data
+      -m 8222
+    volumes:
+      - nats_data:/data
+    security_opt:
+      - no-new-privileges:true
+    networks:
+      - nexo-network
+
+# ═══════════════════════════════════════════════════════════
+# VOLUMES PERSISTENTES
+# ═══════════════════════════════════════════════════════════
+volumes:
+  postgres_data:
+    driver: local
+  redis_data:
+    driver: local
+  nats_data:
+    driver: local
+
+# ═══════════════════════════════════════════════════════════
+# REDE ISOLADA
+# ═══════════════════════════════════════════════════════════
+networks:
+  nexo-network:
+    driver: bridge
+    ipam:
+      config:
+        - subnet: 172.28.0.0/16

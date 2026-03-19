@@ -26,7 +26,7 @@ func NewAestheticsRepo(db *DB) *AestheticsRepo {
 func (r *AestheticsRepo) Create(ctx context.Context, apt *aesthetics.Appointment) error {
 	return r.db.WithTenant(ctx, apt.TenantID, func(tx *sql.Tx) error {
 		query := `
-			INSERT INTO aesthetics_appointments (
+			INSERT INTO nexo.aesthetics_appointments (
 				tenant_id, professional_id, customer_id, customer_name,
 				customer_phone, service_id, service_price,
 				start_time, end_time, duration_min, status,
@@ -65,7 +65,7 @@ func (r *AestheticsRepo) Create(ctx context.Context, apt *aesthetics.Appointment
 func (r *AestheticsRepo) Update(ctx context.Context, apt *aesthetics.Appointment) error {
 	return r.db.WithTenant(ctx, apt.TenantID, func(tx *sql.Tx) error {
 		_, err := tx.ExecContext(ctx, `
-			UPDATE aesthetics_appointments SET
+			UPDATE nexo.aesthetics_appointments SET
 				start_time  = $3,
 				end_time    = $4,
 				status      = $5,
@@ -95,7 +95,7 @@ func (r *AestheticsRepo) GetByID(ctx context.Context, tenantID, id string) (*aes
 			       COALESCE(customer_phone,''), service_id, service_price,
 			       start_time, end_time, duration_min, status,
 			       COALESCE(notes,''), split_enabled, created_at
-			FROM aesthetics_appointments
+			FROM nexo.aesthetics_appointments
 			WHERE id = $1 AND tenant_id = $2`, id, tenantID).
 			Scan(
 				&apt.ID, &apt.TenantID, &apt.ProfessionalID,
@@ -118,7 +118,7 @@ func (r *AestheticsRepo) FindConflicts(ctx context.Context, tenantID, profession
 	err := r.db.WithTenant(ctx, tenantID, func(tx *sql.Tx) error {
 		rows, err := tx.QueryContext(ctx, `
 			SELECT id, start_time, end_time, customer_name, status
-			FROM aesthetics_appointments
+			FROM nexo.aesthetics_appointments
 			WHERE tenant_id       = $1
 			  AND professional_id = $2
 			  AND status NOT IN ('cancelled','no_show')
@@ -163,7 +163,7 @@ func (r *AestheticsRepo) listByDate(ctx context.Context, tenantID string, date t
 			       COALESCE(customer_id::text,''), customer_name,
 			       COALESCE(customer_phone,''), service_id, service_price,
 			       start_time, end_time, duration_min, status, created_at
-			FROM aesthetics_appointments
+			FROM nexo.aesthetics_appointments
 			WHERE tenant_id = $1
 			  AND start_time >= $2 AND start_time < $3
 			  AND ($4 = '' OR professional_id::text = $4)

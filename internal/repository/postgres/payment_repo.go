@@ -24,7 +24,7 @@ func (r *PaymentRepo) SavePixCharge(ctx context.Context, charge *baas.PixCharge)
 
 	return r.db.WithTenant(ctx, charge.TenantID, func(tx *sql.Tx) error {
 		return tx.QueryRowContext(ctx, `
-			INSERT INTO baas_pix_charges
+			INSERT INTO nexo.baas_pix_charges
 			(tenant_id, tx_id, amount, description, payer_name, payer_document,
 			 expires_at, status, qr_code_text, qr_code_image, split_data, created_at)
 			VALUES ($1,$2,$3,$4,$5,$6,$7,$8,$9,$10,$11,$12)
@@ -44,7 +44,7 @@ func (r *PaymentRepo) UpdatePixStatus(ctx context.Context, tenantID, txID string
 	// Buscar tenant_id via txID se não fornecido
 	if tenantID == "" {
 		r.db.pool.QueryRowContext(ctx,
-			`SELECT tenant_id FROM baas_pix_charges WHERE tx_id = $1`, txID).
+			`SELECT tenant_id FROM nexo.baas_pix_charges WHERE tx_id = $1`, txID).
 			Scan(&tenantID)
 	}
 	if tenantID == "" {
@@ -53,7 +53,7 @@ func (r *PaymentRepo) UpdatePixStatus(ctx context.Context, tenantID, txID string
 
 	return r.db.WithTenant(ctx, tenantID, func(tx *sql.Tx) error {
 		_, err := tx.ExecContext(ctx, `
-			UPDATE baas_pix_charges SET
+			UPDATE nexo.baas_pix_charges SET
 				status  = $3,
 				paid_at = $4
 			WHERE tx_id = $1 AND tenant_id = $2`,
@@ -66,7 +66,7 @@ func (r *PaymentRepo) UpdatePixStatus(ctx context.Context, tenantID, txID string
 func (r *PaymentRepo) SaveBoleto(ctx context.Context, boleto *baas.BoletoCharge) error {
 	return r.db.WithTenant(ctx, boleto.TenantID, func(tx *sql.Tx) error {
 		return tx.QueryRowContext(ctx, `
-			INSERT INTO baas_boletos
+			INSERT INTO nexo.baas_boletos
 			(tenant_id, our_number, amount, due_date, description,
 			 payer_name, payer_document, payer_address,
 			 status, bar_code, digitable_line, qr_code_text, pdf_url, created_at)
@@ -86,12 +86,12 @@ func (r *PaymentRepo) SaveBoleto(ctx context.Context, boleto *baas.BoletoCharge)
 func (r *PaymentRepo) UpdateBoletoStatus(ctx context.Context, tenantID, ourNumber string, status baas.PaymentStatus, paidAt *time.Time) error {
 	if tenantID == "" {
 		r.db.pool.QueryRowContext(ctx,
-			`SELECT tenant_id FROM baas_boletos WHERE our_number = $1`, ourNumber).
+			`SELECT tenant_id FROM nexo.baas_boletos WHERE our_number = $1`, ourNumber).
 			Scan(&tenantID)
 	}
 	return r.db.WithTenant(ctx, tenantID, func(tx *sql.Tx) error {
 		_, err := tx.ExecContext(ctx, `
-			UPDATE baas_boletos SET status = $3, paid_at = $4
+			UPDATE nexo.baas_boletos SET status = $3, paid_at = $4
 			WHERE our_number = $1 AND tenant_id = $2`,
 			ourNumber, tenantID, string(status), nullTime(paidAt))
 		return err
@@ -102,7 +102,7 @@ func (r *PaymentRepo) UpdateBoletoStatus(ctx context.Context, tenantID, ourNumbe
 func (r *PaymentRepo) LogWebhook(ctx context.Context, tenantID, eventType, chargeID, txID string, amount float64, paidAt time.Time, rawPayload []byte) error {
 	raw, _ := json.RawMessage(rawPayload).MarshalJSON()
 	_, err := r.db.pool.ExecContext(ctx, `
-		INSERT INTO baas_webhook_events
+		INSERT INTO nexo.baas_webhook_events
 		(tenant_id, event_type, charge_id, tx_id, amount, paid_at, raw_payload)
 		VALUES ($1,$2,$3,$4,$5,$6,$7)`,
 		nullString(tenantID), eventType, nullString(chargeID),
@@ -117,7 +117,7 @@ func (r *PaymentRepo) GetPendingPix(ctx context.Context, tenantID string, expiri
 	err := r.db.WithTenant(ctx, tenantID, func(tx *sql.Tx) error {
 		rows, err := tx.QueryContext(ctx, `
 			SELECT id, tx_id, amount, description, payer_name, expires_at, status
-			FROM baas_pix_charges
+			FROM nexo.baas_pix_charges
 			WHERE tenant_id = $1
 			  AND status = 'pending'
 			  AND expires_at < $2
