@@ -27,27 +27,26 @@ const (
         OSStatusInvoiced      OSStatus = "invoiced"        // faturada (NF-e emitida)
 )
 
-// ServiceOrder representa uma Ordem de Serviço digital.
 type ServiceOrder struct {
-        ID              string
-        TenantID        string
-        Number          string     // ex: "OS-2026-001842"
-        VehiclePlate    string     // placa MERCOSUL ex: "ABC1D23"
-        VehicleKM       int        // km atual na entrada
-        VehicleModel    string
-        VehicleYear     int
-        CustomerID      string
-        CustomerPhone   string     // WhatsApp para aprovação
-        Status          OSStatus
-        Complaint       string     // reclamação do cliente
-        Diagnosis       string     // diagnóstico do mecânico
-        Parts           []OSPart
-        LaborItems      []OSLabor
-        ApprovalToken   string     // token único para link de aprovação WhatsApp
-        ApprovalURL     string     // link enviado ao cliente
-        ApprovedAt      *time.Time
-        CreatedAt       time.Time
-        UpdatedAt       time.Time
+        ID            string     `json:"id"`
+        TenantID      string     `json:"tenant_id"`
+        Number        string     `json:"number"`
+        VehiclePlate  string     `json:"vehicle_plate"`
+        VehicleKM     int        `json:"vehicle_km"`
+        VehicleModel  string     `json:"vehicle_model"`
+        VehicleYear   int        `json:"vehicle_year"`
+        CustomerID    string     `json:"customer_id"`
+        CustomerPhone string     `json:"customer_phone"`
+        Status        OSStatus   `json:"status"`
+        Complaint     string     `json:"complaint"`
+        Diagnosis     string     `json:"diagnosis"`
+        Parts         []OSPart   `json:"parts"`
+        LaborItems    []OSLabor  `json:"labor_items"`
+        ApprovalToken string     `json:"approval_token,omitempty"`
+        ApprovalURL   string     `json:"approval_url,omitempty"`
+        ApprovedAt    *time.Time `json:"approved_at"`
+        CreatedAt     time.Time  `json:"created_at"`
+        UpdatedAt     time.Time  `json:"updated_at"`
 }
 
 // OSPart representa uma peça utilizada na OS.

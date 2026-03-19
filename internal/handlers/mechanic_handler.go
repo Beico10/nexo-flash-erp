@@ -61,7 +61,7 @@ func (h *MechanicHandler) CreateOS(w http.ResponseWriter, r *http.Request) {
 		Complaint:     req.Complaint,
 	}
 	if err := h.service.Create(r.Context(), os); err != nil {
-		respondError(w, http.StatusInternalServerError, err.Error())
+		respondError(w, http.StatusBadRequest, err.Error())
 		return
 	}
 	respondJSON(w, http.StatusCreated, os)
