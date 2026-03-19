@@ -14,7 +14,7 @@ import (
 	"fmt"
 	"time"
 
-	"github.com/nexoflash/nexo-flash/internal/modules/logistics"
+	"github.com/nexoone/nexo-one/internal/modules/logistics"
 )
 
 // LogisticsRepo implementa logistics.ContractRepository.

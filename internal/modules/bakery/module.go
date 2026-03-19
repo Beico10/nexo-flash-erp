@@ -1,6 +1,6 @@
 package bakery
 
-import "github.com/nexoflash/nexo-flash/internal/core"
+import "github.com/nexoone/nexo-one/internal/core"
 
 type Module struct{}
 

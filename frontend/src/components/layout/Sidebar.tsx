@@ -35,7 +35,7 @@ export default function Sidebar() {
           </div>
           <div className="leading-none">
             <div style={{fontFamily:'var(--font-syne)',fontWeight:800,fontSize:18,letterSpacing:'-0.02em',color:'#0D1B4B'}}>
-              Nexo<span style={{color:'#1A47C8'}}>Flash</span>
+              Nexo<span style={{color:'#1A47C8'}}>One</span>
             </div>
             <div style={{fontSize:10,fontWeight:600,color:'#8892B8',letterSpacing:'0.05em',textTransform:'uppercase',marginTop:1}}>ERP Inteligente</div>
           </div>

@@ -1,4 +1,4 @@
-// Package bakery implementa o módulo de Padaria do Nexo Flash.
+// Package bakery implementa o módulo de Padaria do Nexo One.
 //
 // Funcionalidades (Briefing Mestre §1 — Nicho Padaria):
 //   - PDV Rápido (venda por peso, unidade e combo)

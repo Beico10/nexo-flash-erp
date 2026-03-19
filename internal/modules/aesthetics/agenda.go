@@ -1,4 +1,4 @@
-// Package aesthetics implementa o módulo de Estética do Nexo Flash.
+// Package aesthetics implementa o módulo de Estética do Nexo One.
 //
 // Funcionalidades (Briefing Mestre §1 — Nicho Estética):
 //   - Agenda com trava de conflito (sem double-booking)

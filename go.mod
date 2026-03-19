@@ -1,4 +1,4 @@
-module github.com/nexoflash/nexo-flash
+module github.com/nexoone/nexo-one
 
 go 1.22
 

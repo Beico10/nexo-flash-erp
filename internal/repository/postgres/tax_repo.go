@@ -17,7 +17,7 @@ import (
 	"fmt"
 	"time"
 
-	"github.com/nexoflash/nexo-flash/internal/tax"
+	"github.com/nexoone/nexo-one/internal/tax"
 )
 
 // RedisClient interface mínima para o cache de alíquotas.

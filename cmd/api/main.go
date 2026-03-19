@@ -1,4 +1,4 @@
-// Package main é o ponto de entrada do servidor Nexo Flash ERP.
+// Package main é o ponto de entrada do servidor Nexo One ERP.
 package main
 
 import (
@@ -10,17 +10,17 @@ import (
 	"syscall"
 	"time"
 
-	"github.com/nexoflash/nexo-flash/internal/app"
-	"github.com/nexoflash/nexo-flash/internal/auth"
-	"github.com/nexoflash/nexo-flash/pkg/middleware"
+	"github.com/nexoone/nexo-one/internal/app"
+	"github.com/nexoone/nexo-one/internal/auth"
+	"github.com/nexoone/nexo-one/pkg/middleware"
 
 	// Registra todos os módulos via init()
-	_ "github.com/nexoflash/nexo-flash/internal/modules/aesthetics"
-	_ "github.com/nexoflash/nexo-flash/internal/modules/bakery"
-	_ "github.com/nexoflash/nexo-flash/internal/modules/industry"
-	_ "github.com/nexoflash/nexo-flash/internal/modules/logistics"
-	_ "github.com/nexoflash/nexo-flash/internal/modules/mechanic"
-	_ "github.com/nexoflash/nexo-flash/internal/modules/shoes"
+	_ "github.com/nexoone/nexo-one/internal/modules/aesthetics"
+	_ "github.com/nexoone/nexo-one/internal/modules/bakery"
+	_ "github.com/nexoone/nexo-one/internal/modules/industry"
+	_ "github.com/nexoone/nexo-one/internal/modules/logistics"
+	_ "github.com/nexoone/nexo-one/internal/modules/mechanic"
+	_ "github.com/nexoone/nexo-one/internal/modules/shoes"
 )
 
 var version = "dev"
@@ -34,7 +34,7 @@ func main() {
 	logger := slog.New(slog.NewJSONHandler(os.Stdout, &slog.HandlerOptions{Level: logLevel}))
 	slog.SetDefault(logger)
 
-	slog.Info("Nexo Flash ERP iniciando", "version", version, "env", getEnv("APP_ENV", "development"))
+	slog.Info("Nexo One ERP iniciando", "version", version, "env", getEnv("APP_ENV", "development"))
 
 	// Inicializar container de dependências
 	container, err := app.Wire(app.Config{

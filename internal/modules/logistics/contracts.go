@@ -1,5 +1,5 @@
 // Package logistics implementa a lógica de contratos multi-cliente e
-// o "DRE da Viagem" (Demonstrativo de Resultado da Viagem) do Nexo Flash.
+// o "DRE da Viagem" (Demonstrativo de Resultado da Viagem) do Nexo One.
 //
 // Hierarquia de contratos (Briefing Mestre §4):
 //  1. Tabela específica do Embarcador (shipper_id preenchido) → PRIORIDADE

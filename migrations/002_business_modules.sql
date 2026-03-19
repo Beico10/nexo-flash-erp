@@ -1,7 +1,11 @@
 -- =============================================================================
--- NEXO FLASH ERP — Migração 002: Tabelas de Negócio (6 Nichos)
+-- NEXO ONE ERP — Migração 002: Tabelas de Negócio (6 Nichos)
 -- Todas as tabelas têm RLS habilitado.
 -- =============================================================================
+
+BEGIN;
+
+SET search_path = nexo;
 
 -- =============================================================================
 -- MÓDULO: MECÂNICA
@@ -16,6 +20,7 @@ CREATE TABLE mechanic_service_orders (
     vehicle_model   TEXT,
     vehicle_year    INT,
     customer_id     UUID,
+    customer_name   TEXT,
     customer_phone  TEXT,
     status          TEXT NOT NULL DEFAULT 'open'
                     CHECK (status IN ('open','diagnosed','await_approval','approved','rejected','in_progress','done','invoiced')),
@@ -63,6 +68,7 @@ CREATE POLICY mec_os_isolation ON mechanic_service_orders USING (tenant_id = cur
 CREATE POLICY mec_parts_isolation ON mechanic_os_parts USING (tenant_id = current_tenant_id());
 CREATE POLICY mec_labor_isolation ON mechanic_os_labor USING (tenant_id = current_tenant_id());
 
+CREATE INDEX idx_mec_os_tenant ON mechanic_service_orders(tenant_id);
 CREATE INDEX idx_mec_os_plate ON mechanic_service_orders(tenant_id, vehicle_plate);
 CREATE INDEX idx_mec_os_status ON mechanic_service_orders(tenant_id, status) WHERE status NOT IN ('done','invoiced');
 
@@ -80,7 +86,7 @@ CREATE TABLE bakery_products (
     ncm_code        TEXT,
     is_basket_item  BOOLEAN NOT NULL DEFAULT FALSE,
     basket_category TEXT,
-    scale_plu       TEXT,   -- código PLU para a balança
+    scale_plu       TEXT,
     current_stock   NUMERIC(12,3) DEFAULT 0,
     min_stock       NUMERIC(12,3) DEFAULT 0,
     active          BOOLEAN NOT NULL DEFAULT TRUE,
@@ -139,6 +145,9 @@ CREATE POLICY bak_sales_iso ON bakery_sales USING (tenant_id = current_tenant_id
 CREATE POLICY bak_items_iso ON bakery_sale_items USING (tenant_id = current_tenant_id());
 CREATE POLICY bak_losses_iso ON bakery_losses USING (tenant_id = current_tenant_id());
 
+CREATE INDEX idx_bak_products_tenant ON bakery_products(tenant_id);
+CREATE INDEX idx_bak_sales_tenant ON bakery_sales(tenant_id);
+
 -- =============================================================================
 -- MÓDULO: ESTÉTICA
 -- =============================================================================
@@ -179,7 +188,6 @@ CREATE TABLE aesthetics_appointments (
     notes             TEXT,
     split_enabled     BOOLEAN DEFAULT FALSE,
     created_at        TIMESTAMPTZ NOT NULL DEFAULT NOW(),
-    -- TRAVA DE CONFLITO: constraint de exclusão por sobreposição de horário
     CONSTRAINT no_double_booking EXCLUDE USING gist (
         tenant_id WITH =,
         professional_id WITH =,
@@ -208,8 +216,8 @@ CREATE POLICY aes_srv_iso ON aesthetics_services USING (tenant_id = current_tena
 CREATE POLICY aes_apt_iso ON aesthetics_appointments USING (tenant_id = current_tenant_id());
 CREATE POLICY aes_split_iso ON aesthetics_split_rules USING (tenant_id = current_tenant_id());
 
--- Extensão para EXCLUDE (trava de conflito de agenda)
-CREATE EXTENSION IF NOT EXISTS btree_gist;
+CREATE INDEX idx_aes_prof_tenant ON aesthetics_professionals(tenant_id);
+CREATE INDEX idx_aes_apt_tenant ON aesthetics_appointments(tenant_id);
 
 -- =============================================================================
 -- MÓDULO: CALÇADOS
@@ -260,6 +268,9 @@ ALTER TABLE shoes_commission_rules ENABLE ROW LEVEL SECURITY;
 CREATE POLICY shoes_prod_iso ON shoes_products USING (tenant_id = current_tenant_id());
 CREATE POLICY shoes_grid_iso ON shoes_grid_cells USING (tenant_id = current_tenant_id());
 CREATE POLICY shoes_comm_iso ON shoes_commission_rules USING (tenant_id = current_tenant_id());
+
+CREATE INDEX idx_shoes_prod_tenant ON shoes_products(tenant_id);
+CREATE INDEX idx_shoes_grid_tenant ON shoes_grid_cells(tenant_id);
 
 -- =============================================================================
 -- MÓDULO: INDÚSTRIA
@@ -318,3 +329,8 @@ ALTER TABLE industry_production_orders ENABLE ROW LEVEL SECURITY;
 CREATE POLICY ind_bom_iso ON industry_bom USING (tenant_id = current_tenant_id());
 CREATE POLICY ind_bom_items_iso ON industry_bom_items USING (tenant_id = current_tenant_id());
 CREATE POLICY ind_po_iso ON industry_production_orders USING (tenant_id = current_tenant_id());
+
+CREATE INDEX idx_ind_bom_tenant ON industry_bom(tenant_id);
+CREATE INDEX idx_ind_po_tenant ON industry_production_orders(tenant_id);
+
+COMMIT;

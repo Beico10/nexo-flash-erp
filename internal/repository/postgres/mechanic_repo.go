@@ -9,7 +9,7 @@ import (
 	"fmt"
 	"time"
 
-	"github.com/nexoflash/nexo-flash/internal/modules/mechanic"
+	"github.com/nexoone/nexo-one/internal/modules/mechanic"
 )
 
 // MechanicRepo implementa mechanic.OSRepository usando PostgreSQL + RLS.

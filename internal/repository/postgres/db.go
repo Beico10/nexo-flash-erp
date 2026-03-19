@@ -2,7 +2,7 @@
 //
 // SEGURANÇA CRÍTICA:
 // Toda query DEVE ser executada dentro de uma transação que executa primeiro:
-//   SET LOCAL app.tenant_id = '<uuid>'
+//   SET LOCAL nexo.current_tenant_id = '<uuid>'
 //
 // Isso ativa o Row Level Security (RLS) do PostgreSQL.
 // A função WithTenant() garante isso automaticamente.
@@ -83,7 +83,7 @@ func (d *DB) WithTenant(ctx context.Context, tenantID string, fn func(tx *sql.Tx
 	}
 
 	// SET LOCAL: afeta apenas esta transação — thread-safe com pool de conexões
-	if _, err := tx.ExecContext(ctx, "SET LOCAL app.tenant_id = $1", tenantID); err != nil {
+	if _, err := tx.ExecContext(ctx, "SET LOCAL nexo.current_tenant_id = $1", tenantID); err != nil {
 		tx.Rollback()
 		return fmt.Errorf("postgres.WithTenant: set tenant_id: %w", err)
 	}

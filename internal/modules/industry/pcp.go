@@ -1,4 +1,4 @@
-// Package industry implementa o módulo de Indústria do Nexo Flash.
+// Package industry implementa o módulo de Indústria do Nexo One.
 //
 // Funcionalidades (Briefing Mestre §1 — Nicho Indústria):
 //   - PCP: Planejamento e Controle da Produção

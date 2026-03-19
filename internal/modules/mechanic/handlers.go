@@ -6,8 +6,8 @@ import (
 	"net/http"
 	"time"
 
-	"github.com/nexoflash/nexo-flash/internal/modules/mechanic"
-	"github.com/nexoflash/nexo-flash/pkg/middleware"
+	"github.com/nexoone/nexo-one/internal/modules/mechanic"
+	"github.com/nexoone/nexo-one/pkg/middleware"
 )
 
 // MechanicHandler agrupa os handlers do módulo de mecânica.

@@ -1,4 +1,4 @@
-// Package core defines o micro-kernel do Nexo Flash.
+// Package core defines o micro-kernel do Nexo One.
 // O ModuleRegistry carrega apenas os módulos autorizados para cada tenant,
 // baseado no campo business_type da tabela tenants.
 // Nenhuma lógica de nicho deve residir aqui — apenas contratos (interfaces).

@@ -16,7 +16,7 @@ func NewNoOpGateway() *NoOpGateway { return &NoOpGateway{} }
 
 func (n *NoOpGateway) CreatePixCharge(_ context.Context, charge *PixCharge) (*PixCharge, error) {
 	charge.ID = fmt.Sprintf("mock_%d", time.Now().UnixNano())
-	charge.QRCodeText = fmt.Sprintf("00020126580014br.gov.bcb.pix0136%s5204000053039865802BR5925Nexo Flash ERP6009Sao Paulo62070503***6304ABCD", charge.TxID)
+	charge.QRCodeText = fmt.Sprintf("00020126580014br.gov.bcb.pix0136%s5204000053039865802BR5925Nexo One ERP6009Sao Paulo62070503***6304ABCD", charge.TxID)
 	charge.QRCodeImage = "data:image/png;base64,iVBORw0KGgoAAAANSUhEUgAAAAEAAAABCAYAAAAfFcSJAAAADUlEQVR42mNk+M9QDwADhgGAWjR9awAAAABJRU5ErkJggg=="
 	charge.Status = PaymentPending
 	fmt.Printf("[BaaS NoOp] PIX criado: txID=%s valor=R$%.2f\n", charge.TxID, charge.Amount)

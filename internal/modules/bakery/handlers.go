@@ -6,8 +6,8 @@ import (
 	"net/http"
 	"time"
 
-	"github.com/nexoflash/nexo-flash/internal/modules/bakery"
-	"github.com/nexoflash/nexo-flash/pkg/middleware"
+	"github.com/nexoone/nexo-one/internal/modules/bakery"
+	"github.com/nexoone/nexo-one/pkg/middleware"
 )
 
 type BakeryHandler struct {

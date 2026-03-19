@@ -6,8 +6,8 @@ import (
 	"net/http"
 	"time"
 
-	"github.com/nexoflash/nexo-flash/internal/baas"
-	"github.com/nexoflash/nexo-flash/pkg/middleware"
+	"github.com/nexoone/nexo-one/internal/baas"
+	"github.com/nexoone/nexo-one/pkg/middleware"
 )
 
 type PaymentHandler struct {

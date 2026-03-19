@@ -1,7 +1,7 @@
-// Package mechanic — registro do módulo no micro-kernel do Nexo Flash.
+// Package mechanic — registro do módulo no micro-kernel do Nexo One.
 package mechanic
 
-import "github.com/nexoflash/nexo-flash/internal/core"
+import "github.com/nexoone/nexo-one/internal/core"
 
 // Module implementa a interface core.Module para o nicho de mecânica.
 type Module struct{}

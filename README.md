@@ -1,6 +1,8 @@
-# Nexo Flash ERP
+# Nexo One ERP
 
 ERP SaaS Multi-Tenant, Multi-Nicho — Reforma Tributária Brasil 2026 (IBS/CBS).
+
+**Do TOTVS Protheus ao vendedor de cafezinho — um sistema que atende todos.**
 
 ## Deploy Hetzner — 3 passos
 
@@ -9,9 +11,9 @@ ERP SaaS Multi-Tenant, Multi-Nicho — Reforma Tributária Brasil 2026 (IBS/CBS)
 ssh root@IP_DO_SERVIDOR
 
 # 2. Configurar e rodar
-export GITHUB_REPO="https://github.com/Beico10/nexo-flash-erp.git"
-export DOMAIN="api.nexoflash.com.br"
-export FRONTEND_DOMAIN="app.nexoflash.com.br"
+export GITHUB_REPO="https://github.com/Beico10/nexo-one-erp.git"
+export DOMAIN="api.nexoone.com.br"
+export FRONTEND_DOMAIN="app.nexoone.com.br"
 export LETSENCRYPT_EMAIL="seu@email.com.br"
 bash deployments/scripts/deploy.sh
 
@@ -21,7 +23,7 @@ bash deployments/scripts/deploy.sh
 ## Atualizar após novos commits
 
 ```bash
-bash /opt/nexo-flash/deployments/scripts/update.sh
+bash /opt/nexo-one/deployments/scripts/update.sh
 ```
 
 ## Stack

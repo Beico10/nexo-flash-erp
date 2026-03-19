@@ -1,20 +1,20 @@
-// Package app — injeção de dependências completa do Nexo Flash.
+// Package app — injeção de dependências completa do Nexo One.
 package app
 
 import (
 	"context"
 	"fmt"
 
-	"github.com/nexoflash/nexo-flash/internal/ai"
-	"github.com/nexoflash/nexo-flash/internal/auth"
-	"github.com/nexoflash/nexo-flash/internal/baas"
-	"github.com/nexoflash/nexo-flash/internal/handlers"
-	"github.com/nexoflash/nexo-flash/internal/modules/aesthetics"
-	"github.com/nexoflash/nexo-flash/internal/modules/logistics"
-	"github.com/nexoflash/nexo-flash/internal/modules/mechanic"
-	"github.com/nexoflash/nexo-flash/internal/repository/postgres"
-	"github.com/nexoflash/nexo-flash/internal/tax"
-	"github.com/nexoflash/nexo-flash/pkg/cache"
+	"github.com/nexoone/nexo-one/internal/ai"
+	"github.com/nexoone/nexo-one/internal/auth"
+	"github.com/nexoone/nexo-one/internal/baas"
+	"github.com/nexoone/nexo-one/internal/handlers"
+	"github.com/nexoone/nexo-one/internal/modules/aesthetics"
+	"github.com/nexoone/nexo-one/internal/modules/logistics"
+	"github.com/nexoone/nexo-one/internal/modules/mechanic"
+	"github.com/nexoone/nexo-one/internal/repository/postgres"
+	"github.com/nexoone/nexo-one/internal/tax"
+	"github.com/nexoone/nexo-one/pkg/cache"
 )
 
 type Config struct {

@@ -6,11 +6,11 @@ import (
 	"net/http"
 	"time"
 
-	"github.com/nexoflash/nexo-flash/internal/ai"
-	"github.com/nexoflash/nexo-flash/internal/modules/aesthetics"
-	"github.com/nexoflash/nexo-flash/internal/modules/logistics"
-	"github.com/nexoflash/nexo-flash/internal/tax"
-	"github.com/nexoflash/nexo-flash/pkg/middleware"
+	"github.com/nexoone/nexo-one/internal/ai"
+	"github.com/nexoone/nexo-one/internal/modules/aesthetics"
+	"github.com/nexoone/nexo-one/internal/modules/logistics"
+	"github.com/nexoone/nexo-one/internal/tax"
+	"github.com/nexoone/nexo-one/pkg/middleware"
 )
 
 // =============================================================================

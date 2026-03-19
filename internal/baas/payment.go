@@ -1,4 +1,4 @@
-// Package baas implementa o Banking as a Service do Nexo Flash.
+// Package baas implementa o Banking as a Service do Nexo One.
 //
 // Funcionalidades (Briefing Mestre §3):
 //   - PIX Dinâmico (QR Code com valor e vencimento)
@@ -99,7 +99,7 @@ type BaaSGateway interface {
 	ProcessWebhook(ctx context.Context, payload []byte, signature string) (*WebhookEvent, error)
 }
 
-// PaymentService é o serviço de pagamentos do Nexo Flash.
+// PaymentService é o serviço de pagamentos do Nexo One.
 type PaymentService struct {
 	gateway BaaSGateway
 	repo    PaymentRepository

@@ -1,11 +1,11 @@
 {
   "/_not-found/page": "app/_not-found/page.js",
-  "/aesthetics/page": "app/aesthetics/page.js",
   "/ai-approvals/page": "app/ai-approvals/page.js",
+  "/aesthetics/page": "app/aesthetics/page.js",
   "/api/auth/login/route": "app/api/auth/login/route.js",
+  "/bakery/page": "app/bakery/page.js",
   "/dashboard/page": "app/dashboard/page.js",
   "/industry/page": "app/industry/page.js",
-  "/bakery/page": "app/bakery/page.js",
   "/logistics/page": "app/logistics/page.js",
   "/mechanic/page": "app/mechanic/page.js",
   "/settings/page": "app/settings/page.js",

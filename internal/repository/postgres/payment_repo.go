@@ -8,7 +8,7 @@ import (
 	"encoding/json"
 	"time"
 
-	"github.com/nexoflash/nexo-flash/internal/baas"
+	"github.com/nexoone/nexo-one/internal/baas"
 )
 
 // PaymentRepo implementa baas.PaymentRepository.

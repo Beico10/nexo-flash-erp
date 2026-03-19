@@ -1,4 +1,4 @@
-// Package ai implementa a camada Human-in-the-Loop do Nexo Flash.
+// Package ai implementa a camada Human-in-the-Loop do Nexo One.
 //
 // DIRETRIZ CRÍTICA (do Briefing Mestre):
 // Nenhuma IA tem autonomia para alterar dados (Preço, Imposto, Financeiro)

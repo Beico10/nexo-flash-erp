@@ -1,4 +1,4 @@
-// Package cache implementa o cache Redis do Nexo Flash.
+// Package cache implementa o cache Redis do Nexo One.
 //
 // Uso principal: cache de alíquotas NCM (TTL 1h).
 // As alíquotas mudam raramente (publicação no DOU), então 1h é seguro.

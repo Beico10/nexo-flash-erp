@@ -1,4 +1,4 @@
-// Package auth implementa autenticação JWT do Nexo Flash.
+// Package auth implementa autenticação JWT do Nexo One.
 //
 // Fluxo completo:
 //  1. POST /auth/login → valida email+senha → retorna access_token (15min) + refresh_token (7d)

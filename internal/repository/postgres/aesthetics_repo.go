@@ -8,7 +8,7 @@ import (
 	"fmt"
 	"time"
 
-	"github.com/nexoflash/nexo-flash/internal/modules/aesthetics"
+	"github.com/nexoone/nexo-one/internal/modules/aesthetics"
 )
 
 // AestheticsRepo implementa aesthetics.AgendaRepository.

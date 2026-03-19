@@ -1,4 +1,4 @@
-// Package shoes implementa o módulo de Calçados do Nexo Flash.
+// Package shoes implementa o módulo de Calçados do Nexo One.
 //
 // Funcionalidades (Briefing Mestre §1 — Nicho Calçados):
 //   - Matriz de Grade (Cor × Tamanho × SKU) para gestão de estoque precisa

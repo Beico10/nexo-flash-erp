@@ -1,4 +1,4 @@
-// Package ai — IA Concierge do Nexo Flash.
+// Package ai — IA Concierge do Nexo One.
 //
 // Função: lê XMLs de NF-e de compra e configura 90% do tenant e catálogo
 // em até 5 minutos, sem que o usuário precise digitar produto por produto.
@@ -80,7 +80,7 @@ type OnboardSuggestion struct {
 	Reason     string
 }
 
-// Concierge é o agente de IA de onboarding do Nexo Flash.
+// Concierge é o agente de IA de onboarding do Nexo One.
 type Concierge struct {
 	gateway *Gateway
 }

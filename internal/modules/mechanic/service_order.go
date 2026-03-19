@@ -1,4 +1,4 @@
-// Package mechanic implementa o módulo de Mecânica do Nexo Flash.
+// Package mechanic implementa o módulo de Mecânica do Nexo One.
 //
 // Funcionalidades (Briefing Mestre §1 — Nicho Mecânica):
 //   - OS Digital com controle por Placa e KM

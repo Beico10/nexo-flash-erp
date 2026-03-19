@@ -14,7 +14,14 @@
       "static/chunks/main-app-ea0bad449de17305.js",
       "static/css/0ffcb69c10f50fb7.css",
       "static/chunks/396-fad7a27e0815031c.js",
-      "static/chunks/app/layout-9067c5cda9b567fe.js"
+      "static/chunks/app/layout-2f2ca1f4d780289b.js"
+    ],
+    "/ai-approvals/page": [
+      "static/chunks/webpack-1214e4bd8911037e.js",
+      "static/chunks/fd9d1056-cf71f16cd111741d.js",
+      "static/chunks/23-5eee46a6a4e5d8d3.js",
+      "static/chunks/main-app-ea0bad449de17305.js",
+      "static/chunks/app/ai-approvals/page-68ac38a68a8894a5.js"
     ],
     "/aesthetics/page": [
       "static/chunks/webpack-1214e4bd8911037e.js",
@@ -23,12 +30,12 @@
       "static/chunks/main-app-ea0bad449de17305.js",
       "static/chunks/app/aesthetics/page-cba7736bec8225bb.js"
     ],
-    "/ai-approvals/page": [
+    "/bakery/page": [
       "static/chunks/webpack-1214e4bd8911037e.js",
       "static/chunks/fd9d1056-cf71f16cd111741d.js",
       "static/chunks/23-5eee46a6a4e5d8d3.js",
       "static/chunks/main-app-ea0bad449de17305.js",
-      "static/chunks/app/ai-approvals/page-68ac38a68a8894a5.js"
+      "static/chunks/app/bakery/page-a3e60b802be3846e.js"
     ],
     "/dashboard/page": [
       "static/chunks/webpack-1214e4bd8911037e.js",
@@ -45,13 +52,6 @@
       "static/chunks/23-5eee46a6a4e5d8d3.js",
       "static/chunks/main-app-ea0bad449de17305.js",
       "static/chunks/app/industry/page-c48a2d5716b970a9.js"
-    ],
-    "/bakery/page": [
-      "static/chunks/webpack-1214e4bd8911037e.js",
-      "static/chunks/fd9d1056-cf71f16cd111741d.js",
-      "static/chunks/23-5eee46a6a4e5d8d3.js",
-      "static/chunks/main-app-ea0bad449de17305.js",
-      "static/chunks/app/bakery/page-a3e60b802be3846e.js"
     ],
     "/logistics/page": [
       "static/chunks/webpack-1214e4bd8911037e.js",
@@ -87,7 +87,7 @@
       "static/chunks/23-5eee46a6a4e5d8d3.js",
       "static/chunks/main-app-ea0bad449de17305.js",
       "static/chunks/995-37286af73d600b68.js",
-      "static/chunks/app/login/page-b1e7927af063cef2.js"
+      "static/chunks/app/login/page-8b0e44044d48ffaf.js"
     ],
     "/login/layout": [
       "static/chunks/webpack-1214e4bd8911037e.js",

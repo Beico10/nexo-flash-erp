@@ -11,7 +11,7 @@ import (
 	"github.com/redis/go-redis/v9"
 )
 
-// Client é o cliente Redis do Nexo Flash.
+// Client é o cliente Redis do Nexo One.
 // Implementa: cache.RedisClient, auth.SimpleRedis, repository.RedisClient
 type Client struct {
 	rdb *redis.Client

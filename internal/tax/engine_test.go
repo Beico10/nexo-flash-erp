@@ -6,7 +6,7 @@ import (
 	"testing"
 	"time"
 
-	"github.com/nexoflash/nexo-flash/internal/tax"
+	"github.com/nexoone/nexo-one/internal/tax"
 )
 
 // mockRateRepository implementa tax.RateRepository para testes.

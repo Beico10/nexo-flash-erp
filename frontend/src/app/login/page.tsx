@@ -77,7 +77,7 @@ export default function LoginPage() {
             </div>
             <div>
               <div style={{ fontFamily: 'var(--font-syne)', fontWeight: 800, fontSize: 24, color: '#fff', letterSpacing: '-0.02em' }}>
-                NexoFlash
+                NexoOne
               </div>
               <div style={{ fontSize: 11, color: 'rgba(255,255,255,0.5)', fontWeight: 600, letterSpacing: '0.06em', textTransform: 'uppercase' }}>
                 ERP Inteligente
@@ -90,10 +90,10 @@ export default function LoginPage() {
         <div className="relative space-y-8">
           <div>
             <p style={{ fontFamily: 'var(--font-syne)', fontSize: 34, fontWeight: 800, color: '#fff', lineHeight: 1.15, letterSpacing: '-0.03em' }}>
-              Gestão inteligente para o seu negócio.
+              Do TOTVS ao cafezinho — gestão para todos.
             </p>
             <p style={{ fontSize: 15, color: 'rgba(255,255,255,0.65)', marginTop: 16, lineHeight: 1.7 }}>
-              ERP multi-nicho com motor fiscal IBS/CBS 2026, IA assistente e zero burocracia.
+              ERP multi-nicho com motor fiscal IBS/CBS 2026, IA assistente com aprovação humana e zero burocracia.
             </p>
           </div>
 
@@ -119,7 +119,7 @@ export default function LoginPage() {
         {/* Footer */}
         <div className="relative">
           <p style={{ fontSize: 11, color: 'rgba(255,255,255,0.3)', fontWeight: 500 }}>
-            © 2026 Nexo Flash ERP · Reforma Tributária Brasil 2026
+            © 2026 Nexo One ERP · Reforma Tributária Brasil 2026
           </p>
         </div>
       </div>
@@ -134,7 +134,7 @@ export default function LoginPage() {
               <Zap size={18} className="text-white" strokeWidth={2.5} />
             </div>
             <span style={{ fontFamily: 'var(--font-syne)', fontWeight: 800, fontSize: 22, color: '#0D1B4B', letterSpacing: '-0.02em' }}>
-              Nexo<span style={{ color: '#1A47C8' }}>Flash</span>
+              Nexo<span style={{ color: '#1A47C8' }}>One</span>
             </span>
           </div>
 
@@ -194,7 +194,7 @@ export default function LoginPage() {
                     background: 'rgba(26,51,120,0.05)', padding: '2px 8px', borderRadius: 6,
                     border: '1px solid rgba(26,51,120,0.1)',
                   }}>
-                    .nexoflash.com
+                    .nexoone.com
                   </span>
                 </div>
                 <p style={{ fontSize: 11, color: '#B0B8D8', marginTop: 5 }}>

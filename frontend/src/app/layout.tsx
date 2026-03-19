@@ -4,8 +4,8 @@ import Sidebar from '@/components/layout/Sidebar'
 import Header from '@/components/layout/Header'
 
 export const metadata: Metadata = {
-  title: 'Nexo Flash ERP',
-  description: 'ERP SaaS Multi-Nicho — Reforma Tributária Brasil 2026',
+  title: 'Nexo One ERP',
+  description: 'ERP SaaS Multi-Nicho — Do TOTVS ao cafezinho — Reforma Tributária Brasil 2026',
 }
 
 export default function RootLayout({ children }: { children: React.ReactNode }) {

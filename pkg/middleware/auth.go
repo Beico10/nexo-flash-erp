@@ -1,4 +1,4 @@
-// Package middleware implementa os middlewares HTTP do Nexo Flash.
+// Package middleware implementa os middlewares HTTP do Nexo One.
 //
 // TenantMiddleware é o middleware mais crítico do sistema:
 // ele extrai o tenant_id do JWT e configura a sessão PostgreSQL
@@ -15,7 +15,7 @@ import (
 	"time"
 )
 
-// Claims representa o payload do JWT do Nexo Flash.
+// Claims representa o payload do JWT do Nexo One.
 type Claims struct {
 	UserID     string   `json:"sub"`
 	TenantID   string   `json:"tenant_id"`

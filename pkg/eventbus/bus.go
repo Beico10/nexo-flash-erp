@@ -1,4 +1,4 @@
-// Package eventbus implementa o barramento de eventos interno do Nexo Flash.
+// Package eventbus implementa o barramento de eventos interno do Nexo One.
 // Utiliza NATS JetStream para garantia de entrega (at-least-once) e
 // desacoplamento total entre módulos.
 //

@@ -13,7 +13,7 @@ import (
 	"fmt"
 	"time"
 
-	"github.com/nexoflash/nexo-flash/internal/ai"
+	"github.com/nexoone/nexo-one/internal/ai"
 )
 
 // AIRepo implementa ai.ApprovalRepository.
