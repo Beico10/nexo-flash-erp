@@ -239,3 +239,72 @@ ERP SaaS Multi-Tenant que atende desde **indústrias** (nível TOTVS Protheus) a
 | GET | `/api/admin/analytics/funnel` | Métricas do funil |
 | GET | `/api/admin/analytics/drops` | Usuários travados |
 
+
+---
+
+## 11. Módulo de Despesas com Leitor de QR Code (Implementado Jan/2026)
+
+### Problema Resolvido
+MEIs e pequenos negócios perdem notas fiscais e não conseguem abater despesas no imposto. Mecânicos compram peças e perdem as notas.
+
+### Solução
+Leitor de QR Code que escaneia NFC-e/NF-e e registra automaticamente como despesa, calculando crédito de imposto.
+
+### Fluxo
+```
+1. Compra material (peças, insumos, etc.)
+2. Recebe nota fiscal com QR Code
+3. Abre app → "Registrar Despesa"
+4. Aponta câmera → Lê QR Code
+5. Sistema consulta SEFAZ → Extrai dados
+6. Categoriza automaticamente (pelo NCM)
+7. Calcula crédito IBS/CBS (Reforma 2026)
+8. Fim do mês: Relatório para contador
+```
+
+### Documentos Suportados
+- NFC-e (Nota Fiscal do Consumidor Eletrônica)
+- NF-e (Nota Fiscal Eletrônica)
+- SAT-CF-e (Sistema Autenticador - São Paulo)
+- CT-e (Conhecimento de Transporte)
+
+### Funcionalidades
+- ✅ Leitor de QR Code via câmera (BarcodeDetector API)
+- ✅ Upload de XML como alternativa
+- ✅ Consulta automática na SEFAZ (scraping)
+- ✅ Categorização automática por NCM
+- ✅ Cálculo de crédito IBS/CBS 2026
+- ✅ Detecção de duplicidade (mesma chave de acesso)
+- ✅ Relatório para IR/imposto
+
+### Categorias Padrão
+- Peças e Componentes (mecânica)
+- Mercadorias para Revenda
+- Materiais e Insumos
+- Combustível
+- Manutenção e Reparos
+- Equipamentos e Ferramentas
+- Serviços de Terceiros
+- Outros
+
+### Endpoints
+| Método | Endpoint | Descrição |
+|--------|----------|-----------|
+| POST | `/api/expenses/scan` | Processa QR Code |
+| POST | `/api/expenses/parse-qr` | Preview sem salvar |
+| POST | `/api/expenses/upload-xml` | Importa XML |
+| GET | `/api/expenses` | Lista despesas |
+| GET | `/api/expenses/{id}` | Detalhes |
+| DELETE | `/api/expenses/{id}` | Cancela |
+| GET | `/api/expenses/categories` | Categorias |
+| GET | `/api/expenses/summary` | Resumo por período |
+| GET | `/api/expenses/tax-report` | Relatório IR |
+
+### Arquivos Criados
+- `migrations/008_expenses_qrcode.sql`
+- `internal/expenses/service.go`
+- `internal/expenses/sefaz.go`
+- `internal/handlers/expense_handler.go`
+- `frontend/src/app/dashboard/expenses/page.tsx`
+- `frontend/src/app/dashboard/expenses/scan/page.tsx`
+
