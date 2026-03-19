@@ -130,3 +130,48 @@ ERP SaaS Multi-Tenant que atende desde **indústrias** (nível TOTVS Protheus) a
 ---
 
 *Última atualização: Janeiro 2026*
+
+---
+
+## 9. Sistema de Planos e Assinaturas (Implementado Jan/2026)
+
+### Modelo de Preços
+
+| Plano | Mensal | Anual | Setup | Público-Alvo |
+|-------|--------|-------|-------|--------------|
+| **Micro** | R$ 47 | R$ 470 | Grátis | Autônomos, MEI |
+| **Starter** | R$ 97 | R$ 970 | Grátis | Pequenos negócios |
+| **Pro** | R$ 197 | R$ 1.970 | Grátis | PMEs estabelecidas |
+| **Business** | R$ 397 | R$ 3.970 | R$ 297 | Indústrias pequenas |
+| **Enterprise** | R$ 997+ | R$ 9.970+ | R$ 497 | Indústrias médias |
+
+### Funcionalidades Self-Service
+
+- ✅ Trial 7 dias automático
+- ✅ Conversão sem intervenção humana
+- ✅ Upgrade/Downgrade pelo cliente
+- ✅ Verificação de limites em tempo real
+- ✅ Cupons de desconto
+- ✅ Admin Master configura preços (sem código)
+
+### Arquivos Criados
+
+- `/migrations/006_billing_plans.sql` — Tabelas de planos e assinaturas
+- `/internal/billing/service.go` — Lógica de negócio
+- `/internal/repository/postgres/billing_repo.go` — Persistência
+- `/internal/handlers/billing_handler.go` — Endpoints API
+- `/frontend/src/app/pricing/page.tsx` — Página de preços
+- `/frontend/src/app/dashboard/subscription/page.tsx` — Gerenciar assinatura
+
+### Endpoints API
+
+| Método | Endpoint | Descrição |
+|--------|----------|-----------|
+| GET | `/api/billing/plans` | Lista planos (público) |
+| POST | `/api/billing/coupon/validate` | Valida cupom |
+| GET | `/api/billing/subscription` | Assinatura do tenant |
+| POST | `/api/billing/convert` | Converte trial → pago |
+| POST | `/api/billing/change-plan` | Muda plano |
+| GET | `/api/billing/usage` | Uso atual |
+| PUT | `/api/admin/billing/plans/{id}` | Admin atualiza plano |
+
