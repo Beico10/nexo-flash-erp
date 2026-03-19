@@ -1,0 +1,151 @@
+# Nexo Flash ERP — Stack open source completa
+# Custo: apenas Hetzner VPS — zero vendor lock-in
+# Segurança: rede interna isolada, secrets via Vault, TLS via Traefik
+
+version: "3.9"
+
+networks:
+  nexo-internal:
+    driver: bridge
+    internal: true
+  nexo-public:
+    driver: bridge
+
+volumes:
+  postgres_data:
+  redis_data:
+  minio_data:
+  vault_data:
+  prometheus_data:
+  grafana_data:
+  loki_data:
+
+services:
+
+  traefik:
+    image: traefik:v3.1
+    restart: unless-stopped
+    networks: [nexo-public, nexo-internal]
+    ports: ["80:80", "443:443"]
+    volumes:
+      - /var/run/docker.sock:/var/run/docker.sock:ro
+      - ./traefik/traefik.yml:/etc/traefik/traefik.yml:ro
+      - ./traefik/acme.json:/acme.json
+
+  api:
+    build:
+      context: ../../
+      dockerfile: deployments/docker/Dockerfile
+    restart: unless-stopped
+    networks: [nexo-internal]
+    environment:
+      APP_ENV: production
+      VAULT_ADDR: http://vault:8200
+    depends_on:
+      postgres: { condition: service_healthy }
+      redis: { condition: service_healthy }
+      nats: { condition: service_started }
+    labels:
+      - "traefik.enable=true"
+      - "traefik.http.routers.api.rule=Host(`api.nexoflash.com.br`)"
+      - "traefik.http.routers.api.tls.certresolver=letsencrypt"
+      - "traefik.http.services.api.loadbalancer.server.port=8080"
+      - "traefik.http.middlewares.ratelimit.ratelimit.average=100"
+      - "traefik.http.middlewares.ratelimit.ratelimit.burst=50"
+
+  postgres:
+    image: postgres:16-alpine
+    restart: unless-stopped
+    networks: [nexo-internal]
+    environment:
+      POSTGRES_DB: nexo
+      POSTGRES_USER: nexo_migrator
+      POSTGRES_PASSWORD_FILE: /run/secrets/pg_password
+    volumes:
+      - postgres_data:/var/lib/postgresql/data
+      - ../../migrations:/docker-entrypoint-initdb.d:ro
+    secrets: [pg_password]
+    healthcheck:
+      test: ["CMD-SHELL", "pg_isready -U nexo_migrator -d nexo"]
+      interval: 10s
+      timeout: 5s
+      retries: 5
+
+  redis:
+    image: redis:7-alpine
+    restart: unless-stopped
+    networks: [nexo-internal]
+    command: redis-server --requirepass "${REDIS_PASSWORD}" --maxmemory 256mb --maxmemory-policy allkeys-lru --save 60 1000
+    volumes: [redis_data:/data]
+    healthcheck:
+      test: ["CMD", "redis-cli", "ping"]
+      interval: 10s
+      timeout: 5s
+      retries: 3
+
+  nats:
+    image: nats:2.10-alpine
+    restart: unless-stopped
+    networks: [nexo-internal]
+    command: ["-js", "-m", "8222"]
+
+  minio:
+    image: minio/minio:latest
+    restart: unless-stopped
+    networks: [nexo-internal]
+    command: server /data --console-address ":9001"
+    environment:
+      MINIO_ROOT_USER_FILE: /run/secrets/minio_user
+      MINIO_ROOT_PASSWORD_FILE: /run/secrets/minio_password
+    volumes: [minio_data:/data]
+    secrets: [minio_user, minio_password]
+
+  vault:
+    image: hashicorp/vault:1.17
+    restart: unless-stopped
+    networks: [nexo-internal]
+    cap_add: [IPC_LOCK]
+    environment:
+      VAULT_ADDR: http://0.0.0.0:8200
+    volumes:
+      - vault_data:/vault/data
+      - ./vault/vault.hcl:/vault/config/vault.hcl:ro
+    command: vault server -config=/vault/config/vault.hcl
+
+  prometheus:
+    image: prom/prometheus:v2.53
+    restart: unless-stopped
+    networks: [nexo-internal]
+    volumes:
+      - ./monitoring/prometheus.yml:/etc/prometheus/prometheus.yml:ro
+      - prometheus_data:/prometheus
+
+  grafana:
+    image: grafana/grafana:11.1.0
+    restart: unless-stopped
+    networks: [nexo-internal]
+    environment:
+      GF_SECURITY_ADMIN_PASSWORD_FILE: /run/secrets/grafana_password
+    volumes: [grafana_data:/var/lib/grafana]
+    secrets: [grafana_password]
+    labels:
+      - "traefik.enable=true"
+      - "traefik.http.routers.grafana.rule=Host(`grafana.nexoflash.com.br`)"
+      - "traefik.http.routers.grafana.tls.certresolver=letsencrypt"
+
+  loki:
+    image: grafana/loki:3.1.0
+    restart: unless-stopped
+    networks: [nexo-internal]
+    volumes:
+      - loki_data:/loki
+      - ./monitoring/loki.yml:/etc/loki/local-config.yaml:ro
+    command: -config.file=/etc/loki/local-config.yaml
+
+secrets:
+  pg_password:     { file: ./secrets/pg_password.txt }
+  minio_user:      { file: ./secrets/minio_user.txt }
+  minio_password:  { file: ./secrets/minio_password.txt }
+  grafana_password: { file: ./secrets/grafana_password.txt }
+
+# NUNCA commite ./secrets/ no git — adicione ao .gitignore
