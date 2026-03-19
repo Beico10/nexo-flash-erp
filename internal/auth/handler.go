@@ -18,10 +18,10 @@ func NewHandler(s *Service) *Handler { return &Handler{service: s} }
 // RegisterRoutes registra as rotas de autenticação.
 // Estas rotas NÃO passam pelo AuthMiddleware — são públicas.
 func (h *Handler) RegisterRoutes(mux *http.ServeMux) {
-	mux.HandleFunc("POST /auth/login",   h.Login)
-	mux.HandleFunc("POST /auth/refresh", h.Refresh)
-	mux.HandleFunc("POST /auth/logout",  h.Logout)
-	mux.HandleFunc("GET  /auth/me",      h.Me)
+	mux.HandleFunc("POST /api/auth/login",   h.Login)
+	mux.HandleFunc("POST /api/auth/refresh", h.Refresh)
+	mux.HandleFunc("POST /api/auth/logout",  h.Logout)
+	mux.HandleFunc("GET /api/auth/me",       h.Me)
 }
 
 // Login autentica usuário e retorna par de tokens.

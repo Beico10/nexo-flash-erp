@@ -33,12 +33,12 @@ func (h *ExpenseHandler) ScanQRCode(w http.ResponseWriter, r *http.Request) {
 		QRContent string `json:"qr_content"`
 	}
 	if err := json.NewDecoder(r.Body).Decode(&req); err != nil {
-		jsonError(w, "JSON inválido", http.StatusBadRequest)
+		respondError(w, http.StatusBadRequest, "JSON inválido")
 		return
 	}
 
 	if req.QRContent == "" {
-		jsonError(w, "qr_content é obrigatório", http.StatusBadRequest)
+		respondError(w, http.StatusBadRequest, "qr_content é obrigatório")
 		return
 	}
 
@@ -47,18 +47,18 @@ func (h *ExpenseHandler) ScanQRCode(w http.ResponseWriter, r *http.Request) {
 	if err != nil {
 		switch err {
 		case expenses.ErrInvalidQRCode:
-			jsonError(w, "QR Code não reconhecido. Certifique-se de que é uma NFC-e ou NF-e válida.", http.StatusBadRequest)
+			respondError(w, http.StatusBadRequest, "QR Code não reconhecido. Certifique-se de que é uma NFC-e ou NF-e válida.")
 		case expenses.ErrDuplicateExpense:
-			jsonError(w, "Esta nota já foi registrada anteriormente.", http.StatusConflict)
+			respondError(w, http.StatusConflict, "Esta nota já foi registrada anteriormente.")
 		case expenses.ErrSEFAZUnavailable:
-			jsonError(w, "SEFAZ indisponível. Tente novamente em alguns segundos.", http.StatusServiceUnavailable)
+			respondError(w, http.StatusServiceUnavailable, "SEFAZ indisponível. Tente novamente em alguns segundos.")
 		default:
-			jsonError(w, err.Error(), http.StatusInternalServerError)
+			respondError(w, http.StatusInternalServerError, err.Error())
 		}
 		return
 	}
 
-	jsonOK(w, map[string]interface{}{
+	respondJSON(w, http.StatusOK, map[string]interface{}{
 		"success": true,
 		"message": "Despesa registrada com sucesso!",
 		"expense": formatExpenseResponse(expense),
@@ -72,17 +72,17 @@ func (h *ExpenseHandler) ParseQRCode(w http.ResponseWriter, r *http.Request) {
 		QRContent string `json:"qr_content"`
 	}
 	if err := json.NewDecoder(r.Body).Decode(&req); err != nil {
-		jsonError(w, "JSON inválido", http.StatusBadRequest)
+		respondError(w, http.StatusBadRequest, "JSON inválido")
 		return
 	}
 
 	result, err := h.svc.ParseQRCode(req.QRContent)
 	if err != nil {
-		jsonError(w, "QR Code não reconhecido", http.StatusBadRequest)
+		respondError(w, http.StatusBadRequest, "QR Code não reconhecido")
 		return
 	}
 
-	jsonOK(w, map[string]interface{}{
+	respondJSON(w, http.StatusOK, map[string]interface{}{
 		"type":       result.Type,
 		"access_key": result.AccessKey,
 		"uf":         result.UF,
@@ -102,21 +102,21 @@ func (h *ExpenseHandler) UploadXML(w http.ResponseWriter, r *http.Request) {
 
 	file, _, err := r.FormFile("xml")
 	if err != nil {
-		jsonError(w, "Arquivo XML não encontrado", http.StatusBadRequest)
+		respondError(w, http.StatusBadRequest, "Arquivo XML não encontrado")
 		return
 	}
 	defer file.Close()
 
 	xmlData, err := io.ReadAll(file)
 	if err != nil {
-		jsonError(w, "Erro ao ler arquivo", http.StatusBadRequest)
+		respondError(w, http.StatusBadRequest, "Erro ao ler arquivo")
 		return
 	}
 
 	// Parse do XML
 	expense, err := expenses.ParseNFeXML(xmlData)
 	if err != nil {
-		jsonError(w, "XML inválido: "+err.Error(), http.StatusBadRequest)
+		respondError(w, http.StatusBadRequest, "XML inválido: "+err.Error())
 		return
 	}
 
@@ -127,11 +127,11 @@ func (h *ExpenseHandler) UploadXML(w http.ResponseWriter, r *http.Request) {
 
 	// Salvar
 	if err := h.svc.CreateManual(r.Context(), expense); err != nil {
-		jsonError(w, err.Error(), http.StatusInternalServerError)
+		respondError(w, http.StatusInternalServerError, err.Error())
 		return
 	}
 
-	jsonOK(w, map[string]interface{}{
+	respondJSON(w, http.StatusOK, map[string]interface{}{
 		"success": true,
 		"message": "Nota importada com sucesso!",
 		"expense": formatExpenseResponse(expense),
@@ -150,7 +150,7 @@ func (h *ExpenseHandler) CreateExpense(w http.ResponseWriter, r *http.Request) {
 
 	var expense expenses.Expense
 	if err := json.NewDecoder(r.Body).Decode(&expense); err != nil {
-		jsonError(w, "JSON inválido", http.StatusBadRequest)
+		respondError(w, http.StatusBadRequest, "JSON inválido")
 		return
 	}
 
@@ -158,11 +158,11 @@ func (h *ExpenseHandler) CreateExpense(w http.ResponseWriter, r *http.Request) {
 	expense.RegisteredBy = userID
 
 	if err := h.svc.CreateManual(r.Context(), &expense); err != nil {
-		jsonError(w, err.Error(), http.StatusInternalServerError)
+		respondError(w, http.StatusInternalServerError, err.Error())
 		return
 	}
 
-	jsonOK(w, map[string]interface{}{
+	respondJSON(w, http.StatusOK, map[string]interface{}{
 		"message": "Despesa criada com sucesso!",
 		"expense": formatExpenseResponse(&expense),
 	})
@@ -200,11 +200,11 @@ func (h *ExpenseHandler) ListExpenses(w http.ResponseWriter, r *http.Request) {
 
 	list, err := h.svc.List(r.Context(), tenantID, filter)
 	if err != nil {
-		jsonError(w, err.Error(), http.StatusInternalServerError)
+		respondError(w, http.StatusInternalServerError, err.Error())
 		return
 	}
 
-	jsonOK(w, map[string]interface{}{
+	respondJSON(w, http.StatusOK, map[string]interface{}{
 		"expenses": list,
 		"count":    len(list),
 	})
@@ -218,11 +218,11 @@ func (h *ExpenseHandler) GetExpense(w http.ResponseWriter, r *http.Request) {
 
 	expense, err := h.svc.GetByID(r.Context(), tenantID, expenseID)
 	if err != nil {
-		jsonError(w, "Despesa não encontrada", http.StatusNotFound)
+		respondError(w, http.StatusNotFound, "Despesa não encontrada")
 		return
 	}
 
-	jsonOK(w, map[string]interface{}{
+	respondJSON(w, http.StatusOK, map[string]interface{}{
 		"expense": formatExpenseResponse(expense),
 	})
 }
@@ -234,11 +234,11 @@ func (h *ExpenseHandler) DeleteExpense(w http.ResponseWriter, r *http.Request) {
 	expenseID := r.PathValue("id")
 
 	if err := h.svc.Delete(r.Context(), tenantID, expenseID); err != nil {
-		jsonError(w, err.Error(), http.StatusInternalServerError)
+		respondError(w, http.StatusInternalServerError, err.Error())
 		return
 	}
 
-	jsonOK(w, map[string]interface{}{
+	respondJSON(w, http.StatusOK, map[string]interface{}{
 		"message": "Despesa cancelada",
 	})
 }
@@ -254,11 +254,11 @@ func (h *ExpenseHandler) GetCategories(w http.ResponseWriter, r *http.Request) {
 
 	categories, err := h.svc.GetCategories(r.Context(), tenantID)
 	if err != nil {
-		jsonError(w, err.Error(), http.StatusInternalServerError)
+		respondError(w, http.StatusInternalServerError, err.Error())
 		return
 	}
 
-	jsonOK(w, map[string]interface{}{
+	respondJSON(w, http.StatusOK, map[string]interface{}{
 		"categories": categories,
 	})
 }
@@ -290,7 +290,7 @@ func (h *ExpenseHandler) GetSummary(w http.ResponseWriter, r *http.Request) {
 
 	summary, err := h.svc.GetSummary(r.Context(), tenantID, from, to)
 	if err != nil {
-		jsonError(w, err.Error(), http.StatusInternalServerError)
+		respondError(w, http.StatusInternalServerError, err.Error())
 		return
 	}
 
@@ -302,7 +302,7 @@ func (h *ExpenseHandler) GetSummary(w http.ResponseWriter, r *http.Request) {
 		totalCBS += s.CBSCredit
 	}
 
-	jsonOK(w, map[string]interface{}{
+	respondJSON(w, http.StatusOK, map[string]interface{}{
 		"period": map[string]string{
 			"from": from.Format("2006-01-02"),
 			"to":   to.Format("2006-01-02"),
@@ -331,7 +331,7 @@ func (h *ExpenseHandler) GetTaxReport(w http.ResponseWriter, r *http.Request) {
 
 	report, err := h.svc.GetTaxReport(r.Context(), tenantID, year)
 	if err != nil {
-		jsonError(w, err.Error(), http.StatusInternalServerError)
+		respondError(w, http.StatusInternalServerError, err.Error())
 		return
 	}
 
@@ -346,7 +346,7 @@ func (h *ExpenseHandler) GetTaxReport(w http.ResponseWriter, r *http.Request) {
 		totalCredit += r.TaxCredit
 	}
 
-	jsonOK(w, map[string]interface{}{
+	respondJSON(w, http.StatusOK, map[string]interface{}{
 		"year":   year,
 		"report": report,
 		"totals": map[string]float64{

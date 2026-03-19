@@ -52,7 +52,7 @@ type BoletoCharge struct {
 	TenantID      string
 	OurNumber     string        // nosso número
 	Amount        float64
-	DueDate       time.Date
+	DueDate       time.Time
 	Description   string
 	PayerName     string
 	PayerDocument string
@@ -210,7 +210,7 @@ type PixChargeInput struct {
 // BoletoInput dados de entrada para criar um boleto.
 type BoletoInput struct {
 	Amount        float64
-	DueDate       time.Date
+	DueDate       time.Time
 	Description   string
 	PayerName     string
 	PayerDocument string
@@ -228,9 +228,9 @@ func validatePixInput(i PixChargeInput) error {
 }
 
 func generateTxID() string {
-	// Em produção: use UUID v4 sem hífens (max 35 chars conforme BACEN)
-	return fmt.Sprintf("NXF%d", time.Now().UnixNano())[:35]
+	s := fmt.Sprintf("NXF%d", time.Now().UnixNano())
+	if len(s) > 35 {
+		return s[:35]
+	}
+	return s
 }
-
-// time.Date temporário — em produção use time.Time com format YYYY-MM-DD
-type Date = time.Time

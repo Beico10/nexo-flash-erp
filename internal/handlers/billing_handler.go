@@ -24,10 +24,10 @@ func NewBillingHandler(svc *billing.Service) *BillingHandler {
 func (h *BillingHandler) ListPlans(w http.ResponseWriter, r *http.Request) {
 	plans, err := h.svc.ListPlans(r.Context())
 	if err != nil {
-		jsonError(w, err.Error(), http.StatusInternalServerError)
+		respondError(w, http.StatusInternalServerError, err.Error())
 		return
 	}
-	jsonOK(w, map[string]interface{}{
+	respondJSON(w, http.StatusOK, map[string]interface{}{
 		"plans": plans,
 	})
 }
@@ -39,17 +39,17 @@ func (h *BillingHandler) ValidateCoupon(w http.ResponseWriter, r *http.Request) 
 		PlanCode string `json:"plan_code"`
 	}
 	if err := json.NewDecoder(r.Body).Decode(&req); err != nil {
-		jsonError(w, "JSON inválido", http.StatusBadRequest)
+		respondError(w, http.StatusBadRequest, "JSON invalido")
 		return
 	}
 
 	coupon, err := h.svc.ValidateCoupon(r.Context(), req.Code, req.PlanCode)
 	if err != nil {
-		jsonError(w, err.Error(), http.StatusBadRequest)
+		respondError(w, http.StatusBadRequest, err.Error())
 		return
 	}
 
-	jsonOK(w, map[string]interface{}{
+	respondJSON(w, http.StatusOK, map[string]interface{}{
 		"valid":          true,
 		"discount_type":  coupon.DiscountType,
 		"discount_value": coupon.DiscountValue,
@@ -67,13 +67,13 @@ func (h *BillingHandler) GetSubscription(w http.ResponseWriter, r *http.Request)
 
 	sub, err := h.svc.GetSubscription(r.Context(), tenantID)
 	if err != nil {
-		jsonError(w, err.Error(), http.StatusNotFound)
+		respondError(w, http.StatusNotFound, err.Error())
 		return
 	}
 
 	usage, _ := h.svc.GetUsageStatus(r.Context(), tenantID)
 
-	jsonOK(w, map[string]interface{}{
+	respondJSON(w, http.StatusOK, map[string]interface{}{
 		"subscription": sub,
 		"usage":        usage,
 	})
@@ -88,17 +88,17 @@ func (h *BillingHandler) ConvertTrial(w http.ResponseWriter, r *http.Request) {
 		CouponCode    string `json:"coupon_code"`
 	}
 	if err := json.NewDecoder(r.Body).Decode(&req); err != nil {
-		jsonError(w, "JSON inválido", http.StatusBadRequest)
+		respondError(w, http.StatusBadRequest, "JSON invalido")
 		return
 	}
 
 	sub, err := h.svc.ConvertTrial(r.Context(), tenantID, req.PaymentMethod, req.CouponCode)
 	if err != nil {
-		jsonError(w, err.Error(), http.StatusBadRequest)
+		respondError(w, http.StatusBadRequest, err.Error())
 		return
 	}
 
-	jsonOK(w, map[string]interface{}{
+	respondJSON(w, http.StatusOK, map[string]interface{}{
 		"subscription": sub,
 		"message":      "Assinatura ativada com sucesso!",
 	})
@@ -112,17 +112,17 @@ func (h *BillingHandler) ChangePlan(w http.ResponseWriter, r *http.Request) {
 		PlanCode string `json:"plan_code"`
 	}
 	if err := json.NewDecoder(r.Body).Decode(&req); err != nil {
-		jsonError(w, "JSON inválido", http.StatusBadRequest)
+		respondError(w, http.StatusBadRequest, "JSON invalido")
 		return
 	}
 
 	sub, err := h.svc.ChangePlan(r.Context(), tenantID, req.PlanCode)
 	if err != nil {
-		jsonError(w, err.Error(), http.StatusBadRequest)
+		respondError(w, http.StatusBadRequest, err.Error())
 		return
 	}
 
-	jsonOK(w, map[string]interface{}{
+	respondJSON(w, http.StatusOK, map[string]interface{}{
 		"subscription": sub,
 		"message":      "Plano alterado com sucesso!",
 	})
@@ -134,11 +134,11 @@ func (h *BillingHandler) GetUsage(w http.ResponseWriter, r *http.Request) {
 
 	usage, err := h.svc.GetUsageStatus(r.Context(), tenantID)
 	if err != nil {
-		jsonError(w, err.Error(), http.StatusInternalServerError)
+		respondError(w, http.StatusInternalServerError, err.Error())
 		return
 	}
 
-	jsonOK(w, map[string]interface{}{
+	respondJSON(w, http.StatusOK, map[string]interface{}{
 		"usage": usage,
 	})
 }
@@ -149,17 +149,17 @@ func (h *BillingHandler) CheckFeature(w http.ResponseWriter, r *http.Request) {
 	feature := r.URL.Query().Get("feature")
 
 	if feature == "" {
-		jsonError(w, "feature é obrigatório", http.StatusBadRequest)
+		respondError(w, http.StatusBadRequest, "feature e obrigatorio")
 		return
 	}
 
 	hasAccess, err := h.svc.HasFeature(r.Context(), tenantID, feature)
 	if err != nil {
-		jsonError(w, err.Error(), http.StatusInternalServerError)
+		respondError(w, http.StatusInternalServerError, err.Error())
 		return
 	}
 
-	jsonOK(w, map[string]interface{}{
+	respondJSON(w, http.StatusOK, map[string]interface{}{
 		"feature":    feature,
 		"has_access": hasAccess,
 	})
@@ -173,10 +173,10 @@ func (h *BillingHandler) CheckFeature(w http.ResponseWriter, r *http.Request) {
 func (h *BillingHandler) AdminListPlans(w http.ResponseWriter, r *http.Request) {
 	plans, err := h.svc.ListAllPlans(r.Context())
 	if err != nil {
-		jsonError(w, err.Error(), http.StatusInternalServerError)
+		respondError(w, http.StatusInternalServerError, err.Error())
 		return
 	}
-	jsonOK(w, map[string]interface{}{
+	respondJSON(w, http.StatusOK, map[string]interface{}{
 		"plans": plans,
 	})
 }
@@ -185,16 +185,16 @@ func (h *BillingHandler) AdminListPlans(w http.ResponseWriter, r *http.Request) 
 func (h *BillingHandler) AdminUpdatePlan(w http.ResponseWriter, r *http.Request) {
 	var plan billing.Plan
 	if err := json.NewDecoder(r.Body).Decode(&plan); err != nil {
-		jsonError(w, "JSON inválido", http.StatusBadRequest)
+		respondError(w, http.StatusBadRequest, "JSON invalido")
 		return
 	}
 
 	if err := h.svc.UpdatePlan(r.Context(), &plan); err != nil {
-		jsonError(w, err.Error(), http.StatusInternalServerError)
+		respondError(w, http.StatusInternalServerError, err.Error())
 		return
 	}
 
-	jsonOK(w, map[string]interface{}{
+	respondJSON(w, http.StatusOK, map[string]interface{}{
 		"message": "Plano atualizado com sucesso",
 		"plan":    plan,
 	})
@@ -215,7 +215,7 @@ func (h *BillingHandler) LimitMiddleware(metric string) func(http.Handler) http.
 			}
 
 			if err := h.svc.CanPerform(r.Context(), tenantID, metric); err != nil {
-				jsonError(w, err.Error(), http.StatusPaymentRequired)
+				respondError(w, http.StatusPaymentRequired, err.Error())
 				return
 			}
 
@@ -236,7 +236,7 @@ func (h *BillingHandler) FeatureMiddleware(feature string) func(http.Handler) ht
 
 			hasAccess, err := h.svc.HasFeature(r.Context(), tenantID, feature)
 			if err != nil || !hasAccess {
-				jsonError(w, "Recurso não disponível no seu plano. Faça upgrade para ter acesso.", http.StatusPaymentRequired)
+				respondError(w, http.StatusPaymentRequired, "Recurso nao disponivel no seu plano")
 				return
 			}
 

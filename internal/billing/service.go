@@ -193,6 +193,11 @@ func (s *Service) ListAllPlans(ctx context.Context) ([]*Plan, error) {
 	return s.repo.ListPlans(ctx, false)
 }
 
+// GetSubscription retorna a assinatura de um tenant.
+func (s *Service) GetSubscription(ctx context.Context, tenantID string) (*Subscription, error) {
+	return s.repo.GetSubscription(ctx, tenantID)
+}
+
 // UpdatePlan atualiza um plano (Admin Master).
 func (s *Service) UpdatePlan(ctx context.Context, plan *Plan) error {
 	return s.repo.UpdatePlan(ctx, plan)

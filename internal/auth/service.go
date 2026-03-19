@@ -22,6 +22,8 @@ import (
 
 	"github.com/golang-jwt/jwt/v5"
 	"golang.org/x/crypto/bcrypt"
+
+	"github.com/nexoone/nexo-one/pkg/middleware"
 )
 
 const (
@@ -179,6 +181,22 @@ func (s *Service) ValidateAccessToken(tokenStr string) (*Claims, error) {
 		return nil, fmt.Errorf("claims inválidos")
 	}
 	return claims, nil
+}
+
+// Validate implements middleware.JWTValidator - adapta auth.Claims para middleware.Claims.
+func (s *Service) Validate(tokenStr string) (*middleware.Claims, error) {
+	claims, err := s.ValidateAccessToken(tokenStr)
+	if err != nil {
+		return nil, err
+	}
+	return &middleware.Claims{
+		UserID:      claims.UserID,
+		TenantID:    claims.TenantID,
+		TenantSlug:  claims.TenantSlug,
+		Role:        claims.Role,
+		Permissions: claims.Permissions,
+		ExpiresAt:   claims.ExpiresAt.Time,
+	}, nil
 }
 
 // HashPassword gera um hash bcrypt de uma senha.

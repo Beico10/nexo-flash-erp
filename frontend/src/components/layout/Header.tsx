@@ -17,7 +17,7 @@ const titles: Record<string, { title: string; sub: string }> = {
 
 export default function Header() {
   const pathname = usePathname()
-  const meta = Object.entries(titles).find(([k]) => pathname.startsWith(k))?.[1] ?? { title: 'Nexo Flash', sub: '' }
+  const meta = Object.entries(titles).find(([k]) => pathname.startsWith(k))?.[1] ?? { title: 'Nexo One', sub: '' }
   const today = new Date().toLocaleDateString('pt-BR', { weekday: 'long', day: 'numeric', month: 'long' })
 
   return (

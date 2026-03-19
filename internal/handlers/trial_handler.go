@@ -32,12 +32,12 @@ func (h *TrialHandler) StartVerification(w http.ResponseWriter, r *http.Request)
 		DeviceHash  string `json:"device_hash"`
 	}
 	if err := json.NewDecoder(r.Body).Decode(&req); err != nil {
-		jsonError(w, "JSON inválido", http.StatusBadRequest)
+		respondError(w, http.StatusBadRequest, "JSON inválido")
 		return
 	}
 
 	if req.Phone == "" {
-		jsonError(w, "Telefone é obrigatório", http.StatusBadRequest)
+		respondError(w, http.StatusBadRequest, "Telefone é obrigatório")
 		return
 	}
 
@@ -51,10 +51,10 @@ func (h *TrialHandler) StartVerification(w http.ResponseWriter, r *http.Request)
 	whatsappURL, err := h.trialSvc.StartVerification(r.Context(), req.Phone, req.Email, req.DeviceHash, ip)
 	if err != nil {
 		if err == trial.ErrPhoneAlreadyUsed {
-			jsonError(w, "Este telefone já possui uma conta. Faça login.", http.StatusConflict)
+			respondError(w, http.StatusConflict, "Este telefone já possui uma conta. Faça login.")
 			return
 		}
-		jsonError(w, err.Error(), http.StatusBadRequest)
+		respondError(w, http.StatusBadRequest, err.Error())
 		return
 	}
 
@@ -66,7 +66,7 @@ func (h *TrialHandler) StartVerification(w http.ResponseWriter, r *http.Request)
 		Properties:    map[string]any{"method": "whatsapp"},
 	})
 
-	jsonOK(w, map[string]interface{}{
+	respondJSON(w, http.StatusOK, map[string]interface{}{
 		"whatsapp_url": whatsappURL,
 		"message":      "Clique no link para abrir o WhatsApp e enviar o código",
 		"expires_in":   300, // 5 minutos
@@ -81,7 +81,7 @@ func (h *TrialHandler) VerifyCode(w http.ResponseWriter, r *http.Request) {
 		Code  string `json:"code"`
 	}
 	if err := json.NewDecoder(r.Body).Decode(&req); err != nil {
-		jsonError(w, "JSON inválido", http.StatusBadRequest)
+		respondError(w, http.StatusBadRequest, "JSON inválido")
 		return
 	}
 
@@ -89,13 +89,13 @@ func (h *TrialHandler) VerifyCode(w http.ResponseWriter, r *http.Request) {
 	if err != nil {
 		switch err {
 		case trial.ErrCodeExpired:
-			jsonError(w, "Código expirado. Solicite um novo.", http.StatusGone)
+			respondError(w, http.StatusGone, "Código expirado. Solicite um novo.")
 		case trial.ErrCodeInvalid:
-			jsonError(w, "Código inválido. Verifique e tente novamente.", http.StatusBadRequest)
+			respondError(w, http.StatusBadRequest, "Código inválido. Verifique e tente novamente.")
 		case trial.ErrTooManyAttempts:
-			jsonError(w, "Muitas tentativas. Aguarde 15 minutos.", http.StatusTooManyRequests)
+			respondError(w, http.StatusTooManyRequests, "Muitas tentativas. Aguarde 15 minutos.")
 		default:
-			jsonError(w, err.Error(), http.StatusBadRequest)
+			respondError(w, http.StatusBadRequest, err.Error())
 		}
 		return
 	}
@@ -107,7 +107,7 @@ func (h *TrialHandler) VerifyCode(w http.ResponseWriter, r *http.Request) {
 		EventCategory: "conversion",
 	})
 
-	jsonOK(w, map[string]interface{}{
+	respondJSON(w, http.StatusOK, map[string]interface{}{
 		"verified":   true,
 		"message":    "Telefone verificado com sucesso!",
 		"tenant_id":  tc.TenantID,
@@ -122,7 +122,7 @@ func (h *TrialHandler) WhatsAppWebhook(w http.ResponseWriter, r *http.Request) {
 		Body string `json:"body"` // Conteúdo da mensagem
 	}
 	if err := json.NewDecoder(r.Body).Decode(&payload); err != nil {
-		jsonError(w, "JSON inválido", http.StatusBadRequest)
+		respondError(w, http.StatusBadRequest, "JSON inválido")
 		return
 	}
 
@@ -130,14 +130,14 @@ func (h *TrialHandler) WhatsAppWebhook(w http.ResponseWriter, r *http.Request) {
 	if err != nil {
 		// Não retorna erro - webhook deve sempre retornar 200
 		// Mas loga para análise
-		jsonOK(w, map[string]interface{}{
+		respondJSON(w, http.StatusOK, map[string]interface{}{
 			"processed": false,
 			"reason":    err.Error(),
 		})
 		return
 	}
 
-	jsonOK(w, map[string]interface{}{
+	respondJSON(w, http.StatusOK, map[string]interface{}{
 		"processed": true,
 		"tenant_id": tc.TenantID,
 	})
@@ -167,17 +167,17 @@ func (h *OnboardingHandler) GetSteps(w http.ResponseWriter, r *http.Request) {
 	}
 
 	if businessType == "" {
-		jsonError(w, "business_type é obrigatório", http.StatusBadRequest)
+		respondError(w, http.StatusBadRequest, "business_type é obrigatório")
 		return
 	}
 
 	steps, err := h.journeySvc.GetOnboardingSteps(r.Context(), businessType)
 	if err != nil {
-		jsonError(w, err.Error(), http.StatusInternalServerError)
+		respondError(w, http.StatusInternalServerError, err.Error())
 		return
 	}
 
-	jsonOK(w, map[string]interface{}{
+	respondJSON(w, http.StatusOK, map[string]interface{}{
 		"steps": steps,
 		"total": len(steps),
 	})
@@ -190,7 +190,7 @@ func (h *OnboardingHandler) GetProgress(w http.ResponseWriter, r *http.Request) 
 
 	progress, err := h.journeySvc.GetOnboardingProgress(r.Context(), tenantID)
 	if err != nil {
-		jsonError(w, err.Error(), http.StatusNotFound)
+		respondError(w, http.StatusNotFound, err.Error())
 		return
 	}
 
@@ -202,7 +202,7 @@ func (h *OnboardingHandler) GetProgress(w http.ResponseWriter, r *http.Request) 
 		percent = (len(progress.CompletedSteps) * 100) / len(steps)
 	}
 
-	jsonOK(w, map[string]interface{}{
+	respondJSON(w, http.StatusOK, map[string]interface{}{
 		"progress":        progress,
 		"steps":           steps,
 		"percent":         percent,
@@ -222,16 +222,16 @@ func (h *OnboardingHandler) CompleteStep(w http.ResponseWriter, r *http.Request)
 		Skipped  bool   `json:"skipped"`
 	}
 	if err := json.NewDecoder(r.Body).Decode(&req); err != nil {
-		jsonError(w, "JSON inválido", http.StatusBadRequest)
+		respondError(w, http.StatusBadRequest, "JSON inválido")
 		return
 	}
 
 	if err := h.journeySvc.CompleteOnboardingStep(r.Context(), tenantID, userID, req.StepCode, req.Skipped); err != nil {
-		jsonError(w, err.Error(), http.StatusInternalServerError)
+		respondError(w, http.StatusInternalServerError, err.Error())
 		return
 	}
 
-	jsonOK(w, map[string]interface{}{
+	respondJSON(w, http.StatusOK, map[string]interface{}{
 		"message":    "Passo registrado!",
 		"step_code":  req.StepCode,
 		"skipped":    req.Skipped,
@@ -244,11 +244,11 @@ func (h *OnboardingHandler) SkipOnboarding(w http.ResponseWriter, r *http.Reques
 	tenantID := r.Context().Value("tenant_id").(string)
 
 	if err := h.journeySvc.SkipOnboarding(r.Context(), tenantID); err != nil {
-		jsonError(w, err.Error(), http.StatusInternalServerError)
+		respondError(w, http.StatusInternalServerError, err.Error())
 		return
 	}
 
-	jsonOK(w, map[string]interface{}{
+	respondJSON(w, http.StatusOK, map[string]interface{}{
 		"message": "OK! Você pode voltar ao onboarding a qualquer momento pelo menu.",
 	})
 }
@@ -280,7 +280,7 @@ func (h *TrackingHandler) TrackEvent(w http.ResponseWriter, r *http.Request) {
 		TimeOnPage    int            `json:"time_on_page"`
 	}
 	if err := json.NewDecoder(r.Body).Decode(&req); err != nil {
-		jsonError(w, "JSON inválido", http.StatusBadRequest)
+		respondError(w, http.StatusBadRequest, "JSON inválido")
 		return
 	}
 
@@ -340,7 +340,7 @@ func (h *AnalyticsHandler) GetFunnel(w http.ResponseWriter, r *http.Request) {
 
 	metrics, err := h.journeySvc.GetFunnelRange(r.Context(), from, to, businessType)
 	if err != nil {
-		jsonError(w, err.Error(), http.StatusInternalServerError)
+		respondError(w, http.StatusInternalServerError, err.Error())
 		return
 	}
 
@@ -361,7 +361,7 @@ func (h *AnalyticsHandler) GetFunnel(w http.ResponseWriter, r *http.Request) {
 		totals.ConversionRate = float64(totals.TrialConverted) / float64(totals.Visits) * 100
 	}
 
-	jsonOK(w, map[string]interface{}{
+	respondJSON(w, http.StatusOK, map[string]interface{}{
 		"period":  map[string]string{"from": from.Format("2006-01-02"), "to": to.Format("2006-01-02")},
 		"daily":   metrics,
 		"totals":  totals,
@@ -375,7 +375,7 @@ func (h *AnalyticsHandler) GetDropPoints(w http.ResponseWriter, r *http.Request)
 	
 	drops, err := h.journeySvc.GetDropPoints(r.Context(), stage, 1) // Travados há pelo menos 1 dia
 	if err != nil {
-		jsonError(w, err.Error(), http.StatusInternalServerError)
+		respondError(w, http.StatusInternalServerError, err.Error())
 		return
 	}
 
@@ -385,7 +385,7 @@ func (h *AnalyticsHandler) GetDropPoints(w http.ResponseWriter, r *http.Request)
 		byStage[d.Stage] = append(byStage[d.Stage], d)
 	}
 
-	jsonOK(w, map[string]interface{}{
+	respondJSON(w, http.StatusOK, map[string]interface{}{
 		"total":    len(drops),
 		"by_stage": byStage,
 		"drops":    drops,

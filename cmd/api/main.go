@@ -1,4 +1,4 @@
-// Package main é o ponto de entrada do servidor Nexo One ERP.
+// Package main e o ponto de entrada do servidor Nexo One ERP.
 package main
 
 import (
@@ -14,7 +14,7 @@ import (
 	"github.com/nexoone/nexo-one/internal/auth"
 	"github.com/nexoone/nexo-one/pkg/middleware"
 
-	// Registra todos os módulos via init()
+	// Registra todos os modulos via init()
 	_ "github.com/nexoone/nexo-one/internal/modules/aesthetics"
 	_ "github.com/nexoone/nexo-one/internal/modules/bakery"
 	_ "github.com/nexoone/nexo-one/internal/modules/industry"
@@ -23,10 +23,9 @@ import (
 	_ "github.com/nexoone/nexo-one/internal/modules/shoes"
 )
 
-var version = "dev"
+var version = "1.0.0"
 
 func main() {
-	// Logger estruturado
 	logLevel := slog.LevelInfo
 	if os.Getenv("LOG_LEVEL") == "debug" {
 		logLevel = slog.LevelDebug
@@ -34,29 +33,26 @@ func main() {
 	logger := slog.New(slog.NewJSONHandler(os.Stdout, &slog.HandlerOptions{Level: logLevel}))
 	slog.SetDefault(logger)
 
-	slog.Info("Nexo One ERP iniciando", "version", version, "env", getEnv("APP_ENV", "development"))
+	port := getEnv("PORT", "8002")
+	jwtSecret := getEnv("JWT_SECRET", "nexo-one-dev-secret-2026")
 
-	// Inicializar container de dependências
+	slog.Info("Nexo One ERP iniciando", "version", version, "port", port)
+
 	container, err := app.Wire(app.Config{
-		DatabaseURL:   mustEnv("DATABASE_URL"),
-		RedisURL:      mustEnv("REDIS_URL"),
-		NatsURL:       mustEnv("NATS_URL"),
-		JWTSecret:     mustEnv("JWT_SECRET"),
-		BaseURL:       getEnv("BASE_URL", "http://localhost:8080"),
-		WhatsAppToken: getEnv("WHATSAPP_TOKEN", ""),
+		JWTSecret: jwtSecret,
+		BaseURL:   getEnv("BASE_URL", "http://localhost:"+port),
+		Port:      port,
 	})
 	if err != nil {
-		slog.Error("falha ao inicializar dependências", "err", err)
+		slog.Error("falha ao inicializar dependencias", "err", err)
 		os.Exit(1)
 	}
 	defer container.Close()
 
-	// Montar router
 	mux := buildRouter(container)
 
-	// Servidor HTTP com timeouts seguros
 	srv := &http.Server{
-		Addr:         ":" + getEnv("PORT", "8080"),
+		Addr:         ":" + port,
 		ReadTimeout:  15 * time.Second,
 		WriteTimeout: 30 * time.Second,
 		IdleTimeout:  60 * time.Second,
@@ -71,7 +67,6 @@ func main() {
 		}
 	}()
 
-	// Graceful shutdown
 	quit := make(chan os.Signal, 1)
 	signal.Notify(quit, syscall.SIGINT, syscall.SIGTERM)
 	<-quit
@@ -80,58 +75,42 @@ func main() {
 	ctx, cancel := context.WithTimeout(context.Background(), 30*time.Second)
 	defer cancel()
 	if err := srv.Shutdown(ctx); err != nil {
-		slog.Error("shutdown forçado", "err", err)
+		slog.Error("shutdown forcado", "err", err)
 	}
 	slog.Info("servidor encerrado")
 }
 
 func buildRouter(c *app.Container) http.Handler {
 	mux := http.NewServeMux()
+	authMW := middleware.AuthMiddleware(c.AuthService)
 
-	// ── Middlewares globais ──────────────────────────────────────────────────
-	jwtSecret := mustEnv("JWT_SECRET")
-	authSvc := auth.NewService(jwtSecret, c.UserProvider(), c.TokenStore())
-	authMiddleware := middleware.AuthMiddleware(authSvc)
-	tenantMiddleware := middleware.TenantDBMiddleware(c.DB)
-
-	// ── Rotas públicas (sem autenticação) ────────────────────────────────────
-	mux.HandleFunc("GET /health", func(w http.ResponseWriter, r *http.Request) {
+	// Health check (publico)
+	mux.HandleFunc("GET /api/health", func(w http.ResponseWriter, r *http.Request) {
 		w.Header().Set("Content-Type", "application/json")
 		w.WriteHeader(http.StatusOK)
-		w.Write([]byte(`{"status":"ok","version":"` + version + `"}`))
+		w.Write([]byte(`{"status":"ok","version":"` + version + `","engine":"fiscal_ibs_cbs_2026"}`))
 	})
 
-	// Auth
-	authHandler := auth.NewHandler(authSvc)
+	// Auth (publico)
+	authHandler := auth.NewHandler(c.AuthService)
 	authHandler.RegisterRoutes(mux)
 
-	// Aprovação WhatsApp (token é o autenticador, sem JWT)
-	mux.HandleFunc("POST /api/v1/mechanic/os/approve/{token}", c.MechanicHandler.ApproveByToken)
+	// Rotas protegidas - precisam de JWT via AuthMiddleware
+	protectedMux := http.NewServeMux()
+	c.TaxHandler.RegisterRoutes(protectedMux)
+	c.MechanicHandler.RegisterRoutes(protectedMux)
+	c.BakeryHandler.RegisterRoutes(protectedMux)
+	c.LogisticsHandler.RegisterRoutes(protectedMux)
+	c.AestheticsHandler.RegisterRoutes(protectedMux)
+	c.AIHandler.RegisterRoutes(protectedMux)
+	c.PaymentHandler.RegisterRoutes(protectedMux)
 
-	// ── Rotas protegidas (JWT + RLS) ─────────────────────────────────────────
-	protected := applyMiddlewares(mux, authMiddleware, tenantMiddleware)
+	// Monta as rotas protegidas no mux principal com middleware
+	mux.Handle("/api/v1/", authMW(protectedMux))
 
-	c.MechanicHandler.RegisterRoutes(protected)
-	c.BakeryHandler.RegisterRoutes(protected)
-	c.TaxHandler.RegisterRoutes(protected)
-	c.LogisticsHandler.RegisterRoutes(protected)
-	c.AestheticsHandler.RegisterRoutes(protected)
-	c.AIHandler.RegisterRoutes(protected)
-	c.PaymentHandler.RegisterRoutes(protected)
-
-	// CORS para o frontend
 	return corsMiddleware(mux)
 }
 
-// applyMiddlewares envolve um mux com múltiplos middlewares.
-func applyMiddlewares(mux *http.ServeMux, middlewares ...func(http.Handler) http.Handler) *http.ServeMux {
-	// Os handlers já registrados no mux são envolvidos pelos middlewares
-	// quando chamados via mux.Handle
-	_ = middlewares // aplicado via wrapper no corsMiddleware
-	return mux
-}
-
-// corsMiddleware adiciona headers CORS para o frontend Next.js.
 func corsMiddleware(next http.Handler) http.Handler {
 	return http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
 		origin := r.Header.Get("Origin")
@@ -147,15 +126,6 @@ func corsMiddleware(next http.Handler) http.Handler {
 		}
 		next.ServeHTTP(w, r)
 	})
-}
-
-func mustEnv(key string) string {
-	v := os.Getenv(key)
-	if v == "" {
-		slog.Error("variável obrigatória não definida", "key", key)
-		os.Exit(1)
-	}
-	return v
 }
 
 func getEnv(key, fallback string) string {

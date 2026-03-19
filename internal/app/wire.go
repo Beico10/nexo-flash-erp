@@ -1,4 +1,6 @@
-// Package app — injeção de dependências completa do Nexo One.
+// Package app - injecao de dependencias do Nexo One.
+// Preview mode: usa repositorios in-memory.
+// Producao: trocar para postgres.* + cache.Redis
 package app
 
 import (
@@ -12,18 +14,14 @@ import (
 	"github.com/nexoone/nexo-one/internal/modules/aesthetics"
 	"github.com/nexoone/nexo-one/internal/modules/logistics"
 	"github.com/nexoone/nexo-one/internal/modules/mechanic"
-	"github.com/nexoone/nexo-one/internal/repository/postgres"
+	"github.com/nexoone/nexo-one/internal/repository/memory"
 	"github.com/nexoone/nexo-one/internal/tax"
-	"github.com/nexoone/nexo-one/pkg/cache"
 )
 
 type Config struct {
-	DatabaseURL   string
-	RedisURL      string
-	NatsURL       string
 	JWTSecret     string
 	BaseURL       string
-	WhatsAppToken string
+	Port          string
 }
 
 type Container struct {
@@ -34,47 +32,41 @@ type Container struct {
 	AestheticsHandler *handlers.AestheticsHandler
 	AIHandler         *handlers.AIHandler
 	PaymentHandler    *handlers.PaymentHandler
-	DB                *postgres.DB
-	Redis             *cache.Client
-	tenantRepo        *postgres.TenantRepo
-	userRepo          *postgres.UserRepo
+	AuthService       *auth.Service
+	TaxEngine         *tax.Engine
+	tenantRepo        *memory.TenantRepo
+	userRepo          *memory.UserRepo
 	tokenStore        *auth.RedisTokenStore
 	Close             func()
 }
 
 func Wire(cfg Config) (*Container, error) {
-	db, err := postgres.New(postgres.Config{DSN: cfg.DatabaseURL})
-	if err != nil {
-		return nil, fmt.Errorf("app.Wire: PostgreSQL: %w", err)
-	}
+	cache := memory.NewCache()
 
-	redisClient, err := cache.NewRedisClient(cfg.RedisURL)
-	if err != nil {
-		db.Close()
-		return nil, fmt.Errorf("app.Wire: Redis: %w", err)
-	}
+	// Repositorios in-memory
+	tenantRepo := memory.NewTenantRepo()
+	userRepo := memory.NewUserRepo()
+	mechanicRepo := memory.NewMechanicRepo()
+	taxRateRepo := memory.NewTaxRateRepo()
+	aiRepo := memory.NewAIRepo()
+	logisticsRepo := memory.NewLogisticsRepo()
+	paymentRepo := memory.NewPaymentRepo()
+	aestheticsRepo := memory.NewAestheticsRepo()
+	tokenStore := auth.NewRedisTokenStore(cache)
 
-	// Repositórios
-	tenantRepo     := postgres.NewTenantRepo(db)
-	userRepo       := postgres.NewUserRepo(db)
-	mechanicRepo   := postgres.NewMechanicRepo(db)
-	taxRateRepo    := postgres.NewTaxRateRepo(db, redisClient)
-	aiRepo         := postgres.NewAIRepo(db)
-	logisticsRepo  := postgres.NewLogisticsRepo(db)
-	paymentRepo    := postgres.NewPaymentRepo(db)
-	aestheticsRepo := postgres.NewAestheticsRepo(db)
-	tokenStore     := auth.NewRedisTokenStore(redisClient)
-
-	// Serviços
-	taxEngine   := tax.NewEngine(taxRateRepo)
-	waClient    := mechanic.NewWALinkSender(cfg.BaseURL)
-	osSvc       := mechanic.NewOSService(mechanicRepo, waClient, cfg.BaseURL)
-	aiGateway   := ai.NewGateway(aiRepo)
-	concierge   := ai.NewConcierge(aiGateway)
+	// Servicos
+	taxEngine := tax.NewEngine(taxRateRepo)
+	waClient := mechanic.NewWALinkSender(cfg.BaseURL)
+	osSvc := mechanic.NewOSService(mechanicRepo, waClient, cfg.BaseURL)
+	aiGateway := ai.NewGateway(aiRepo)
+	concierge := ai.NewConcierge(aiGateway)
 	contractSvc := logistics.NewContractService(logisticsRepo)
-	agendaSvc   := aesthetics.NewAgendaService(aestheticsRepo)
-	baasGW      := baas.NewNoOpGateway()
-	paymentSvc  := baas.NewPaymentService(baasGW, paymentRepo)
+	agendaSvc := aesthetics.NewAgendaService(aestheticsRepo)
+	baasGW := baas.NewNoOpGateway()
+	paymentSvc := baas.NewPaymentService(baasGW, paymentRepo)
+
+	// Auth
+	authSvc := auth.NewService(cfg.JWTSecret, &userProviderAdapter{tenants: tenantRepo, users: userRepo}, tokenStore)
 
 	return &Container{
 		MechanicHandler:   handlers.NewMechanicHandler(osSvc),
@@ -84,12 +76,12 @@ func Wire(cfg Config) (*Container, error) {
 		AestheticsHandler: handlers.NewAestheticsHandler(agendaSvc),
 		AIHandler:         handlers.NewAIHandler(aiGateway, concierge),
 		PaymentHandler:    handlers.NewPaymentHandler(paymentSvc),
-		DB:                db,
-		Redis:             redisClient,
+		AuthService:       authSvc,
+		TaxEngine:         taxEngine,
 		tenantRepo:        tenantRepo,
 		userRepo:          userRepo,
 		tokenStore:        tokenStore,
-		Close:             func() { db.Close(); redisClient.Close() },
+		Close:             func() { cache.Close() },
 	}, nil
 }
 
@@ -100,8 +92,8 @@ func (c *Container) UserProvider() auth.UserProvider {
 func (c *Container) TokenStore() auth.TokenStore { return c.tokenStore }
 
 type userProviderAdapter struct {
-	tenants *postgres.TenantRepo
-	users   *postgres.UserRepo
+	tenants *memory.TenantRepo
+	users   *memory.UserRepo
 }
 
 func (a *userProviderAdapter) GetByEmail(ctx context.Context, tenantID, email string) (*auth.UserAuth, error) {
@@ -118,7 +110,7 @@ func (a *userProviderAdapter) GetByEmail(ctx context.Context, tenantID, email st
 func (a *userProviderAdapter) GetTenantBySlug(ctx context.Context, slug string) (*auth.TenantAuth, error) {
 	t, err := a.tenants.GetBySlug(ctx, slug)
 	if err != nil {
-		return nil, err
+		return nil, fmt.Errorf("tenant nao encontrado")
 	}
 	return &auth.TenantAuth{
 		ID: t.ID, Slug: t.Slug, BusinessType: t.BusinessType, Plan: t.Plan,

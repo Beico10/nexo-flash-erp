@@ -17,7 +17,6 @@ package expenses
 import (
 	"context"
 	"errors"
-	"fmt"
 	"net/url"
 	"regexp"
 	"strings"

@@ -22,7 +22,11 @@ export default function LoginPage() {
       const res = await fetch('/api/auth/login', {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify(form),
+        body: JSON.stringify({
+          tenant_slug: form.tenantSlug,
+          email: form.email,
+          password: form.password,
+        }),
       })
       const data = await res.json()
       if (!res.ok) throw new Error(data.error || 'Falha no login')
