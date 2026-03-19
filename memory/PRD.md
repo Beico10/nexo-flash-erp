@@ -175,3 +175,67 @@ ERP SaaS Multi-Tenant que atende desde **indústrias** (nível TOTVS Protheus) a
 | GET | `/api/billing/usage` | Uso atual |
 | PUT | `/api/admin/billing/plans/{id}` | Admin atualiza plano |
 
+
+---
+
+## 10. Sistema de Trial e Jornada do Usuário (Implementado Jan/2026)
+
+### Verificação por WhatsApp (Custo Zero)
+
+```
+1. Usuário cadastra com telefone
+2. Sistema gera código 6 dígitos (Redis, 5 min TTL)
+3. Abre WhatsApp: "Meu código Nexo One: 847293"
+4. Webhook recebe → Valida → Trial liberado
+5. 1 trial por telefone (hash SHA256 para LGPD)
+```
+
+### Anti-Abuso
+
+| Controle | Implementação |
+|----------|---------------|
+| 1 trial/telefone | Hash SHA256 único |
+| Device fingerprint | Detecta múltiplos trials |
+| Rate limit | 5 tentativas de código |
+| Abuse score | 0-100, bloqueio automático |
+
+### Tracking de Jornada
+
+**Eventos rastreados:**
+- page_view, signup_started, signup_completed
+- verification_sent, verification_completed
+- onboarding_started, onboarding_step_completed
+- first_action, trial_converted
+
+**Analytics disponíveis:**
+- Funil de conversão diário
+- Taxa de conversão por nicho
+- Pontos de travamento (drop points)
+- Tempo médio de ativação
+
+### Onboarding Adaptativo
+
+| Nicho | Passos | Recompensa |
+|-------|--------|------------|
+| Mecânica | 5 passos | +3 dias trial |
+| Padaria | 5 passos | +3 dias trial |
+| Estética | 5 passos | +3 dias trial |
+| Logística | 5 passos | +4 dias trial |
+| Indústria | 5 passos | +5 dias trial |
+| Calçados | 5 passos | +4 dias trial |
+
+### Endpoints Criados
+
+| Método | Endpoint | Descrição |
+|--------|----------|-----------|
+| POST | `/api/auth/verify/start` | Inicia verificação WhatsApp |
+| POST | `/api/auth/verify/confirm` | Confirma código |
+| POST | `/api/webhooks/whatsapp` | Webhook para receber código |
+| GET | `/api/onboarding/steps` | Passos do onboarding |
+| GET | `/api/onboarding/progress` | Progresso atual |
+| POST | `/api/onboarding/complete` | Marca passo completo |
+| POST | `/api/onboarding/skip` | Pula onboarding |
+| POST | `/api/track` | Envia evento de tracking |
+| GET | `/api/admin/analytics/funnel` | Métricas do funil |
+| GET | `/api/admin/analytics/drops` | Usuários travados |
+
