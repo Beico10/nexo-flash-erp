@@ -89,3 +89,7 @@ coverage/
 # PASTA ANTIGA (migração)
 # ═══════════════════════════════════════════════════════════
 /nexo-flash/
+-e 
+# Environment files
+*.env
+*.env.*
