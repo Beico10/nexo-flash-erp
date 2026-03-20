@@ -17,13 +17,6 @@
       "static/chunks/782-ca0188ec48ad118b.js",
       "static/chunks/app/layout-3756cca65cf8f0b1.js"
     ],
-    "/admin/plans/page": [
-      "static/chunks/webpack-c84e7b3dbc67fa68.js",
-      "static/chunks/fd9d1056-b778a18b0daf24fe.js",
-      "static/chunks/23-a16bb9430840aab5.js",
-      "static/chunks/main-app-7a50ec93c874a729.js",
-      "static/chunks/app/admin/plans/page-0fced1156e5691bf.js"
-    ],
     "/aesthetics/page": [
       "static/chunks/webpack-c84e7b3dbc67fa68.js",
       "static/chunks/fd9d1056-b778a18b0daf24fe.js",
@@ -37,6 +30,13 @@
       "static/chunks/23-a16bb9430840aab5.js",
       "static/chunks/main-app-7a50ec93c874a729.js",
       "static/chunks/app/ai-approvals/page-d40f6a6dc450e2eb.js"
+    ],
+    "/admin/plans/page": [
+      "static/chunks/webpack-c84e7b3dbc67fa68.js",
+      "static/chunks/fd9d1056-b778a18b0daf24fe.js",
+      "static/chunks/23-a16bb9430840aab5.js",
+      "static/chunks/main-app-7a50ec93c874a729.js",
+      "static/chunks/app/admin/plans/page-0fced1156e5691bf.js"
     ],
     "/bakery/page": [
       "static/chunks/webpack-c84e7b3dbc67fa68.js",
@@ -117,19 +117,19 @@
       "static/chunks/main-app-7a50ec93c874a729.js",
       "static/chunks/app/onboarding/page-23736649f8f85d33.js"
     ],
-    "/payments/page": [
-      "static/chunks/webpack-c84e7b3dbc67fa68.js",
-      "static/chunks/fd9d1056-b778a18b0daf24fe.js",
-      "static/chunks/23-a16bb9430840aab5.js",
-      "static/chunks/main-app-7a50ec93c874a729.js",
-      "static/chunks/app/payments/page-079a97a0c3835a10.js"
-    ],
     "/page": [
       "static/chunks/webpack-c84e7b3dbc67fa68.js",
       "static/chunks/fd9d1056-b778a18b0daf24fe.js",
       "static/chunks/23-a16bb9430840aab5.js",
       "static/chunks/main-app-7a50ec93c874a729.js",
       "static/chunks/app/page-a0c8eed4e0adcd52.js"
+    ],
+    "/payments/page": [
+      "static/chunks/webpack-c84e7b3dbc67fa68.js",
+      "static/chunks/fd9d1056-b778a18b0daf24fe.js",
+      "static/chunks/23-a16bb9430840aab5.js",
+      "static/chunks/main-app-7a50ec93c874a729.js",
+      "static/chunks/app/payments/page-079a97a0c3835a10.js"
     ],
     "/pricing/page": [
       "static/chunks/webpack-c84e7b3dbc67fa68.js",
