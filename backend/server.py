@@ -8,6 +8,7 @@ from contextlib import asynccontextmanager
 import httpx
 import asyncio
 from router_module import router_api
+from whatsapp_evolution import whatsapp_router
 
 GO_BINARY = "/app/nexo-one"
 go_process = None
@@ -80,6 +81,7 @@ async def lifespan(app: FastAPI):
 
 app = FastAPI(lifespan=lifespan, title="Nexo One Proxy")
 app.include_router(router_api)
+app.include_router(whatsapp_router)
 
 @app.api_route("/{path:path}", methods=["GET", "POST", "PUT", "PATCH", "DELETE", "OPTIONS", "HEAD"])
 async def proxy(request: Request, path: str):
