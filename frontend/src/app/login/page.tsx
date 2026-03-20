@@ -186,6 +186,7 @@ export default function LoginPage() {
                 <div className="relative">
                   <input
                     autoFocus
+                    data-testid="login-tenant-input"
                     value={form.tenantSlug}
                     onChange={e => setForm(f => ({ ...f, tenantSlug: e.target.value.toLowerCase().replace(/\s/g, '-') }))}
                     placeholder="mecanica-do-joao"
@@ -205,7 +206,7 @@ export default function LoginPage() {
                   Fornecido no seu e-mail de cadastro
                 </p>
               </div>
-              <button type="submit" className="btn-primary w-full justify-center py-3" style={{ fontSize: 14 }}>
+              <button type="submit" data-testid="login-continue-btn" className="btn-primary w-full justify-center py-3" style={{ fontSize: 14 }}>
                 Continuar
                 <ArrowRight size={15} />
               </button>
@@ -231,6 +232,7 @@ export default function LoginPage() {
                 <input
                   type="email"
                   autoFocus
+                  data-testid="login-email-input"
                   value={form.email}
                   onChange={e => setForm(f => ({ ...f, email: e.target.value }))}
                   placeholder="joao@mecanicadojoao.com.br"
@@ -249,6 +251,7 @@ export default function LoginPage() {
                 <div className="relative">
                   <input
                     type={showPass ? 'text' : 'password'}
+                    data-testid="login-password-input"
                     value={form.password}
                     onChange={e => setForm(f => ({ ...f, password: e.target.value }))}
                     placeholder="••••••••"
@@ -268,6 +271,7 @@ export default function LoginPage() {
               <button
                 type="submit"
                 disabled={loading}
+                data-testid="login-submit-btn"
                 className="btn-primary w-full justify-center py-3"
                 style={{ fontSize: 14, marginTop: 8 }}
               >
