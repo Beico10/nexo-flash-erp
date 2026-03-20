@@ -36,39 +36,32 @@ func (r *BillingRepo) seedPlans() {
 	intPtr := func(v int) *int { return &v }
 	r.plans = []*billing.Plan{
 		{
-			ID: "plan-micro", Code: "micro", Name: "Micro", Description: "Para autonomos",
-			PriceMonthly: 49, PriceYearly: 490, SetupFee: 0,
-			MaxUsers: intPtr(1), MaxTransactions: intPtr(100), MaxProducts: intPtr(50), MaxInvoices: intPtr(30), MaxStorageMB: intPtr(500),
-			Features: billing.PlanFeatures{Fiscal2026: true},
-			AllowedNiches: []string{"mechanic", "bakery", "aesthetics"}, DisplayOrder: 1, IsActive: true,
-		},
-		{
-			ID: "plan-starter", Code: "starter", Name: "Starter", Description: "Comecando a crescer",
-			PriceMonthly: 99, PriceYearly: 990, SetupFee: 0,
+			ID: "plan-starter", Code: "starter", Name: "Starter", Description: "Para quem esta comecando",
+			PriceMonthly: 497, PriceYearly: 4970, SetupFee: 0,
 			MaxUsers: intPtr(3), MaxTransactions: intPtr(500), MaxProducts: intPtr(200), MaxInvoices: intPtr(100), MaxStorageMB: intPtr(2000),
 			Features: billing.PlanFeatures{Fiscal2026: true, BaaSPix: true, WhatsApp: true, AIConcierge: true},
-			AllowedNiches: []string{"mechanic", "bakery", "aesthetics", "logistics", "shoes"}, DisplayOrder: 2, IsActive: true,
+			AllowedNiches: []string{"mechanic", "bakery", "aesthetics", "logistics", "shoes"}, DisplayOrder: 1, IsActive: true,
 		},
 		{
 			ID: "plan-pro", Code: "pro", Name: "Pro", Description: "Para negocios em expansao",
-			PriceMonthly: 199, PriceYearly: 1990, SetupFee: 0,
-			MaxUsers: intPtr(10), MaxTransactions: intPtr(2000), MaxProducts: intPtr(1000), MaxInvoices: intPtr(500), MaxStorageMB: intPtr(10000),
+			PriceMonthly: 997, PriceYearly: 9970, SetupFee: 0,
+			MaxUsers: intPtr(10), MaxTransactions: intPtr(5000), MaxProducts: intPtr(2000), MaxInvoices: intPtr(1000), MaxStorageMB: intPtr(20000),
 			Features: billing.PlanFeatures{Fiscal2026: true, BaaSPix: true, BaaSBoleto: true, WhatsApp: true, AICopilot: true, AIConcierge: true, MultiPDV: true, CustomReports: true},
-			AllowedNiches: []string{"mechanic", "bakery", "aesthetics", "logistics", "shoes", "industry"}, DisplayOrder: 3, IsActive: true, IsFeatured: true,
+			AllowedNiches: []string{"mechanic", "bakery", "aesthetics", "logistics", "shoes", "industry"}, DisplayOrder: 2, IsActive: true, IsFeatured: true,
 		},
 		{
-			ID: "plan-business", Code: "business", Name: "Business", Description: "Gestao completa",
-			PriceMonthly: 399, PriceYearly: 3990, SetupFee: 0,
-			MaxUsers: intPtr(30), MaxTransactions: nil, MaxProducts: nil, MaxInvoices: nil, MaxStorageMB: intPtr(50000),
+			ID: "plan-business", Code: "business", Name: "Business", Description: "Gestao completa para media empresa",
+			PriceMonthly: 1997, PriceYearly: 19970, SetupFee: 5000,
+			MaxUsers: intPtr(30), MaxTransactions: nil, MaxProducts: nil, MaxInvoices: nil, MaxStorageMB: intPtr(100000),
 			Features: billing.PlanFeatures{Fiscal2026: true, BaaSPix: true, BaaSBoleto: true, BaaSSplit: true, WhatsApp: true, AICopilot: true, AIConcierge: true, Roteirizador: true, MultiPDV: true, APIAccess: true, PrioritySupport: true, CustomReports: true},
-			AllowedNiches: []string{"mechanic", "bakery", "aesthetics", "logistics", "shoes", "industry"}, DisplayOrder: 4, IsActive: true,
+			AllowedNiches: []string{"mechanic", "bakery", "aesthetics", "logistics", "shoes", "industry"}, DisplayOrder: 3, IsActive: true,
 		},
 		{
-			ID: "plan-enterprise", Code: "enterprise", Name: "Enterprise", Description: "Sob medida",
-			PriceMonthly: 999, PriceYearly: 9990, SetupFee: 500,
+			ID: "plan-enterprise", Code: "enterprise", Name: "Enterprise", Description: "Para industria e multi-filial",
+			PriceMonthly: 2997, PriceYearly: 29970, SetupFee: 10000,
 			MaxUsers: nil, MaxTransactions: nil, MaxProducts: nil, MaxInvoices: nil, MaxStorageMB: nil,
 			Features: billing.PlanFeatures{Fiscal2026: true, BaaSPix: true, BaaSBoleto: true, BaaSSplit: true, WhatsApp: true, AICopilot: true, AIConcierge: true, Roteirizador: true, MultiPDV: true, APIAccess: true, PrioritySupport: true, CustomReports: true, DedicatedSupport: true, SLA999: true},
-			AllowedNiches: []string{"mechanic", "bakery", "aesthetics", "logistics", "shoes", "industry"}, DisplayOrder: 5, IsActive: true,
+			AllowedNiches: []string{"mechanic", "bakery", "aesthetics", "logistics", "shoes", "industry"}, DisplayOrder: 4, IsActive: true,
 		},
 	}
 }
@@ -94,9 +87,9 @@ func (r *BillingRepo) seedDemoSubscription() {
 		PlanID: "plan-pro", PlanCode: "pro", PlanName: "Pro",
 		Status: billing.StatusTrialing, TrialEndsAt: &trialEnd,
 		CurrentPeriodStart: time.Now(), CurrentPeriodEnd: trialEnd,
-		BillingCycle: billing.CycleMonthly, Price: 199,
+		BillingCycle: billing.CycleMonthly, Price: 997,
 		CurrentUsers: 3, CurrentTransactions: 47, CurrentProducts: 12, CurrentInvoices: 8,
-		MaxUsers: intPtr(10), MaxTransactions: intPtr(2000), MaxProducts: intPtr(1000), MaxInvoices: intPtr(500),
+		MaxUsers: intPtr(10), MaxTransactions: intPtr(5000), MaxProducts: intPtr(2000), MaxInvoices: intPtr(1000),
 	}
 	r.usage["00000000-0000-0000-0000-000000000001"] = map[string]int{
 		"users": 3, "transactions": 47, "products": 12, "invoices": 8,
