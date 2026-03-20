@@ -25,63 +25,63 @@ const (
 
 // BOMItem representa um componente na Ficha Técnica (Bill of Materials).
 type BOMItem struct {
-	ID              string
-	ParentProductID string  // produto final
-	ComponentID     string  // insumo/matéria-prima
-	ComponentName   string
-	NCMCode         string
-	Quantity        float64 // quantidade por unidade produzida
-	Unit            string  // kg, L, un, m²
-	ScrapFactor     float64 // fator de perda (ex: 0.05 = 5% de refugo)
-	NetQuantity     float64 // quantity * (1 + scrapFactor)
-	UnitCost        float64
-	TotalCost       float64
+	ID              string  `json:"id"`
+	ParentProductID string  `json:"parent_product_id"`
+	ComponentID     string  `json:"component_id"`
+	ComponentName   string  `json:"component_name"`
+	NCMCode         string  `json:"ncm_code"`
+	Quantity        float64 `json:"quantity"`
+	Unit            string  `json:"unit"`
+	ScrapFactor     float64 `json:"scrap_factor"`
+	NetQuantity     float64 `json:"net_quantity"`
+	UnitCost        float64 `json:"unit_cost"`
+	TotalCost       float64 `json:"total_cost"`
 }
 
 // BOM representa a Ficha Técnica completa de um produto.
 type BOM struct {
-	ID          string
-	TenantID    string
-	ProductID   string
-	ProductName string
-	Version     int
-	Items       []BOMItem
-	TotalCost   float64
-	ValidFrom   time.Time
-	ValidUntil  *time.Time
-	CreatedBy   string
-	CreatedAt   time.Time
+	ID          string     `json:"id"`
+	TenantID    string     `json:"-"`
+	ProductID   string     `json:"product_id"`
+	ProductName string     `json:"product_name"`
+	Version     int        `json:"version"`
+	Items       []BOMItem  `json:"items"`
+	TotalCost   float64    `json:"total_cost"`
+	ValidFrom   time.Time  `json:"valid_from"`
+	ValidUntil  *time.Time `json:"valid_until"`
+	CreatedBy   string     `json:"created_by"`
+	CreatedAt   time.Time  `json:"created_at"`
 }
 
 // ProductionOrder representa uma Ordem de Produção (OP).
 type ProductionOrder struct {
-	ID           string
-	TenantID     string
-	Number       string
-	ProductID    string
-	ProductName  string
-	BOMID        string
-	PlannedQty   float64
-	ProducedQty  float64
-	Unit         string
-	Status       ProductionOrderStatus
-	PlannedStart time.Time
-	PlannedEnd   time.Time
-	ActualStart  *time.Time
-	ActualEnd    *time.Time
+	ID           string                `json:"id"`
+	TenantID     string                `json:"-"`
+	Number       string                `json:"number"`
+	ProductID    string                `json:"product_id"`
+	ProductName  string                `json:"product_name"`
+	BOMID        string                `json:"bom_id"`
+	PlannedQty   float64               `json:"planned_qty"`
+	ProducedQty  float64               `json:"produced_qty"`
+	Unit         string                `json:"unit"`
+	Status       ProductionOrderStatus `json:"status"`
+	PlannedStart time.Time             `json:"planned_start"`
+	PlannedEnd   time.Time             `json:"planned_end"`
+	ActualStart  *time.Time            `json:"actual_start"`
+	ActualEnd    *time.Time            `json:"actual_end"`
 	// Insumos reservados para esta OP (explodido da BOM)
-	MaterialReservations []MaterialReservation
-	CreatedAt   time.Time
+	MaterialReservations []MaterialReservation `json:"material_reservations"`
+	CreatedAt   time.Time             `json:"created_at"`
 }
 
 // MaterialReservation reserva insumos para uma Ordem de Produção.
 type MaterialReservation struct {
-	MaterialID  string
-	MaterialName string
-	RequiredQty float64
-	Unit        string
-	ReservedQty float64
-	IsAvailable bool
+	MaterialID   string  `json:"material_id"`
+	MaterialName string  `json:"material_name"`
+	RequiredQty  float64 `json:"required_qty"`
+	Unit         string  `json:"unit"`
+	ReservedQty  float64 `json:"reserved_qty"`
+	IsAvailable  bool    `json:"is_available"`
 }
 
 // BOMRepository acessa fichas técnicas.

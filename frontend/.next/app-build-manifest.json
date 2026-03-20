@@ -31,13 +31,6 @@
       "static/chunks/main-app-7a50ec93c874a729.js",
       "static/chunks/app/aesthetics/page-c48ce57e852dde1c.js"
     ],
-    "/ai-approvals/page": [
-      "static/chunks/webpack-c84e7b3dbc67fa68.js",
-      "static/chunks/fd9d1056-b778a18b0daf24fe.js",
-      "static/chunks/23-a16bb9430840aab5.js",
-      "static/chunks/main-app-7a50ec93c874a729.js",
-      "static/chunks/app/ai-approvals/page-d40f6a6dc450e2eb.js"
-    ],
     "/bakery/page": [
       "static/chunks/webpack-c84e7b3dbc67fa68.js",
       "static/chunks/fd9d1056-b778a18b0daf24fe.js",
@@ -52,13 +45,6 @@
       "static/chunks/main-app-7a50ec93c874a729.js",
       "static/chunks/app/copilot/page-ac30a8bbc6636500.js"
     ],
-    "/dashboard/expenses/scan/page": [
-      "static/chunks/webpack-c84e7b3dbc67fa68.js",
-      "static/chunks/fd9d1056-b778a18b0daf24fe.js",
-      "static/chunks/23-a16bb9430840aab5.js",
-      "static/chunks/main-app-7a50ec93c874a729.js",
-      "static/chunks/app/dashboard/expenses/scan/page-6d80e6381768c0f4.js"
-    ],
     "/dashboard/expenses/page": [
       "static/chunks/webpack-c84e7b3dbc67fa68.js",
       "static/chunks/fd9d1056-b778a18b0daf24fe.js",
@@ -66,6 +52,20 @@
       "static/chunks/main-app-7a50ec93c874a729.js",
       "static/chunks/959-bce2546f5457e476.js",
       "static/chunks/app/dashboard/expenses/page-9ab34dce8c0af983.js"
+    ],
+    "/ai-approvals/page": [
+      "static/chunks/webpack-c84e7b3dbc67fa68.js",
+      "static/chunks/fd9d1056-b778a18b0daf24fe.js",
+      "static/chunks/23-a16bb9430840aab5.js",
+      "static/chunks/main-app-7a50ec93c874a729.js",
+      "static/chunks/app/ai-approvals/page-d40f6a6dc450e2eb.js"
+    ],
+    "/dashboard/expenses/scan/page": [
+      "static/chunks/webpack-c84e7b3dbc67fa68.js",
+      "static/chunks/fd9d1056-b778a18b0daf24fe.js",
+      "static/chunks/23-a16bb9430840aab5.js",
+      "static/chunks/main-app-7a50ec93c874a729.js",
+      "static/chunks/app/dashboard/expenses/scan/page-6d80e6381768c0f4.js"
     ],
     "/dashboard/page": [
       "static/chunks/webpack-c84e7b3dbc67fa68.js",

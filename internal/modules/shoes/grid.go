@@ -14,32 +14,32 @@ import (
 
 // GridCell representa uma célula da Matriz de Grade (Cor + Tamanho).
 type GridCell struct {
-	SKU       string
-	Color     string  // ex: "Preto", "Marrom", "Nude"
-	Size      string  // ex: "34", "35", "36", "37", "38", "39", "40"
-	Stock     int
-	Price     float64
-	CostPrice float64
-	Barcode   string  // EAN-13 por SKU
-	Active    bool
+	SKU       string  `json:"sku"`
+	Color     string  `json:"color"`
+	Size      string  `json:"size"`
+	Stock     int     `json:"stock"`
+	Price     float64 `json:"price"`
+	CostPrice float64 `json:"cost_price"`
+	Barcode   string  `json:"barcode"`
+	Active    bool    `json:"active"`
 }
 
 // ProductGrid é a grade completa de um modelo de calçado.
 // Estrutura: Modelo → Grade[Cor][Tamanho] → GridCell
 type ProductGrid struct {
-	ID          string
-	TenantID    string
-	ModelCode   string
-	ModelName   string
-	Brand       string
-	NCMCode     string
+	ID        string                       `json:"id"`
+	TenantID  string                       `json:"-"`
+	ModelCode string                       `json:"model_code"`
+	ModelName string                       `json:"model_name"`
+	Brand     string                       `json:"brand"`
+	NCMCode   string                       `json:"ncm_code"`
 	// Grid[cor][tamanho] → célula
-	Grid        map[string]map[string]GridCell
+	Grid      map[string]map[string]GridCell `json:"grid"`
 	// Listas ordenadas de cores e tamanhos para exibição na UI
-	Colors      []string
-	Sizes       []string
-	CreatedAt   time.Time
-	UpdatedAt   time.Time
+	Colors    []string                     `json:"colors"`
+	Sizes     []string                     `json:"sizes"`
+	CreatedAt time.Time                    `json:"created_at"`
+	UpdatedAt time.Time                    `json:"updated_at"`
 }
 
 // GridSummary é um resumo da grade para listagem rápida.
@@ -54,26 +54,26 @@ type GridSummary struct {
 
 // CommissionRule define a regra de comissão de um vendedor.
 type CommissionRule struct {
-	ID           string
-	TenantID     string
-	SellerID     string
-	SellerName   string
-	BaseRate     float64  // ex: 0.05 = 5% sobre vendas
-	BonusRate    float64  // taxa extra ao bater meta
-	MonthlTarget float64  // meta mensal em R$
-	Active       bool
+	ID           string  `json:"id"`
+	TenantID     string  `json:"-"`
+	SellerID     string  `json:"seller_id"`
+	SellerName   string  `json:"seller_name"`
+	BaseRate     float64 `json:"base_rate"`
+	BonusRate    float64 `json:"bonus_rate"`
+	MonthlTarget float64 `json:"monthly_target"`
+	Active       bool    `json:"active"`
 }
 
 // CommissionResult é o resultado do cálculo de comissão.
 type CommissionResult struct {
-	SellerID      string
-	PeriodFrom    time.Time
-	PeriodTo      time.Time
-	TotalSales    float64
-	BaseCommission float64
-	BonusCommission float64
-	TotalCommission float64
-	MetAchieved   bool
+	SellerID        string    `json:"seller_id"`
+	PeriodFrom      time.Time `json:"period_from"`
+	PeriodTo        time.Time `json:"period_to"`
+	TotalSales      float64   `json:"total_sales"`
+	BaseCommission  float64   `json:"base_commission"`
+	BonusCommission float64   `json:"bonus_commission"`
+	TotalCommission float64   `json:"total_commission"`
+	MetAchieved     bool      `json:"met_achieved"`
 }
 
 // GridRepository acessa grades de calçados.
