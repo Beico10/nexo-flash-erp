@@ -16,7 +16,7 @@ import requests
 import os
 
 # Use environment variable or preview URL
-BASE_URL = os.environ.get('REACT_APP_BACKEND_URL', 'https://chameleon-erp.preview.emergentagent.com').rstrip('/')
+BASE_URL = os.environ.get('REACT_APP_BACKEND_URL', 'https://repo-status-check-2.preview.emergentagent.com').rstrip('/')
 
 # Test credentials
 TENANT_SLUG = 'demo'
