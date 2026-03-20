@@ -120,25 +120,25 @@ type QRCodeResult struct {
 
 // ExpenseSummary resumo de despesas.
 type ExpenseSummary struct {
-	Month         time.Time
-	Category      string
-	Count         int
-	Total         float64
-	IBSCredit     float64
-	CBSCredit     float64
-	ICMSPaid      float64
+	Month         time.Time `json:"month"`
+	Category      string    `json:"category"`
+	Count         int       `json:"count"`
+	Total         float64   `json:"total"`
+	IBSCredit     float64   `json:"ibs_credit"`
+	CBSCredit     float64   `json:"cbs_credit"`
+	ICMSPaid      float64   `json:"icms_paid"`
 }
 
 // TaxReport relatório para IR/imposto.
 type TaxReport struct {
-	Year          int
-	Month         int
-	CategoryCode  string
-	CategoryName  string
-	TaxDeductible bool
-	Total         float64
-	TaxCredit     float64
-	DocCount      int
+	Year          int     `json:"year"`
+	Month         int     `json:"month"`
+	CategoryCode  string  `json:"category_code"`
+	CategoryName  string  `json:"category_name"`
+	TaxDeductible bool    `json:"tax_deductible"`
+	Total         float64 `json:"total"`
+	TaxCredit     float64 `json:"tax_credit"`
+	DocCount      int     `json:"doc_count"`
 }
 
 // ════════════════════════════════════════════════════════════

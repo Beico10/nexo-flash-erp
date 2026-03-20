@@ -125,6 +125,10 @@ func buildRouter(c *app.Container) http.Handler {
 	protectedMux.HandleFunc("GET /api/v1/billing/usage", c.BillingHandler.GetUsage)
 	protectedMux.HandleFunc("GET /api/v1/billing/feature", c.BillingHandler.CheckFeature)
 
+	// Admin - Gestao de planos
+	protectedMux.HandleFunc("GET /api/v1/admin/plans", c.BillingHandler.GetAllPlansAdmin)
+	protectedMux.HandleFunc("PUT /api/v1/admin/plans", c.BillingHandler.UpdatePlan)
+
 	// Onboarding autenticado
 	protectedMux.HandleFunc("GET /api/v1/onboarding/steps", c.OnboardingHandler.GetSteps)
 	protectedMux.HandleFunc("GET /api/v1/onboarding/progress", c.OnboardingHandler.GetProgress)
@@ -135,6 +139,18 @@ func buildRouter(c *app.Container) http.Handler {
 	protectedMux.HandleFunc("POST /api/v1/track", c.TrackingHandler.TrackEvent)
 	protectedMux.HandleFunc("GET /api/v1/analytics/funnel", c.AnalyticsHandler.GetFunnel)
 	protectedMux.HandleFunc("GET /api/v1/analytics/drops", c.AnalyticsHandler.GetDropPoints)
+
+	// Despesas - QR Code Scanner
+	protectedMux.HandleFunc("POST /api/v1/expenses/scan", c.ExpenseHandler.ScanQRCode)
+	protectedMux.HandleFunc("POST /api/v1/expenses/parse-qr", c.ExpenseHandler.ParseQRCode)
+	protectedMux.HandleFunc("POST /api/v1/expenses/upload-xml", c.ExpenseHandler.UploadXML)
+	protectedMux.HandleFunc("POST /api/v1/expenses", c.ExpenseHandler.CreateExpense)
+	protectedMux.HandleFunc("GET /api/v1/expenses", c.ExpenseHandler.ListExpenses)
+	protectedMux.HandleFunc("GET /api/v1/expenses/{id}", c.ExpenseHandler.GetExpense)
+	protectedMux.HandleFunc("DELETE /api/v1/expenses/{id}", c.ExpenseHandler.DeleteExpense)
+	protectedMux.HandleFunc("GET /api/v1/expenses/categories", c.ExpenseHandler.GetCategories)
+	protectedMux.HandleFunc("GET /api/v1/expenses/summary", c.ExpenseHandler.GetSummary)
+	protectedMux.HandleFunc("GET /api/v1/expenses/tax-report", c.ExpenseHandler.GetTaxReport)
 
 	// Monta as rotas protegidas no mux principal com middleware
 	mux.Handle("/api/v1/", authMW(protectedMux))

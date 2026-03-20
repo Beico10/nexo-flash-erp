@@ -117,8 +117,8 @@ export default function QRCodeScanner() {
     setError(null)
 
     try {
-      const token = localStorage.getItem('token')
-      const res = await fetch(`${process.env.NEXT_PUBLIC_API_URL}/api/expenses/scan`, {
+      const token = sessionStorage.getItem('access_token')
+      const res = await fetch('/api/v1/expenses/scan', {
         method: 'POST',
         headers: {
           'Content-Type': 'application/json',
@@ -153,8 +153,8 @@ export default function QRCodeScanner() {
       const formData = new FormData()
       formData.append('xml', file)
 
-      const token = localStorage.getItem('token')
-      const res = await fetch(`${process.env.NEXT_PUBLIC_API_URL}/api/expenses/upload-xml`, {
+      const token = sessionStorage.getItem('access_token')
+      const res = await fetch('/api/v1/expenses/upload-xml', {
         method: 'POST',
         headers: {
           'Authorization': `Bearer ${token}`,

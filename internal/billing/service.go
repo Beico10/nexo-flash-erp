@@ -203,6 +203,11 @@ func (s *Service) UpdatePlan(ctx context.Context, plan *Plan) error {
 	return s.repo.UpdatePlan(ctx, plan)
 }
 
+// GetPlanByCode busca plano pelo codigo.
+func (s *Service) GetPlanByCode(ctx context.Context, code string) (*Plan, error) {
+	return s.repo.GetPlanByCode(ctx, code)
+}
+
 // ────────────────────────────────────────────────────────────
 // TRIAL (7 dias grátis)
 // ────────────────────────────────────────────────────────────

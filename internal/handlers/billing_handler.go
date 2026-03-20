@@ -33,6 +33,81 @@ func (h *BillingHandler) ListPlans(w http.ResponseWriter, r *http.Request) {
 	})
 }
 
+// UpdatePlan PUT /api/v1/admin/plans - Atualiza preco/config de um plano (Admin).
+func (h *BillingHandler) UpdatePlan(w http.ResponseWriter, r *http.Request) {
+	var req billing.Plan
+	if err := json.NewDecoder(r.Body).Decode(&req); err != nil {
+		respondError(w, http.StatusBadRequest, "JSON invalido")
+		return
+	}
+	if req.ID == "" && req.Code == "" {
+		respondError(w, http.StatusBadRequest, "id ou code do plano obrigatorio")
+		return
+	}
+
+	// Se veio por code, busca o plano existente
+	existing, err := h.svc.GetPlanByCode(r.Context(), req.Code)
+	if err != nil {
+		respondError(w, http.StatusNotFound, "plano nao encontrado")
+		return
+	}
+
+	// Atualiza apenas campos enviados
+	if req.Name != "" {
+		existing.Name = req.Name
+	}
+	if req.Description != "" {
+		existing.Description = req.Description
+	}
+	if req.PriceMonthly > 0 {
+		existing.PriceMonthly = req.PriceMonthly
+	}
+	if req.PriceYearly > 0 {
+		existing.PriceYearly = req.PriceYearly
+	}
+	existing.SetupFee = req.SetupFee // 0 is valid (gratis)
+	if req.MaxUsers != nil {
+		existing.MaxUsers = req.MaxUsers
+	}
+	if req.MaxTransactions != nil {
+		existing.MaxTransactions = req.MaxTransactions
+	}
+	if req.MaxProducts != nil {
+		existing.MaxProducts = req.MaxProducts
+	}
+	if req.MaxInvoices != nil {
+		existing.MaxInvoices = req.MaxInvoices
+	}
+	if len(req.AllowedNiches) > 0 {
+		existing.AllowedNiches = req.AllowedNiches
+	}
+	existing.IsFeatured = req.IsFeatured
+	existing.IsActive = req.IsActive
+	existing.Features = req.Features
+
+	if err := h.svc.UpdatePlan(r.Context(), existing); err != nil {
+		respondError(w, http.StatusInternalServerError, err.Error())
+		return
+	}
+
+	respondJSON(w, http.StatusOK, map[string]interface{}{
+		"updated": true,
+		"plan":    existing,
+	})
+}
+
+// GetAllPlansAdmin GET /api/v1/admin/plans - Lista todos os planos para admin.
+func (h *BillingHandler) GetAllPlansAdmin(w http.ResponseWriter, r *http.Request) {
+	plans, err := h.svc.ListPlans(r.Context())
+	if err != nil {
+		respondError(w, http.StatusInternalServerError, err.Error())
+		return
+	}
+	respondJSON(w, http.StatusOK, map[string]interface{}{
+		"plans": plans,
+	})
+}
+
 // ValidateCoupon POST /api/billing/coupon/validate - Valida cupom.
 func (h *BillingHandler) ValidateCoupon(w http.ResponseWriter, r *http.Request) {
 	var req struct {

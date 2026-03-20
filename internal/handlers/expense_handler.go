@@ -9,6 +9,7 @@ import (
 	"time"
 
 	"github.com/nexoone/nexo-one/internal/expenses"
+	"github.com/nexoone/nexo-one/pkg/middleware"
 )
 
 type ExpenseHandler struct {
@@ -26,8 +27,10 @@ func NewExpenseHandler(svc *expenses.Service) *ExpenseHandler {
 // ScanQRCode POST /api/expenses/scan
 // Recebe conteúdo do QR Code e registra despesa automaticamente.
 func (h *ExpenseHandler) ScanQRCode(w http.ResponseWriter, r *http.Request) {
-	tenantID := r.Context().Value("tenant_id").(string)
-	userID := r.Context().Value("user_id").(string)
+	tenantID, _ := middleware.GetTenantID(r.Context())
+	claims, _ := middleware.GetClaims(r.Context())
+	userID := ""
+	if claims != nil { userID = claims.UserID }
 
 	var req struct {
 		QRContent string `json:"qr_content"`
@@ -94,8 +97,10 @@ func (h *ExpenseHandler) ParseQRCode(w http.ResponseWriter, r *http.Request) {
 // UploadXML POST /api/expenses/upload-xml
 // Recebe arquivo XML de NF-e e registra despesa.
 func (h *ExpenseHandler) UploadXML(w http.ResponseWriter, r *http.Request) {
-	tenantID := r.Context().Value("tenant_id").(string)
-	userID := r.Context().Value("user_id").(string)
+	tenantID, _ := middleware.GetTenantID(r.Context())
+	claims, _ := middleware.GetClaims(r.Context())
+	userID := ""
+	if claims != nil { userID = claims.UserID }
 
 	// Limite de 5MB
 	r.Body = http.MaxBytesReader(w, r.Body, 5<<20)
@@ -145,8 +150,10 @@ func (h *ExpenseHandler) UploadXML(w http.ResponseWriter, r *http.Request) {
 // CreateExpense POST /api/expenses
 // Cria despesa manual.
 func (h *ExpenseHandler) CreateExpense(w http.ResponseWriter, r *http.Request) {
-	tenantID := r.Context().Value("tenant_id").(string)
-	userID := r.Context().Value("user_id").(string)
+	tenantID, _ := middleware.GetTenantID(r.Context())
+	claims, _ := middleware.GetClaims(r.Context())
+	userID := ""
+	if claims != nil { userID = claims.UserID }
 
 	var expense expenses.Expense
 	if err := json.NewDecoder(r.Body).Decode(&expense); err != nil {
@@ -171,7 +178,7 @@ func (h *ExpenseHandler) CreateExpense(w http.ResponseWriter, r *http.Request) {
 // ListExpenses GET /api/expenses
 // Lista despesas com filtros.
 func (h *ExpenseHandler) ListExpenses(w http.ResponseWriter, r *http.Request) {
-	tenantID := r.Context().Value("tenant_id").(string)
+	tenantID, _ := middleware.GetTenantID(r.Context())
 	q := r.URL.Query()
 
 	filter := expenses.ExpenseFilter{
@@ -204,16 +211,21 @@ func (h *ExpenseHandler) ListExpenses(w http.ResponseWriter, r *http.Request) {
 		return
 	}
 
+	formatted := make([]map[string]interface{}, len(list))
+	for i, e := range list {
+		formatted[i] = formatExpenseResponse(e)
+	}
+
 	respondJSON(w, http.StatusOK, map[string]interface{}{
-		"expenses": list,
-		"count":    len(list),
+		"expenses": formatted,
+		"count":    len(formatted),
 	})
 }
 
 // GetExpense GET /api/expenses/{id}
 // Retorna detalhes de uma despesa.
 func (h *ExpenseHandler) GetExpense(w http.ResponseWriter, r *http.Request) {
-	tenantID := r.Context().Value("tenant_id").(string)
+	tenantID, _ := middleware.GetTenantID(r.Context())
 	expenseID := r.PathValue("id")
 
 	expense, err := h.svc.GetByID(r.Context(), tenantID, expenseID)
@@ -230,7 +242,7 @@ func (h *ExpenseHandler) GetExpense(w http.ResponseWriter, r *http.Request) {
 // DeleteExpense DELETE /api/expenses/{id}
 // Cancela uma despesa.
 func (h *ExpenseHandler) DeleteExpense(w http.ResponseWriter, r *http.Request) {
-	tenantID := r.Context().Value("tenant_id").(string)
+	tenantID, _ := middleware.GetTenantID(r.Context())
 	expenseID := r.PathValue("id")
 
 	if err := h.svc.Delete(r.Context(), tenantID, expenseID); err != nil {
@@ -250,7 +262,7 @@ func (h *ExpenseHandler) DeleteExpense(w http.ResponseWriter, r *http.Request) {
 // GetCategories GET /api/expenses/categories
 // Lista categorias de despesa.
 func (h *ExpenseHandler) GetCategories(w http.ResponseWriter, r *http.Request) {
-	tenantID := r.Context().Value("tenant_id").(string)
+	tenantID, _ := middleware.GetTenantID(r.Context())
 
 	categories, err := h.svc.GetCategories(r.Context(), tenantID)
 	if err != nil {
@@ -270,7 +282,7 @@ func (h *ExpenseHandler) GetCategories(w http.ResponseWriter, r *http.Request) {
 // GetSummary GET /api/expenses/summary
 // Resumo de despesas por período.
 func (h *ExpenseHandler) GetSummary(w http.ResponseWriter, r *http.Request) {
-	tenantID := r.Context().Value("tenant_id").(string)
+	tenantID, _ := middleware.GetTenantID(r.Context())
 	q := r.URL.Query()
 
 	// Default: últimos 30 dias
@@ -320,7 +332,7 @@ func (h *ExpenseHandler) GetSummary(w http.ResponseWriter, r *http.Request) {
 // GetTaxReport GET /api/expenses/tax-report
 // Relatório para IR/imposto.
 func (h *ExpenseHandler) GetTaxReport(w http.ResponseWriter, r *http.Request) {
-	tenantID := r.Context().Value("tenant_id").(string)
+	tenantID, _ := middleware.GetTenantID(r.Context())
 
 	year := time.Now().Year()
 	if y := r.URL.Query().Get("year"); y != "" {

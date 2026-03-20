@@ -11,6 +11,7 @@ import (
 	"github.com/nexoone/nexo-one/internal/auth"
 	"github.com/nexoone/nexo-one/internal/baas"
 	"github.com/nexoone/nexo-one/internal/billing"
+	"github.com/nexoone/nexo-one/internal/expenses"
 	"github.com/nexoone/nexo-one/internal/handlers"
 	"github.com/nexoone/nexo-one/internal/journey"
 	"github.com/nexoone/nexo-one/internal/modules/aesthetics"
@@ -43,6 +44,7 @@ type Container struct {
 	OnboardingHandler  *handlers.OnboardingHandler
 	TrackingHandler    *handlers.TrackingHandler
 	AnalyticsHandler   *handlers.AnalyticsHandler
+	ExpenseHandler     *handlers.ExpenseHandler
 	AuthService        *auth.Service
 	TaxEngine          *tax.Engine
 	tenantRepo         *memory.TenantRepo
@@ -67,6 +69,7 @@ func Wire(cfg Config) (*Container, error) {
 	billingRepo := memory.NewBillingRepo()
 	trialRepo := memory.NewTrialRepo()
 	journeyRepo := memory.NewJourneyRepo()
+	expenseRepo := memory.NewExpenseRepo()
 	tokenStore := auth.NewRedisTokenStore(cache)
 
 	// Servicos
@@ -84,6 +87,8 @@ func Wire(cfg Config) (*Container, error) {
 	billingSvc := billing.NewService(billingRepo)
 	trialSvc := trial.NewService(trialRepo)
 	journeySvc := journey.NewService(journeyRepo)
+	sefazScraper := expenses.NewSEFAZScraper()
+	expenseSvc := expenses.NewService(expenseRepo, sefazScraper)
 
 	// Seed demo data
 	memory.SeedAllDemoData(mechanicRepo, bakeryRepo, aestheticsRepo, aiRepo)
@@ -106,6 +111,7 @@ func Wire(cfg Config) (*Container, error) {
 		OnboardingHandler:  handlers.NewOnboardingHandler(journeySvc),
 		TrackingHandler:    handlers.NewTrackingHandler(journeySvc),
 		AnalyticsHandler:   handlers.NewAnalyticsHandler(journeySvc),
+		ExpenseHandler:     handlers.NewExpenseHandler(expenseSvc),
 		AuthService:        authSvc,
 		TaxEngine:          taxEngine,
 		tenantRepo:         tenantRepo,

@@ -67,13 +67,15 @@ export default function ExpensesPage() {
 
   const fetchExpenses = async () => {
     try {
-      const token = localStorage.getItem('token')
+      const token = sessionStorage.getItem('access_token')
+      if (!token) { window.location.href = '/login'; return }
       const params = new URLSearchParams()
       if (filter.category) params.append('category', filter.category)
       
-      const res = await fetch(`${process.env.NEXT_PUBLIC_API_URL}/api/expenses?${params}`, {
+      const res = await fetch(`/api/v1/expenses?${params}`, {
         headers: { Authorization: `Bearer ${token}` },
       })
+      if (res.status === 401) { window.location.href = '/login'; return }
       const data = await res.json()
       setExpenses(data.expenses || [])
     } catch (error) {
@@ -85,8 +87,9 @@ export default function ExpensesPage() {
 
   const fetchSummary = async () => {
     try {
-      const token = localStorage.getItem('token')
-      const res = await fetch(`${process.env.NEXT_PUBLIC_API_URL}/api/expenses/summary`, {
+      const token = sessionStorage.getItem('access_token')
+      if (!token) return
+      const res = await fetch('/api/v1/expenses/summary', {
         headers: { Authorization: `Bearer ${token}` },
       })
       const data = await res.json()
