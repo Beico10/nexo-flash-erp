@@ -66,7 +66,7 @@ func (r *MechanicRepo) GetByPlate(_ context.Context, tenantID, plate string) ([]
 func (r *MechanicRepo) ListOpen(_ context.Context, tenantID string) ([]*mechanic.ServiceOrder, error) {
 	r.mu.RLock()
 	defer r.mu.RUnlock()
-	var result []*mechanic.ServiceOrder
+	result := make([]*mechanic.ServiceOrder, 0)
 	for _, os := range r.orders {
 		if os.TenantID == tenantID && os.Status != mechanic.OSStatusDone && os.Status != mechanic.OSStatusInvoiced {
 			result = append(result, os)
