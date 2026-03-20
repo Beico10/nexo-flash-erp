@@ -7,12 +7,12 @@ Do TOTVS ao cafezinho — gestao para todos. Metade do preco, mesma entrega.
 ## Nicho alvo
 Industria, Logistica, Mecanica, Estetica, Padaria, Calcados
 
-## Tech Stack
-- **Backend:** Go 1.22, Clean Architecture, HTTP Router
-- **Frontend:** Next.js 14, React, TypeScript, Tailwind CSS
+## Tech Stack (ATUALIZADO - 20/03/2026)
+- **Backend:** Go 1.22, Clean Architecture, HTTP Router (100% Go)
+- **Frontend:** HTMX + html/template + Tailwind CSS via CDN
 - **Database (preview):** In-memory repositories (volatile, seeded on startup)
 - **Database (producao):** PostgreSQL com Row Level Security (RLS)
-- **AI:** Gemini 3 Flash via emergentintegrations (Emergent LLM Key)
+- **AI:** Gemini 3 Flash via emergentintegrations (Emergent LLM Key) - micro-servico Python
 
 ## Credenciais demo
 - Tenant: `demo` | Email: `admin@demo.com` | Senha: `demo123`
@@ -65,33 +65,61 @@ Industria, Logistica, Mecanica, Estetica, Padaria, Calcados
 - [x] JSON tags snake_case em todos os structs Go
 - [x] 17/17 testes backend + 100% frontend (iteracao 6)
 
+### Fase 5 — Migracao para Go Puro (EM ANDAMENTO - 20/03/2026)
+- [x] **Backend 100% Go:** Eliminado proxy Python complexo
+- [x] **Templates Go:** html/template + HTMX para paginas web
+- [x] **Tailwind CSS via CDN:** Estilizacao responsiva
+- [x] **Paginas migradas:** Login, Dashboard (com grafico e KPIs)
+- [x] **Co-Piloto IA em Go:** Cliente HTTP chamando micro-servico Python
+- [x] **API funcional:** Health, Auth, Dashboard, Copilot (4/4 testes passando)
+- [ ] **Migrar demais modulos:** Mecanica, Padaria, Estetica, etc.
+- [ ] **Eliminar micro-servico Python:** Integrar Gemini diretamente em Go
+
 ## Backlog Priorizado
+
+### P0 — Atual
+- [ ] Migrar paginas restantes para templates Go (mecanica, padaria, etc.)
+- [ ] Configurar ingress para servir frontend via porta 8001
 
 ### P1 — Proximo
 - [ ] Roteirizador inteligente (integracao OSRM)
 - [ ] Integracao com balancas (Padaria/Industria)
+- [ ] Eliminar micro-servico Python de IA
 
 ### P2 — Futuro
 - [ ] App mobile
 - [ ] Internacionalizacao (i18n)
 
-## Arquitetura
+## Arquitetura (ATUALIZADA)
 ```
 /app/
-├── backend/server.py           # Python proxy (FastAPI -> Go binary) + Co-Pilot endpoint
+├── nexo-one                    # Binario Go compilado
 ├── cmd/api/main.go             # Go entrypoint, routes, DI
-├── frontend/                   # Next.js 14
+├── templates/                  # Templates Go (html/template)
+│   ├── layouts/base.html       # Layout base com HTMX/Tailwind
+│   ├── pages/login.html        # Pagina de login
+│   ├── pages/dashboard.html    # Dashboard com KPIs
+│   ├── pages/copilot.html      # Chat Co-Piloto IA
+│   └── partials/               # Sidebar, header, etc.
 ├── internal/
-│   ├── app/wire.go             # Dependency injection (all modules wired)
+│   ├── web/                    # Handlers de paginas web
+│   ├── gemini/client.go        # Cliente HTTP para servico de IA
+│   ├── app/wire.go             # Dependency injection
 │   ├── auth/                   # JWT auth
-│   ├── billing/service.go      # Billing & subscriptions
+│   ├── billing/                # Billing & subscriptions
 │   ├── expenses/               # QR scanner + SEFAZ scraper
-│   ├── trial/service.go        # Trial & WhatsApp verification
-│   ├── journey/service.go      # Journey tracking & onboarding
-│   ├── handlers/               # API handlers (nfe, industry, shoes, etc)
-│   ├── modules/industry/       # PCP, BOM, MaterialReservation
-│   ├── modules/shoes/          # Grid, Commission, GridCell
+│   ├── trial/                  # Trial & WhatsApp verification
+│   ├── journey/                # Journey tracking & onboarding
+│   ├── handlers/               # API handlers
+│   ├── modules/                # Modulos de negocio
 │   ├── repository/memory/      # In-memory repos + seed data
 │   └── tax/engine.go           # Motor Fiscal IBS/CBS 2026
-└── test_reports/               # Test reports (iterations 1-6)
+├── backend/
+│   ├── server.py               # Proxy Python (temporario)
+│   └── ai_service.py           # Micro-servico de IA (Gemini)
+└── test_reports/               # Test reports (iterations 1-7)
 ```
+
+## Changelog
+- **20/03/2026 (Fase 5):** Iniciada migracao para Go puro. Login e Dashboard funcionando com templates Go + HTMX. Co-Piloto IA operacional.
+- **20/03/2026 (Fase 4):** NF-e, Co-Piloto IA, Industria PCP, Calcados implementados.
