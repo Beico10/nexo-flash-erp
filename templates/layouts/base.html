@@ -1,0 +1,200 @@
+<!DOCTYPE html>
+<html lang="pt-BR" class="h-full">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>{{.Title}} | Nexo One ERP</title>
+    
+    <!-- Tailwind CSS via CDN -->
+    <script src="https://cdn.tailwindcss.com"></script>
+    <script>
+        tailwind.config = {
+            theme: {
+                extend: {
+                    colors: {
+                        nexo: {
+                            50: '#f0f7ff',
+                            100: '#e0efff',
+                            200: '#b9dfff',
+                            300: '#7cc4ff',
+                            400: '#36a5ff',
+                            500: '#0c87eb',
+                            600: '#006bc9',
+                            700: '#0055a3',
+                            800: '#044986',
+                            900: '#0a3d6f',
+                        }
+                    },
+                    fontFamily: {
+                        sans: ['Inter', 'system-ui', 'sans-serif'],
+                    }
+                }
+            }
+        }
+    </script>
+    
+    <!-- HTMX -->
+    <script src="https://unpkg.com/htmx.org@1.9.10"></script>
+    
+    <!-- Inter Font -->
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&display=swap" rel="stylesheet">
+    
+    <!-- Lucide Icons -->
+    <script src="https://unpkg.com/lucide@latest/dist/umd/lucide.min.js"></script>
+    
+    <style>
+        [x-cloak] { display: none !important; }
+        .htmx-request .htmx-indicator { display: inline-flex; }
+        .htmx-indicator { display: none; }
+        
+        /* Custom scrollbar */
+        ::-webkit-scrollbar { width: 6px; height: 6px; }
+        ::-webkit-scrollbar-track { background: #f1f5f9; }
+        ::-webkit-scrollbar-thumb { background: #cbd5e1; border-radius: 3px; }
+        ::-webkit-scrollbar-thumb:hover { background: #94a3b8; }
+        
+        /* Animations */
+        @keyframes fade-in {
+            from { opacity: 0; transform: translateY(10px); }
+            to { opacity: 1; transform: translateY(0); }
+        }
+        .animate-fade-in { animation: fade-in 0.3s ease-out; }
+        
+        /* Card style */
+        .card {
+            background: white;
+            border-radius: 1rem;
+            box-shadow: 0 1px 3px rgba(0,0,0,0.05), 0 1px 2px rgba(0,0,0,0.1);
+            border: 1px solid #f1f5f9;
+        }
+        
+        /* Button styles */
+        .btn-primary {
+            background: linear-gradient(135deg, #0c87eb 0%, #006bc9 100%);
+            color: white;
+            padding: 0.625rem 1.25rem;
+            border-radius: 0.75rem;
+            font-weight: 600;
+            font-size: 0.875rem;
+            transition: all 0.2s;
+            display: inline-flex;
+            align-items: center;
+            gap: 0.5rem;
+        }
+        .btn-primary:hover {
+            transform: translateY(-1px);
+            box-shadow: 0 4px 12px rgba(12, 135, 235, 0.35);
+        }
+        
+        .btn-secondary {
+            background: #f8fafc;
+            color: #475569;
+            padding: 0.625rem 1.25rem;
+            border-radius: 0.75rem;
+            font-weight: 500;
+            font-size: 0.875rem;
+            border: 1px solid #e2e8f0;
+            transition: all 0.2s;
+        }
+        .btn-secondary:hover {
+            background: #f1f5f9;
+            border-color: #cbd5e1;
+        }
+        
+        /* Input styles */
+        .input-field {
+            width: 100%;
+            padding: 0.75rem 1rem;
+            border: 1px solid #e2e8f0;
+            border-radius: 0.75rem;
+            font-size: 0.875rem;
+            transition: all 0.2s;
+            background: #f8fafc;
+        }
+        .input-field:focus {
+            outline: none;
+            border-color: #0c87eb;
+            box-shadow: 0 0 0 3px rgba(12, 135, 235, 0.1);
+            background: white;
+        }
+        
+        /* Sidebar styles */
+        .sidebar-link {
+            display: flex;
+            align-items: center;
+            gap: 0.75rem;
+            padding: 0.75rem 1rem;
+            border-radius: 0.75rem;
+            color: #64748b;
+            font-size: 0.875rem;
+            font-weight: 500;
+            transition: all 0.2s;
+        }
+        .sidebar-link:hover {
+            background: #f1f5f9;
+            color: #334155;
+        }
+        .sidebar-link.active {
+            background: linear-gradient(135deg, #0c87eb 0%, #006bc9 100%);
+            color: white;
+        }
+    </style>
+</head>
+<body class="h-full bg-slate-50 font-sans antialiased">
+    {{if .ShowLayout}}
+    <div class="flex h-full">
+        <!-- Sidebar -->
+        {{template "partials/sidebar.html" .}}
+        
+        <!-- Main Content -->
+        <div class="flex-1 flex flex-col overflow-hidden">
+            <!-- Header -->
+            {{template "partials/header.html" .}}
+            
+            <!-- Page Content -->
+            <main class="flex-1 overflow-auto p-6">
+                {{template "content" .}}
+            </main>
+        </div>
+    </div>
+    {{else}}
+    {{template "content" .}}
+    {{end}}
+    
+    <!-- Toast Container -->
+    <div id="toast-container" class="fixed bottom-4 right-4 z-50 space-y-2"></div>
+    
+    <script>
+        // Initialize Lucide icons
+        lucide.createIcons();
+        
+        // HTMX events
+        document.body.addEventListener('htmx:afterSwap', function() {
+            lucide.createIcons();
+        });
+        
+        // Toast function
+        function showToast(message, type = 'success') {
+            const container = document.getElementById('toast-container');
+            const toast = document.createElement('div');
+            const colors = {
+                success: 'bg-emerald-500',
+                error: 'bg-red-500',
+                warning: 'bg-amber-500',
+                info: 'bg-nexo-500'
+            };
+            toast.className = `${colors[type]} text-white px-4 py-3 rounded-xl shadow-lg animate-fade-in flex items-center gap-2`;
+            toast.innerHTML = `<span>${message}</span>`;
+            container.appendChild(toast);
+            setTimeout(() => toast.remove(), 4000);
+        }
+        
+        // Handle HTMX errors
+        document.body.addEventListener('htmx:responseError', function(evt) {
+            showToast('Erro ao processar requisicao', 'error');
+        });
+    </script>
+</body>
+</html>

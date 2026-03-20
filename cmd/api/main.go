@@ -23,7 +23,7 @@ import (
 	_ "github.com/nexoone/nexo-one/internal/modules/shoes"
 )
 
-var version = "1.0.0"
+var version = "2.0.0-go"
 
 func main() {
 	logLevel := slog.LevelInfo
@@ -33,10 +33,10 @@ func main() {
 	logger := slog.New(slog.NewJSONHandler(os.Stdout, &slog.HandlerOptions{Level: logLevel}))
 	slog.SetDefault(logger)
 
-	port := getEnv("PORT", "8002")
+	port := getEnv("PORT", "8001")
 	jwtSecret := getEnv("JWT_SECRET", "nexo-one-dev-secret-2026")
 
-	slog.Info("Nexo One ERP iniciando", "version", version, "port", port)
+	slog.Info("Nexo One ERP iniciando (Go puro)", "version", version, "port", port)
 
 	container, err := app.Wire(app.Config{
 		JWTSecret: jwtSecret,
@@ -83,12 +83,43 @@ func main() {
 func buildRouter(c *app.Container) http.Handler {
 	mux := http.NewServeMux()
 	authMW := middleware.AuthMiddleware(c.AuthService)
+	webAuthMW := middleware.WebAuthMiddleware(c.AuthService)
+
+	// ═══════════════════════════════════════════════════════════════════
+	// PAGINAS WEB (Templates Go + HTMX)
+	// ═══════════════════════════════════════════════════════════════════
+	
+	// Páginas públicas (sem auth)
+	mux.HandleFunc("GET /{$}", c.PageHandler.HandleRoot) // {$} = match apenas raiz exata
+	mux.HandleFunc("GET /login", c.PageHandler.HandleLogin)
+	mux.HandleFunc("GET /pricing", c.PageHandler.HandlePricing)
+	mux.HandleFunc("GET /simulador-fiscal", c.PageHandler.HandleSimulador)
+	
+	// Páginas protegidas (com auth via cookie/header)
+	protectedPagesMux := http.NewServeMux()
+	c.PageHandler.RegisterProtectedRoutes(protectedPagesMux)
+	mux.Handle("GET /dashboard", webAuthMW(http.HandlerFunc(c.PageHandler.HandleDashboard)))
+	mux.Handle("GET /mechanic", webAuthMW(http.HandlerFunc(c.PageHandler.HandleMechanic)))
+	mux.Handle("GET /bakery", webAuthMW(http.HandlerFunc(c.PageHandler.HandleBakery)))
+	mux.Handle("GET /aesthetics", webAuthMW(http.HandlerFunc(c.PageHandler.HandleAesthetics)))
+	mux.Handle("GET /logistics", webAuthMW(http.HandlerFunc(c.PageHandler.HandleLogistics)))
+	mux.Handle("GET /industry", webAuthMW(http.HandlerFunc(c.PageHandler.HandleIndustry)))
+	mux.Handle("GET /shoes", webAuthMW(http.HandlerFunc(c.PageHandler.HandleShoes)))
+	mux.Handle("GET /nfe", webAuthMW(http.HandlerFunc(c.PageHandler.HandleNFE)))
+	mux.Handle("GET /expenses", webAuthMW(http.HandlerFunc(c.PageHandler.HandleExpenses)))
+	mux.Handle("GET /copilot", webAuthMW(http.HandlerFunc(c.PageHandler.HandleCopilot)))
+	mux.Handle("GET /ai-approvals", webAuthMW(http.HandlerFunc(c.PageHandler.HandleAIApprovals)))
+	mux.Handle("GET /settings", webAuthMW(http.HandlerFunc(c.PageHandler.HandleSettings)))
+
+	// ═══════════════════════════════════════════════════════════════════
+	// API REST
+	// ═══════════════════════════════════════════════════════════════════
 
 	// Health check (publico)
 	mux.HandleFunc("GET /api/health", func(w http.ResponseWriter, r *http.Request) {
 		w.Header().Set("Content-Type", "application/json")
 		w.WriteHeader(http.StatusOK)
-		w.Write([]byte(`{"status":"ok","version":"` + version + `","engine":"fiscal_ibs_cbs_2026"}`))
+		w.Write([]byte(`{"status":"ok","version":"` + version + `","engine":"fiscal_ibs_cbs_2026","stack":"go-puro"}`))
 	})
 
 	// Auth (publico)
@@ -120,6 +151,7 @@ func buildRouter(c *app.Container) http.Handler {
 	c.IndustryHandler.RegisterRoutes(protectedMux)
 	c.ShoesHandler.RegisterRoutes(protectedMux)
 	c.NFEHandler.RegisterRoutes(protectedMux)
+	c.CopilotHandler.RegisterRoutes(protectedMux)
 
 	// Billing autenticado
 	protectedMux.HandleFunc("GET /api/v1/billing/subscription", c.BillingHandler.GetSubscription)
@@ -156,7 +188,8 @@ func buildRouter(c *app.Container) http.Handler {
 	protectedMux.HandleFunc("GET /api/v1/expenses/tax-report", c.ExpenseHandler.GetTaxReport)
 
 	// Monta as rotas protegidas no mux principal com middleware
-	mux.Handle("/api/v1/", authMW(protectedMux))
+	// Usar handler que aceita qualquer método
+	mux.Handle("/api/v1/", authMW(http.StripPrefix("", protectedMux)))
 
 	return corsMiddleware(mux)
 }

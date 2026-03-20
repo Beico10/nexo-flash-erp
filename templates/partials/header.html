@@ -1,0 +1,33 @@
+{{define "partials/header.html"}}
+<header class="h-16 bg-white border-b border-slate-200 flex items-center justify-between px-6">
+    <div class="flex items-center gap-4">
+        <h2 class="text-lg font-semibold text-slate-800">{{.PageTitle}}</h2>
+        {{if .PageSubtitle}}
+        <span class="text-sm text-slate-400">{{.PageSubtitle}}</span>
+        {{end}}
+    </div>
+    
+    <div class="flex items-center gap-3">
+        <!-- Search -->
+        <div class="relative hidden md:block">
+            <i data-lucide="search" class="w-4 h-4 text-slate-400 absolute left-3 top-1/2 -translate-y-1/2"></i>
+            <input type="text" placeholder="Buscar..." 
+                   class="pl-9 pr-4 py-2 bg-slate-50 border border-slate-200 rounded-xl text-sm w-64 focus:outline-none focus:border-nexo-400 focus:bg-white transition-all"
+                   data-testid="search-input">
+        </div>
+        
+        <!-- Notifications -->
+        <button class="relative p-2 hover:bg-slate-100 rounded-xl transition-colors" data-testid="notifications-btn">
+            <i data-lucide="bell" class="w-5 h-5 text-slate-500"></i>
+            {{if gt .NotificationCount 0}}
+            <span class="absolute top-1 right-1 w-2 h-2 bg-red-500 rounded-full"></span>
+            {{end}}
+        </button>
+        
+        <!-- Settings -->
+        <a href="/settings" class="p-2 hover:bg-slate-100 rounded-xl transition-colors" data-testid="settings-btn">
+            <i data-lucide="settings" class="w-5 h-5 text-slate-500"></i>
+        </a>
+    </div>
+</header>
+{{end}}

@@ -1,0 +1,228 @@
+{{define "content"}}
+<div class="max-w-4xl mx-auto animate-fade-in" data-testid="copilot-page">
+    <!-- Header -->
+    <div class="text-center mb-8">
+        <div class="w-16 h-16 mx-auto rounded-2xl bg-gradient-to-br from-violet-500 to-purple-600 flex items-center justify-center shadow-xl shadow-violet-500/30 mb-4">
+            <i data-lucide="brain" class="w-8 h-8 text-white"></i>
+        </div>
+        <h1 class="text-2xl font-bold text-slate-800 mb-1">Co-Piloto IA</h1>
+        <p class="text-slate-500 text-sm">Assistente inteligente para seu negocio</p>
+    </div>
+    
+    <!-- Chat Container -->
+    <div class="card">
+        <!-- Messages -->
+        <div id="chat-messages" class="h-96 overflow-y-auto p-5 space-y-4" data-testid="chat-messages">
+            <!-- Welcome Message -->
+            <div class="flex gap-3">
+                <div class="w-8 h-8 rounded-lg bg-violet-100 flex items-center justify-center flex-shrink-0">
+                    <i data-lucide="brain" class="w-4 h-4 text-violet-600"></i>
+                </div>
+                <div class="flex-1 bg-slate-50 rounded-2xl rounded-tl-none p-4">
+                    <p class="text-sm text-slate-700">Ola! Sou o Co-Piloto do Nexo One. Posso ajudar com:</p>
+                    <ul class="text-sm text-slate-600 mt-2 space-y-1">
+                        <li class="flex items-center gap-2"><i data-lucide="check" class="w-3 h-3 text-emerald-500"></i> Analise de faturamento e impostos</li>
+                        <li class="flex items-center gap-2"><i data-lucide="check" class="w-3 h-3 text-emerald-500"></i> Sugestoes de gestao para seu nicho</li>
+                        <li class="flex items-center gap-2"><i data-lucide="check" class="w-3 h-3 text-emerald-500"></i> Duvidas sobre IBS/CBS 2026</li>
+                        <li class="flex items-center gap-2"><i data-lucide="check" class="w-3 h-3 text-emerald-500"></i> Otimizacao de processos</li>
+                    </ul>
+                </div>
+            </div>
+        </div>
+        
+        <!-- Quick Suggestions -->
+        <div class="px-5 py-3 border-t border-slate-100">
+            <p class="text-xs text-slate-400 mb-2">Sugestoes rapidas:</p>
+            <div class="flex flex-wrap gap-2">
+                <button onclick="sendQuickMessage('Como posso reduzir meus impostos com a reforma tributaria?')" 
+                        class="text-xs bg-slate-100 hover:bg-slate-200 text-slate-600 px-3 py-1.5 rounded-lg transition-colors">
+                    Reduzir impostos
+                </button>
+                <button onclick="sendQuickMessage('Analise meu faturamento da semana')"
+                        class="text-xs bg-slate-100 hover:bg-slate-200 text-slate-600 px-3 py-1.5 rounded-lg transition-colors">
+                    Analise faturamento
+                </button>
+                <button onclick="sendQuickMessage('Quais produtos estao com estoque baixo?')"
+                        class="text-xs bg-slate-100 hover:bg-slate-200 text-slate-600 px-3 py-1.5 rounded-lg transition-colors">
+                    Estoque baixo
+                </button>
+                <button onclick="sendQuickMessage('Sugestoes para aumentar vendas')"
+                        class="text-xs bg-slate-100 hover:bg-slate-200 text-slate-600 px-3 py-1.5 rounded-lg transition-colors">
+                    Aumentar vendas
+                </button>
+            </div>
+        </div>
+        
+        <!-- Input -->
+        <div class="p-4 border-t border-slate-200">
+            <form id="chat-form" class="flex gap-3" data-testid="chat-form">
+                <input type="text" id="chat-input" placeholder="Digite sua pergunta..." 
+                       class="input-field flex-1" data-testid="chat-input" autocomplete="off">
+                <button type="submit" class="btn-primary" data-testid="chat-submit">
+                    <i data-lucide="send" class="w-4 h-4"></i>
+                    <span class="hidden sm:inline">Enviar</span>
+                </button>
+            </form>
+        </div>
+    </div>
+    
+    <!-- Clear Button -->
+    <div class="text-center mt-4">
+        <button onclick="clearChat()" class="text-xs text-slate-400 hover:text-slate-600 transition-colors">
+            <i data-lucide="trash-2" class="w-3 h-3 inline mr-1"></i>
+            Limpar conversa
+        </button>
+    </div>
+</div>
+
+<script>
+    const messagesContainer = document.getElementById('chat-messages');
+    const chatForm = document.getElementById('chat-form');
+    const chatInput = document.getElementById('chat-input');
+    const sessionId = 'copilot-' + Date.now();
+    
+    function getToken() {
+        return sessionStorage.getItem('access_token') || '';
+    }
+    
+    function addMessage(content, isUser) {
+        const div = document.createElement('div');
+        div.className = 'flex gap-3 animate-fade-in';
+        
+        if (isUser) {
+            div.innerHTML = `
+                <div class="flex-1 text-right">
+                    <div class="inline-block bg-nexo-500 text-white rounded-2xl rounded-tr-none p-4 max-w-[80%]">
+                        <p class="text-sm">${escapeHtml(content)}</p>
+                    </div>
+                </div>
+                <div class="w-8 h-8 rounded-lg bg-nexo-100 flex items-center justify-center flex-shrink-0">
+                    <i data-lucide="user" class="w-4 h-4 text-nexo-600"></i>
+                </div>
+            `;
+        } else {
+            div.innerHTML = `
+                <div class="w-8 h-8 rounded-lg bg-violet-100 flex items-center justify-center flex-shrink-0">
+                    <i data-lucide="brain" class="w-4 h-4 text-violet-600"></i>
+                </div>
+                <div class="flex-1 bg-slate-50 rounded-2xl rounded-tl-none p-4 max-w-[80%]">
+                    <p class="text-sm text-slate-700 whitespace-pre-wrap">${escapeHtml(content)}</p>
+                </div>
+            `;
+        }
+        
+        messagesContainer.appendChild(div);
+        messagesContainer.scrollTop = messagesContainer.scrollHeight;
+        lucide.createIcons();
+    }
+    
+    function addLoadingMessage() {
+        const div = document.createElement('div');
+        div.id = 'loading-message';
+        div.className = 'flex gap-3 animate-fade-in';
+        div.innerHTML = `
+            <div class="w-8 h-8 rounded-lg bg-violet-100 flex items-center justify-center flex-shrink-0">
+                <i data-lucide="brain" class="w-4 h-4 text-violet-600"></i>
+            </div>
+            <div class="flex-1 bg-slate-50 rounded-2xl rounded-tl-none p-4">
+                <div class="flex items-center gap-2">
+                    <i data-lucide="loader-2" class="w-4 h-4 text-violet-500 animate-spin"></i>
+                    <span class="text-sm text-slate-500">Pensando...</span>
+                </div>
+            </div>
+        `;
+        messagesContainer.appendChild(div);
+        messagesContainer.scrollTop = messagesContainer.scrollHeight;
+        lucide.createIcons();
+    }
+    
+    function removeLoadingMessage() {
+        const loading = document.getElementById('loading-message');
+        if (loading) loading.remove();
+    }
+    
+    function escapeHtml(text) {
+        const div = document.createElement('div');
+        div.textContent = text;
+        return div.innerHTML;
+    }
+    
+    async function sendMessage(message) {
+        if (!message.trim()) return;
+        
+        addMessage(message, true);
+        chatInput.value = '';
+        addLoadingMessage();
+        
+        try {
+            const resp = await fetch('/api/v1/copilot/suggest', {
+                method: 'POST',
+                headers: {
+                    'Content-Type': 'application/json',
+                    'Authorization': 'Bearer ' + getToken()
+                },
+                body: JSON.stringify({
+                    question: message,
+                    session_id: sessionId
+                })
+            });
+            
+            removeLoadingMessage();
+            
+            if (resp.status === 401) {
+                window.location.href = '/login';
+                return;
+            }
+            
+            const data = await resp.json();
+            
+            if (data.error) {
+                addMessage('Erro: ' + data.error, false);
+            } else {
+                addMessage(data.suggestion, false);
+            }
+        } catch (err) {
+            removeLoadingMessage();
+            addMessage('Erro de conexao. Tente novamente.', false);
+        }
+    }
+    
+    function sendQuickMessage(message) {
+        sendMessage(message);
+    }
+    
+    async function clearChat() {
+        try {
+            await fetch('/api/v1/copilot/clear', {
+                method: 'POST',
+                headers: {
+                    'Content-Type': 'application/json',
+                    'Authorization': 'Bearer ' + getToken()
+                },
+                body: JSON.stringify({ session_id: sessionId })
+            });
+        } catch (err) {}
+        
+        // Limpa visualmente
+        messagesContainer.innerHTML = `
+            <div class="flex gap-3">
+                <div class="w-8 h-8 rounded-lg bg-violet-100 flex items-center justify-center flex-shrink-0">
+                    <i data-lucide="brain" class="w-4 h-4 text-violet-600"></i>
+                </div>
+                <div class="flex-1 bg-slate-50 rounded-2xl rounded-tl-none p-4">
+                    <p class="text-sm text-slate-700">Conversa limpa! Como posso ajudar?</p>
+                </div>
+            </div>
+        `;
+        lucide.createIcons();
+    }
+    
+    chatForm.addEventListener('submit', function(e) {
+        e.preventDefault();
+        sendMessage(chatInput.value);
+    });
+    
+    // Focus no input
+    chatInput.focus();
+</script>
+{{end}}

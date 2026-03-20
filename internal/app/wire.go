@@ -12,6 +12,7 @@ import (
 	"github.com/nexoone/nexo-one/internal/baas"
 	"github.com/nexoone/nexo-one/internal/billing"
 	"github.com/nexoone/nexo-one/internal/expenses"
+	"github.com/nexoone/nexo-one/internal/gemini"
 	"github.com/nexoone/nexo-one/internal/handlers"
 	"github.com/nexoone/nexo-one/internal/journey"
 	"github.com/nexoone/nexo-one/internal/modules/aesthetics"
@@ -23,6 +24,7 @@ import (
 	"github.com/nexoone/nexo-one/internal/repository/memory"
 	"github.com/nexoone/nexo-one/internal/tax"
 	"github.com/nexoone/nexo-one/internal/trial"
+	"github.com/nexoone/nexo-one/internal/web"
 )
 
 type Config struct {
@@ -50,6 +52,10 @@ type Container struct {
 	ShoesHandler       *handlers.ShoesHandler
 	NFEHandler         *handlers.NFEHandler
 	ExpenseHandler     *handlers.ExpenseHandler
+	CopilotHandler     *handlers.CopilotHandler
+	PageHandler        *web.PageHandler
+	TemplateRenderer   *web.TemplateRenderer
+	DashboardProvider  handlers.DashboardDataProvider
 	AuthService        *auth.Service
 	TaxEngine          *tax.Engine
 	tenantRepo         *memory.TenantRepo
@@ -98,6 +104,15 @@ func Wire(cfg Config) (*Container, error) {
 	expenseSvc := expenses.NewService(expenseRepo, sefazScraper)
 	pcpSvc := industry.NewPCPService(&memory.BOMAdapter{R: industryRepo}, industryRepo, industryRepo)
 	gridSvc := shoes.NewGridService(shoesRepo)
+	
+	// Cliente Gemini (Co-Piloto IA)
+	geminiClient := gemini.NewClient("")
+	
+	// Template Renderer
+	templateRenderer, err := web.NewTemplateRenderer("/app/templates")
+	if err != nil {
+		return nil, fmt.Errorf("erro ao inicializar templates: %w", err)
+	}
 
 	// Seed demo data
 	memory.SeedAllDemoData(mechanicRepo, bakeryRepo, aestheticsRepo, aiRepo)
@@ -124,6 +139,10 @@ func Wire(cfg Config) (*Container, error) {
 		IndustryHandler:    handlers.NewIndustryHandler(pcpSvc, industryRepo),
 		ShoesHandler:       handlers.NewShoesHandler(gridSvc, shoesRepo),
 		NFEHandler:         handlers.NewNFEHandler(),
+		CopilotHandler:     handlers.NewCopilotHandler(geminiClient),
+		PageHandler:        web.NewPageHandler(templateRenderer, dashboardProvider),
+		TemplateRenderer:   templateRenderer,
+		DashboardProvider:  dashboardProvider,
 		AuthService:        authSvc,
 		TaxEngine:          taxEngine,
 		tenantRepo:         tenantRepo,

@@ -1,0 +1,105 @@
+{{define "partials/sidebar.html"}}
+<aside class="w-64 bg-white border-r border-slate-200 flex flex-col">
+    <!-- Logo -->
+    <div class="p-5 border-b border-slate-100">
+        <a href="/dashboard" class="flex items-center gap-3">
+            <div class="w-10 h-10 rounded-xl bg-gradient-to-br from-nexo-500 to-nexo-700 flex items-center justify-center">
+                <span class="text-white font-bold text-lg">N</span>
+            </div>
+            <div>
+                <h1 class="font-bold text-slate-800 text-lg leading-none">Nexo One</h1>
+                <span class="text-[10px] text-slate-400 font-medium tracking-wider">ERP CAMALEAO</span>
+            </div>
+        </a>
+    </div>
+    
+    <!-- Navigation -->
+    <nav class="flex-1 p-4 space-y-1 overflow-y-auto">
+        <span class="text-[10px] font-semibold text-slate-400 uppercase tracking-wider px-3 mb-2 block">Principal</span>
+        
+        <a href="/dashboard" class="sidebar-link {{if eq .ActivePage "dashboard"}}active{{end}}" data-testid="nav-dashboard">
+            <i data-lucide="layout-dashboard" class="w-4 h-4"></i>
+            Dashboard
+        </a>
+        
+        <a href="/simulador-fiscal" class="sidebar-link {{if eq .ActivePage "simulador"}}active{{end}}" data-testid="nav-simulador">
+            <i data-lucide="calculator" class="w-4 h-4"></i>
+            Simulador Fiscal
+        </a>
+        
+        <span class="text-[10px] font-semibold text-slate-400 uppercase tracking-wider px-3 mt-4 mb-2 block">Modulos</span>
+        
+        <a href="/mechanic" class="sidebar-link {{if eq .ActivePage "mechanic"}}active{{end}}" data-testid="nav-mechanic">
+            <i data-lucide="wrench" class="w-4 h-4"></i>
+            Mecanica
+        </a>
+        
+        <a href="/bakery" class="sidebar-link {{if eq .ActivePage "bakery"}}active{{end}}" data-testid="nav-bakery">
+            <i data-lucide="wheat" class="w-4 h-4"></i>
+            Padaria
+        </a>
+        
+        <a href="/aesthetics" class="sidebar-link {{if eq .ActivePage "aesthetics"}}active{{end}}" data-testid="nav-aesthetics">
+            <i data-lucide="scissors" class="w-4 h-4"></i>
+            Estetica
+        </a>
+        
+        <a href="/logistics" class="sidebar-link {{if eq .ActivePage "logistics"}}active{{end}}" data-testid="nav-logistics">
+            <i data-lucide="truck" class="w-4 h-4"></i>
+            Logistica
+        </a>
+        
+        <a href="/industry" class="sidebar-link {{if eq .ActivePage "industry"}}active{{end}}" data-testid="nav-industry">
+            <i data-lucide="factory" class="w-4 h-4"></i>
+            Industria PCP
+        </a>
+        
+        <a href="/shoes" class="sidebar-link {{if eq .ActivePage "shoes"}}active{{end}}" data-testid="nav-shoes">
+            <i data-lucide="footprints" class="w-4 h-4"></i>
+            Calcados
+        </a>
+        
+        <span class="text-[10px] font-semibold text-slate-400 uppercase tracking-wider px-3 mt-4 mb-2 block">Fiscal</span>
+        
+        <a href="/nfe" class="sidebar-link {{if eq .ActivePage "nfe"}}active{{end}}" data-testid="nav-nfe">
+            <i data-lucide="file-text" class="w-4 h-4"></i>
+            Emissao NF-e
+        </a>
+        
+        <a href="/expenses" class="sidebar-link {{if eq .ActivePage "expenses"}}active{{end}}" data-testid="nav-expenses">
+            <i data-lucide="receipt" class="w-4 h-4"></i>
+            Despesas
+        </a>
+        
+        <span class="text-[10px] font-semibold text-slate-400 uppercase tracking-wider px-3 mt-4 mb-2 block">IA</span>
+        
+        <a href="/copilot" class="sidebar-link {{if eq .ActivePage "copilot"}}active{{end}}" data-testid="nav-copilot">
+            <i data-lucide="brain" class="w-4 h-4"></i>
+            Co-Piloto IA
+        </a>
+        
+        <a href="/ai-approvals" class="sidebar-link {{if eq .ActivePage "ai-approvals"}}active{{end}}" data-testid="nav-approvals">
+            <i data-lucide="check-circle" class="w-4 h-4"></i>
+            Aprovacoes IA
+        </a>
+    </nav>
+    
+    <!-- User Info -->
+    <div class="p-4 border-t border-slate-100">
+        <div class="flex items-center gap-3 p-2 rounded-xl hover:bg-slate-50 cursor-pointer" data-testid="user-menu">
+            <div class="w-9 h-9 rounded-full bg-gradient-to-br from-nexo-400 to-nexo-600 flex items-center justify-center text-white font-semibold text-sm">
+                {{.UserInitials}}
+            </div>
+            <div class="flex-1 min-w-0">
+                <p class="text-sm font-medium text-slate-700 truncate">{{.UserName}}</p>
+                <p class="text-xs text-slate-400 truncate">{{.TenantName}}</p>
+            </div>
+            <button hx-post="/api/auth/logout" hx-swap="none" 
+                    onclick="sessionStorage.clear(); window.location.href='/login';"
+                    class="p-1.5 hover:bg-slate-200 rounded-lg transition-colors" data-testid="logout-btn">
+                <i data-lucide="log-out" class="w-4 h-4 text-slate-400"></i>
+            </button>
+        </div>
+    </div>
+</aside>
+{{end}}

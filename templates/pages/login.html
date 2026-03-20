@@ -1,0 +1,143 @@
+{{define "content"}}
+<div class="min-h-screen flex items-center justify-center bg-gradient-to-br from-slate-900 via-slate-800 to-nexo-900 p-4">
+    <div class="w-full max-w-md animate-fade-in">
+        <!-- Logo -->
+        <div class="text-center mb-8">
+            <div class="w-16 h-16 mx-auto rounded-2xl bg-gradient-to-br from-nexo-500 to-nexo-700 flex items-center justify-center shadow-xl shadow-nexo-500/30 mb-4">
+                <span class="text-white font-bold text-2xl">N</span>
+            </div>
+            <h1 class="text-2xl font-bold text-white mb-1">Nexo One ERP</h1>
+            <p class="text-slate-400 text-sm">Sistema adaptativo para Reforma Tributaria 2026</p>
+        </div>
+        
+        <!-- Login Card -->
+        <div class="card p-8">
+            <h2 class="text-xl font-semibold text-slate-800 mb-6">Entrar na conta</h2>
+            
+            <form id="login-form" class="space-y-5" data-testid="login-form">
+                <!-- Tenant -->
+                <div>
+                    <label class="block text-sm font-medium text-slate-700 mb-1.5">Empresa</label>
+                    <input type="text" name="tenant_slug" id="tenant_slug" value="demo"
+                           class="input-field" placeholder="slug-da-empresa" required
+                           data-testid="tenant-input">
+                </div>
+                
+                <!-- Email -->
+                <div>
+                    <label class="block text-sm font-medium text-slate-700 mb-1.5">Email</label>
+                    <input type="email" name="email" id="email" value="admin@demo.com"
+                           class="input-field" placeholder="seu@email.com" required
+                           data-testid="email-input">
+                </div>
+                
+                <!-- Password -->
+                <div>
+                    <label class="block text-sm font-medium text-slate-700 mb-1.5">Senha</label>
+                    <div class="relative">
+                        <input type="password" name="password" id="password" value="demo123"
+                               class="input-field pr-10" placeholder="********" required
+                               data-testid="password-input">
+                        <button type="button" onclick="togglePassword()" class="absolute right-3 top-1/2 -translate-y-1/2 text-slate-400 hover:text-slate-600">
+                            <i data-lucide="eye" class="w-4 h-4" id="eye-icon"></i>
+                        </button>
+                    </div>
+                </div>
+                
+                <!-- Remember & Forgot -->
+                <div class="flex items-center justify-between text-sm">
+                    <label class="flex items-center gap-2 cursor-pointer">
+                        <input type="checkbox" class="w-4 h-4 rounded border-slate-300 text-nexo-600 focus:ring-nexo-500">
+                        <span class="text-slate-600">Lembrar-me</span>
+                    </label>
+                    <a href="#" class="text-nexo-600 hover:text-nexo-700 font-medium">Esqueci a senha</a>
+                </div>
+                
+                <!-- Submit -->
+                <button type="submit" class="btn-primary w-full justify-center" data-testid="login-submit">
+                    <span id="login-text">Entrar</span>
+                    <i data-lucide="loader-2" class="w-4 h-4 animate-spin hidden" id="login-spinner"></i>
+                </button>
+                
+                <!-- Error Message -->
+                <div id="login-error" class="hidden p-3 bg-red-50 border border-red-200 rounded-xl text-red-600 text-sm" data-testid="login-error"></div>
+            </form>
+            
+            <!-- Demo Credentials -->
+            <div class="mt-6 pt-6 border-t border-slate-100">
+                <p class="text-xs text-slate-400 text-center mb-3">Credenciais de demonstracao</p>
+                <div class="bg-slate-50 rounded-xl p-3 text-xs text-slate-600 font-mono">
+                    <p><span class="text-slate-400">Tenant:</span> demo</p>
+                    <p><span class="text-slate-400">Email:</span> admin@demo.com</p>
+                    <p><span class="text-slate-400">Senha:</span> demo123</p>
+                </div>
+            </div>
+        </div>
+        
+        <!-- Footer Links -->
+        <div class="mt-6 text-center space-y-2">
+            <a href="/pricing" class="text-sm text-slate-400 hover:text-white transition-colors">Ver planos e precos</a>
+            <p class="text-xs text-slate-500">IBS/CBS 2026 Ready &bull; Motor Fiscal Integrado</p>
+        </div>
+    </div>
+</div>
+
+<script>
+    function togglePassword() {
+        const input = document.getElementById('password');
+        const icon = document.getElementById('eye-icon');
+        if (input.type === 'password') {
+            input.type = 'text';
+            icon.setAttribute('data-lucide', 'eye-off');
+        } else {
+            input.type = 'password';
+            icon.setAttribute('data-lucide', 'eye');
+        }
+        lucide.createIcons();
+    }
+    
+    document.getElementById('login-form').addEventListener('submit', async function(e) {
+        e.preventDefault();
+        
+        const btn = document.querySelector('[data-testid="login-submit"]');
+        const text = document.getElementById('login-text');
+        const spinner = document.getElementById('login-spinner');
+        const errorDiv = document.getElementById('login-error');
+        
+        btn.disabled = true;
+        text.textContent = 'Entrando...';
+        spinner.classList.remove('hidden');
+        errorDiv.classList.add('hidden');
+        
+        const data = {
+            tenant_slug: document.getElementById('tenant_slug').value,
+            email: document.getElementById('email').value,
+            password: document.getElementById('password').value
+        };
+        
+        try {
+            const resp = await fetch('/api/auth/login', {
+                method: 'POST',
+                headers: { 'Content-Type': 'application/json' },
+                body: JSON.stringify(data)
+            });
+            
+            const result = await resp.json();
+            
+            if (resp.ok && result.access_token) {
+                sessionStorage.setItem('access_token', result.access_token);
+                sessionStorage.setItem('token_type', result.token_type);
+                window.location.href = '/dashboard';
+            } else {
+                throw new Error(result.error || 'Credenciais invalidas');
+            }
+        } catch (err) {
+            errorDiv.textContent = err.message;
+            errorDiv.classList.remove('hidden');
+            btn.disabled = false;
+            text.textContent = 'Entrar';
+            spinner.classList.add('hidden');
+        }
+    });
+</script>
+{{end}}

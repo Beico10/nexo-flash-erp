@@ -143,3 +143,46 @@ func extractBearerToken(r *http.Request) string {
 	}
 	return strings.TrimPrefix(auth, "Bearer ")
 }
+
+// WebAuthMiddleware valida o JWT para páginas web.
+// Tenta extrair o token do header ou do query param (para redirects).
+// Se não encontrar token válido, redireciona para /login.
+func WebAuthMiddleware(validator JWTValidator) func(http.Handler) http.Handler {
+	return func(next http.Handler) http.Handler {
+		return http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
+			// Tenta extrair token de várias fontes
+			token := extractBearerToken(r)
+			
+			// Também aceita via query param para casos especiais
+			if token == "" {
+				token = r.URL.Query().Get("token")
+			}
+			
+			if token == "" {
+				// Para requisições AJAX/fetch, retorna 401
+				if r.Header.Get("Accept") == "application/json" {
+					http.Error(w, `{"error":"nao autenticado"}`, http.StatusUnauthorized)
+					return
+				}
+				// Para navegação normal, redireciona para login
+				http.Redirect(w, r, "/login", http.StatusFound)
+				return
+			}
+
+			claims, err := validator.Validate(token)
+			if err != nil || claims.ExpiresAt.Before(time.Now()) {
+				if r.Header.Get("Accept") == "application/json" {
+					http.Error(w, `{"error":"token invalido"}`, http.StatusUnauthorized)
+					return
+				}
+				http.Redirect(w, r, "/login", http.StatusFound)
+				return
+			}
+
+			// Injeta claims no contexto
+			ctx := context.WithValue(r.Context(), claimsKey, claims)
+			ctx = context.WithValue(ctx, tenantIDKey, claims.TenantID)
+			next.ServeHTTP(w, r.WithContext(ctx))
+		})
+	}
+}
