@@ -130,10 +130,13 @@ async def get_status():
     
     result = await evolution_request("GET", f"instance/connectionState/{EVOLUTION_INSTANCE}")
     
+    # Evolution v2 retorna {instance: {state: "open"}}
+    state = result.get("instance", {}).get("state") or result.get("state", "unknown")
+    
     return {
         "instance": EVOLUTION_INSTANCE,
-        "connected": result.get("state") == "open",
-        "state": result.get("state", "unknown"),
+        "connected": state == "open",
+        "state": state,
         "detail": result
     }
 
