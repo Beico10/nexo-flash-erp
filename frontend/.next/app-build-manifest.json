@@ -12,9 +12,10 @@
       "static/chunks/fd9d1056-b778a18b0daf24fe.js",
       "static/chunks/23-a16bb9430840aab5.js",
       "static/chunks/main-app-7a50ec93c874a729.js",
-      "static/css/3b77bbeb832374b2.css",
+      "static/css/e7878c6fd6689861.css",
       "static/chunks/959-bce2546f5457e476.js",
-      "static/chunks/app/layout-9e3379dd77eefe3f.js"
+      "static/chunks/782-ca0188ec48ad118b.js",
+      "static/chunks/app/layout-3756cca65cf8f0b1.js"
     ],
     "/admin/plans/page": [
       "static/chunks/webpack-c84e7b3dbc67fa68.js",
@@ -44,13 +45,12 @@
       "static/chunks/main-app-7a50ec93c874a729.js",
       "static/chunks/app/bakery/page-8370a9523ba8425b.js"
     ],
-    "/dashboard/expenses/page": [
+    "/copilot/page": [
       "static/chunks/webpack-c84e7b3dbc67fa68.js",
       "static/chunks/fd9d1056-b778a18b0daf24fe.js",
       "static/chunks/23-a16bb9430840aab5.js",
       "static/chunks/main-app-7a50ec93c874a729.js",
-      "static/chunks/959-bce2546f5457e476.js",
-      "static/chunks/app/dashboard/expenses/page-9ab34dce8c0af983.js"
+      "static/chunks/app/copilot/page-ac30a8bbc6636500.js"
     ],
     "/dashboard/expenses/scan/page": [
       "static/chunks/webpack-c84e7b3dbc67fa68.js",
@@ -59,12 +59,20 @@
       "static/chunks/main-app-7a50ec93c874a729.js",
       "static/chunks/app/dashboard/expenses/scan/page-6d80e6381768c0f4.js"
     ],
+    "/dashboard/expenses/page": [
+      "static/chunks/webpack-c84e7b3dbc67fa68.js",
+      "static/chunks/fd9d1056-b778a18b0daf24fe.js",
+      "static/chunks/23-a16bb9430840aab5.js",
+      "static/chunks/main-app-7a50ec93c874a729.js",
+      "static/chunks/959-bce2546f5457e476.js",
+      "static/chunks/app/dashboard/expenses/page-9ab34dce8c0af983.js"
+    ],
     "/dashboard/page": [
       "static/chunks/webpack-c84e7b3dbc67fa68.js",
       "static/chunks/fd9d1056-b778a18b0daf24fe.js",
       "static/chunks/23-a16bb9430840aab5.js",
       "static/chunks/main-app-7a50ec93c874a729.js",
-      "static/chunks/app/dashboard/page-932661097069d1b0.js"
+      "static/chunks/app/dashboard/page-d081a4c508ffe7f0.js"
     ],
     "/dashboard/subscription/page": [
       "static/chunks/webpack-c84e7b3dbc67fa68.js",
@@ -78,7 +86,7 @@
       "static/chunks/fd9d1056-b778a18b0daf24fe.js",
       "static/chunks/23-a16bb9430840aab5.js",
       "static/chunks/main-app-7a50ec93c874a729.js",
-      "static/chunks/app/industry/page-187eb03456773f35.js"
+      "static/chunks/app/industry/page-d1435881a43d2676.js"
     ],
     "/logistics/page": [
       "static/chunks/webpack-c84e7b3dbc67fa68.js",
@@ -92,21 +100,28 @@
       "static/chunks/fd9d1056-b778a18b0daf24fe.js",
       "static/chunks/23-a16bb9430840aab5.js",
       "static/chunks/main-app-7a50ec93c874a729.js",
-      "static/chunks/app/mechanic/page-77ae1fdb4669a628.js"
+      "static/chunks/app/mechanic/page-1f8e2446074e3d41.js"
+    ],
+    "/nfe/page": [
+      "static/chunks/webpack-c84e7b3dbc67fa68.js",
+      "static/chunks/fd9d1056-b778a18b0daf24fe.js",
+      "static/chunks/23-a16bb9430840aab5.js",
+      "static/chunks/main-app-7a50ec93c874a729.js",
+      "static/chunks/app/nfe/page-e4f2e98d73474936.js"
     ],
     "/onboarding/page": [
       "static/chunks/webpack-c84e7b3dbc67fa68.js",
       "static/chunks/fd9d1056-b778a18b0daf24fe.js",
       "static/chunks/23-a16bb9430840aab5.js",
       "static/chunks/main-app-7a50ec93c874a729.js",
-      "static/chunks/app/onboarding/page-756c825a973ea57e.js"
+      "static/chunks/app/onboarding/page-23736649f8f85d33.js"
     ],
     "/payments/page": [
       "static/chunks/webpack-c84e7b3dbc67fa68.js",
       "static/chunks/fd9d1056-b778a18b0daf24fe.js",
       "static/chunks/23-a16bb9430840aab5.js",
       "static/chunks/main-app-7a50ec93c874a729.js",
-      "static/chunks/app/payments/page-eb9a4bd10a82b3de.js"
+      "static/chunks/app/payments/page-079a97a0c3835a10.js"
     ],
     "/pricing/page": [
       "static/chunks/webpack-c84e7b3dbc67fa68.js",
@@ -127,7 +142,7 @@
       "static/chunks/fd9d1056-b778a18b0daf24fe.js",
       "static/chunks/23-a16bb9430840aab5.js",
       "static/chunks/main-app-7a50ec93c874a729.js",
-      "static/chunks/app/shoes/page-aefaf0f8cb43e727.js"
+      "static/chunks/app/shoes/page-41187292db9420f3.js"
     ],
     "/simulador-fiscal/page": [
       "static/chunks/webpack-c84e7b3dbc67fa68.js",

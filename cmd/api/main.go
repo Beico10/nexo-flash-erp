@@ -117,6 +117,9 @@ func buildRouter(c *app.Container) http.Handler {
 	c.AestheticsHandler.RegisterRoutes(protectedMux)
 	c.AIHandler.RegisterRoutes(protectedMux)
 	c.PaymentHandler.RegisterRoutes(protectedMux)
+	c.IndustryHandler.RegisterRoutes(protectedMux)
+	c.ShoesHandler.RegisterRoutes(protectedMux)
+	c.NFEHandler.RegisterRoutes(protectedMux)
 
 	// Billing autenticado
 	protectedMux.HandleFunc("GET /api/v1/billing/subscription", c.BillingHandler.GetSubscription)

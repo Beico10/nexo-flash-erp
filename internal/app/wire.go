@@ -16,8 +16,10 @@ import (
 	"github.com/nexoone/nexo-one/internal/journey"
 	"github.com/nexoone/nexo-one/internal/modules/aesthetics"
 	"github.com/nexoone/nexo-one/internal/modules/bakery"
+	"github.com/nexoone/nexo-one/internal/modules/industry"
 	"github.com/nexoone/nexo-one/internal/modules/logistics"
 	"github.com/nexoone/nexo-one/internal/modules/mechanic"
+	"github.com/nexoone/nexo-one/internal/modules/shoes"
 	"github.com/nexoone/nexo-one/internal/repository/memory"
 	"github.com/nexoone/nexo-one/internal/tax"
 	"github.com/nexoone/nexo-one/internal/trial"
@@ -44,6 +46,9 @@ type Container struct {
 	OnboardingHandler  *handlers.OnboardingHandler
 	TrackingHandler    *handlers.TrackingHandler
 	AnalyticsHandler   *handlers.AnalyticsHandler
+	IndustryHandler    *handlers.IndustryHandler
+	ShoesHandler       *handlers.ShoesHandler
+	NFEHandler         *handlers.NFEHandler
 	ExpenseHandler     *handlers.ExpenseHandler
 	AuthService        *auth.Service
 	TaxEngine          *tax.Engine
@@ -70,6 +75,8 @@ func Wire(cfg Config) (*Container, error) {
 	trialRepo := memory.NewTrialRepo()
 	journeyRepo := memory.NewJourneyRepo()
 	expenseRepo := memory.NewExpenseRepo()
+	industryRepo := memory.NewIndustryRepo()
+	shoesRepo := memory.NewShoesRepo()
 	tokenStore := auth.NewRedisTokenStore(cache)
 
 	// Servicos
@@ -89,6 +96,8 @@ func Wire(cfg Config) (*Container, error) {
 	journeySvc := journey.NewService(journeyRepo)
 	sefazScraper := expenses.NewSEFAZScraper()
 	expenseSvc := expenses.NewService(expenseRepo, sefazScraper)
+	pcpSvc := industry.NewPCPService(&memory.BOMAdapter{R: industryRepo}, industryRepo, industryRepo)
+	gridSvc := shoes.NewGridService(shoesRepo)
 
 	// Seed demo data
 	memory.SeedAllDemoData(mechanicRepo, bakeryRepo, aestheticsRepo, aiRepo)
@@ -112,6 +121,9 @@ func Wire(cfg Config) (*Container, error) {
 		TrackingHandler:    handlers.NewTrackingHandler(journeySvc),
 		AnalyticsHandler:   handlers.NewAnalyticsHandler(journeySvc),
 		ExpenseHandler:     handlers.NewExpenseHandler(expenseSvc),
+		IndustryHandler:    handlers.NewIndustryHandler(pcpSvc, industryRepo),
+		ShoesHandler:       handlers.NewShoesHandler(gridSvc, shoesRepo),
+		NFEHandler:         handlers.NewNFEHandler(),
 		AuthService:        authSvc,
 		TaxEngine:          taxEngine,
 		tenantRepo:         tenantRepo,

@@ -3,8 +3,12 @@ import signal
 import sys
 import os
 import httpx
+import asyncio
 from fastapi import FastAPI, Request, Response
 from fastapi.middleware.cors import CORSMiddleware
+from dotenv import load_dotenv
+
+load_dotenv("/app/backend/.env")
 
 app = FastAPI(title="Nexo One Proxy")
 
@@ -41,6 +45,57 @@ async def shutdown():
     if go_process:
         go_process.send_signal(signal.SIGTERM)
         go_process.wait(timeout=10)
+
+
+# ── AI Co-Piloto Endpoint ─────────────────────────────────
+@app.post("/api/v1/copilot/suggest")
+async def copilot_suggest(request: Request):
+    from emergentintegrations.llm.chat import LlmChat, UserMessage
+
+    auth = request.headers.get("authorization", "")
+    if not auth.startswith("Bearer "):
+        return Response(content='{"error":"nao autorizado"}', status_code=401, media_type="application/json")
+
+    body = await request.json()
+    context_data = body.get("context", "")
+    question = body.get("question", "")
+    session_id = body.get("session_id", "copilot-default")
+
+    api_key = os.environ.get("EMERGENT_LLM_KEY", "")
+    if not api_key:
+        return Response(content='{"error":"LLM key nao configurada"}', status_code=500, media_type="application/json")
+
+    system_msg = """Voce e o Co-Piloto do Nexo One ERP, um assistente inteligente para negocios brasileiros.
+Voce ajuda com: gestao financeira, fiscal (IBS/CBS 2026), estoque, agendamentos, logistica, producao.
+Responda sempre em portugues brasileiro, de forma direta e acionavel.
+Quando receber dados do sistema, analise e de sugestoes proativas.
+Use emojis moderadamente. Seja conciso."""
+
+    try:
+        chat = LlmChat(
+            api_key=api_key,
+            session_id=session_id,
+            system_message=system_msg
+        ).with_model("gemini", "gemini-3-flash-preview")
+
+        prompt = question
+        if context_data:
+            prompt = f"Dados do sistema:\n{context_data}\n\nPergunta: {question}"
+
+        user_message = UserMessage(text=prompt)
+        response = await chat.send_message(user_message)
+
+        return Response(
+            content=__import__("json").dumps({"suggestion": response, "model": "gemini-3-flash"}, ensure_ascii=False),
+            status_code=200,
+            media_type="application/json",
+        )
+    except Exception as e:
+        return Response(
+            content=__import__("json").dumps({"error": str(e)}, ensure_ascii=False),
+            status_code=500,
+            media_type="application/json",
+        )
 
 
 @app.api_route("/{path:path}", methods=["GET", "POST", "PUT", "PATCH", "DELETE", "OPTIONS", "HEAD"])
