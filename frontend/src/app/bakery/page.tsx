@@ -14,7 +14,8 @@ export default function BakeryPage() {
   const [loading, setLoading] = useState(true)
 
   useEffect(() => {
-    apiFetch('/api/v1/bakery/products').then(r => r.json()).then(d => { setProducts(d.data || []); setLoading(false) }).catch(() => setLoading(false))
+    if (!getToken()) { window.location.href = '/login'; return }
+    apiFetch('/api/v1/bakery/products').then(r => { if (r.status === 401) { window.location.href = '/login'; return null }; return r.json() }).then(d => { if (d) { setProducts(d.data || []); setLoading(false) } }).catch(() => setLoading(false))
   }, [])
 
   const fmt = (v: number) => v.toLocaleString('pt-BR', { style: 'currency', currency: 'BRL' })

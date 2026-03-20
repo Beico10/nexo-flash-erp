@@ -53,9 +53,12 @@ export default function MechanicPage() {
   const [form, setForm] = useState({ vehicle_plate: '', vehicle_km: '', vehicle_model: '', vehicle_year: '', customer_id: '', customer_phone: '', complaint: '' })
 
   const fetchOrders = useCallback(async () => {
+    const token = getToken()
+    if (!token) { window.location.href = '/login'; return }
     setLoading(true)
     try {
       const res = await apiFetch('/api/v1/mechanic/os')
+      if (res.status === 401) { window.location.href = '/login'; return }
       if (res.ok) {
         const data = await res.json()
         setOrders(data.data || [])

@@ -1,10 +1,11 @@
 'use client'
-import { useState } from 'react'
+import { useState, useEffect } from 'react'
 import { Truck, MapPin, Calculator, Loader2 } from 'lucide-react'
 
 function getToken() { return typeof window !== 'undefined' ? sessionStorage.getItem('access_token') || '' : '' }
 
 export default function LogisticsPage() {
+  useEffect(() => { if (!getToken()) window.location.href = '/login' }, [])
   const [loading, setLoading] = useState(false)
   const [result, setResult] = useState<any>(null)
   const [form, setForm] = useState({ distance_km: '500', weight_kg: '15000', toll_cost: '250', fuel_cost_per_km: '2.10', driver_cost_per_km: '0.80' })

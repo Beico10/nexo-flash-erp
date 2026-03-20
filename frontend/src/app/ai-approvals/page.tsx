@@ -27,7 +27,8 @@ export default function AIApprovalsPage() {
   const [loading, setLoading] = useState(true)
 
   useEffect(() => {
-    apiFetch('/api/v1/ai/suggestions').then(r => r.json()).then(d => { setSuggestions(d.data || []); setLoading(false) }).catch(() => setLoading(false))
+    if (!getToken()) { window.location.href = '/login'; return }
+    apiFetch('/api/v1/ai/suggestions').then(r => { if (r.status === 401) { window.location.href = '/login'; return null }; return r.json() }).then(d => { if (d) { setSuggestions(d.data || []); setLoading(false) } }).catch(() => setLoading(false))
   }, [])
 
   async function handleAction(id: string, action: 'approve' | 'reject') {

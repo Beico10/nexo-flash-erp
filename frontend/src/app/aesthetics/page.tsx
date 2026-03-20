@@ -25,9 +25,10 @@ export default function AestheticsPage() {
 
   useEffect(() => {
     const token = getToken()
+    if (!token) { window.location.href = '/login'; return }
     fetch('/api/v1/aesthetics/appointments', { headers: { Authorization: `Bearer ${token}` } })
-      .then(r => r.json())
-      .then(d => { setAppointments(d.data || []); setLoading(false) })
+      .then(r => { if (r.status === 401) { window.location.href = '/login'; return null }; return r.json() })
+      .then(d => { if (d) { setAppointments(d.data || []); setLoading(false) } })
       .catch(() => setLoading(false))
   }, [])
 

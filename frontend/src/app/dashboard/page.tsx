@@ -10,20 +10,16 @@ interface DashboardStats {
   revenue: { today: number; week: number; chart: { day: string; revenue: number; tax: number }[]; by_module: { module: string; count: number }[] }
 }
 
-function getToken() {
-  if (typeof window !== 'undefined') return sessionStorage.getItem('access_token') || ''
-  return ''
-}
-
 export default function DashboardPage() {
   const [stats, setStats] = useState<DashboardStats | null>(null)
   const [loading, setLoading] = useState(true)
 
   useEffect(() => {
-    const token = getToken()
+    const token = typeof window !== 'undefined' ? sessionStorage.getItem('access_token') || '' : ''
+    if (!token) { window.location.href = '/login'; return }
     fetch('/api/v1/dashboard/stats', { headers: { Authorization: `Bearer ${token}` } })
-      .then(r => r.json())
-      .then(d => { setStats(d); setLoading(false) })
+      .then(r => { if (r.status === 401) { window.location.href = '/login'; return null }; return r.json() })
+      .then(d => { if (d) { setStats(d); setLoading(false) } })
       .catch(() => setLoading(false))
   }, [])
 
