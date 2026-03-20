@@ -119,6 +119,17 @@ func (r *TaxRateRepo) GetRate(_ context.Context, ncm string, _ time.Time) (*tax.
 	return rate, nil
 }
 
+// ListRates retorna todas as aliquotas NCM cadastradas.
+func (r *TaxRateRepo) ListRates() []*tax.NCMRate {
+	r.mu.RLock()
+	defer r.mu.RUnlock()
+	result := make([]*tax.NCMRate, 0, len(r.rates))
+	for _, rate := range r.rates {
+		result = append(result, rate)
+	}
+	return result
+}
+
 // seedNCMRates carrega aliquotas base da Reforma 2026.
 func (r *TaxRateRepo) seedNCMRates() {
 	rates := []tax.NCMRate{

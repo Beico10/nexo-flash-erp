@@ -10,9 +10,10 @@
   "/dashboard/subscription/page": "app/dashboard/subscription/page.js",
   "/industry/page": "app/industry/page.js",
   "/logistics/page": "app/logistics/page.js",
-  "/mechanic/page": "app/mechanic/page.js",
   "/pricing/page": "app/pricing/page.js",
+  "/mechanic/page": "app/mechanic/page.js",
   "/settings/page": "app/settings/page.js",
   "/shoes/page": "app/shoes/page.js",
+  "/simulador-fiscal/page": "app/simulador-fiscal/page.js",
   "/login/page": "app/login/page.js"
 }

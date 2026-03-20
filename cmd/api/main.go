@@ -95,6 +95,9 @@ func buildRouter(c *app.Container) http.Handler {
 	authHandler := auth.NewHandler(c.AuthService)
 	authHandler.RegisterRoutes(mux)
 
+	// Simulador Fiscal (publico - sem autenticacao)
+	c.SimulatorHandler.RegisterPublicRoutes(mux)
+
 	// Rotas protegidas - precisam de JWT via AuthMiddleware
 	protectedMux := http.NewServeMux()
 	c.TaxHandler.RegisterRoutes(protectedMux)

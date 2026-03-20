@@ -1,13 +1,14 @@
 'use client'
 import Link from 'next/link'
 import { usePathname } from 'next/navigation'
-import { LayoutDashboard, Wrench, ShoppingBag, Factory, Truck, Scissors, Wheat, Brain, CreditCard, Settings, ChevronRight, Zap, LogOut, Activity } from 'lucide-react'
+import { LayoutDashboard, Wrench, ShoppingBag, Factory, Truck, Scissors, Wheat, Brain, CreditCard, Settings, ChevronRight, Zap, LogOut, Activity, Calculator } from 'lucide-react'
 import clsx from 'clsx'
 
 const navGroups = [
   { label: 'Principal', items: [
     { label: 'Dashboard', icon: LayoutDashboard, href: '/dashboard' },
-    { label: 'Aprovações IA', icon: Brain, href: '/ai-approvals', badge: '3' },
+    { label: 'Simulador Fiscal', icon: Calculator, href: '/simulador-fiscal' },
+    { label: 'Aprovacoes IA', icon: Brain, href: '/ai-approvals', badge: '3' },
     { label: 'Pagamentos', icon: CreditCard, href: '/payments' },
   ]},
   { label: 'Módulos', items: [

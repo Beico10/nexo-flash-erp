@@ -1,0 +1,59 @@
+{
+  "summary": "Completed iteration 2 testing of Nexo One ERP - Public Tax Simulator and Mechanic page with real backend API. All 16 backend tests pass. Frontend simulator works without auth, mechanic page properly connected to backend.",
+  "backend_issues": {
+    "critical": [],
+    "minor": [
+      {"endpoint": "GET /api/v1/mechanic/os", "issue": "Returns data:null instead of data:[] when no OS exists - frontend handles this but could be cleaner", "priority": "LOW"}
+    ]
+  },
+  "frontend_issues": {
+    "ui_bugs": [],
+    "integration_issues": [],
+    "design_issues": [
+      {"screen": "Dashboard", "issues": ["404 console error for favicon - minor"]}
+    ]
+  },
+  "test_report_links": [
+    "/app/backend/tests/test_simulator_mechanic.py",
+    "/app/test_reports/pytest/pytest_iteration2.xml"
+  ],
+  "action_items": [],
+  "critical_code_review_comments": [
+    "Public Tax Simulator endpoints (/api/v1/tax/simulate, /api/v1/tax/ncm-list) correctly bypass authentication",
+    "LayoutShell properly excludes /simulador-fiscal from auth-protected routes",
+    "Mechanic page now fetches real data from backend API instead of mock data",
+    "OS creation sends data to backend and OS appears in table after refresh"
+  ],
+  "updated_files": ["/app/backend/tests/test_simulator_mechanic.py"],
+  "success_rate": {"backend": "100% (16/16 tests passed)", "frontend": "100% - Simulator and Mechanic working"},
+  "test_credentials": {
+    "tenant_slug": "demo",
+    "email": "admin@demo.com",
+    "password": "demo123"
+  },
+  "seed_data_creation": "Test OS created via API and UI during testing",
+  "retest_needed": false,
+  "should_main_agent_self_test": true,
+  "context_for_next_testing_agent": "Public simulator page at /simulador-fiscal works without auth. All 16 new backend tests in test_simulator_mechanic.py pass. Mechanic page is now connected to real backend API (not mock data). Token stored in sessionStorage as 'access_token'.",
+  "tested_features": {
+    "public_ncm_list": "PASS - GET /api/v1/tax/ncm-list returns 17 NCM items without auth",
+    "public_simulate_cesta_basica": "PASS - NCM 19052000 returns total_tax=0, is_basket_item=true",
+    "public_simulate_standard": "PASS - NCM 84715010 with base_value 5000 returns ibs_amount=462.5",
+    "public_simulate_seletivo": "PASS - NCM 22030000 returns selective_amount=100 (10%)",
+    "public_simulate_invalid_ncm": "PASS - Returns 400 error for invalid NCM",
+    "simulator_frontend_no_auth": "PASS - Page loads without login redirect",
+    "simulator_ncm_dropdown": "PASS - Shows items, search works, selection updates calculation",
+    "simulator_tax_breakdown": "PASS - Displays IBS, CBS, Seletivo, Total, Cashback",
+    "simulator_cesta_basica_badge": "PASS - Shows CESTA BASICA badge for zero-rate items",
+    "simulator_legal_basis": "PASS - Shows LC 214/2025 reference",
+    "sidebar_simulador_link": "PASS - Simulador Fiscal link visible in sidebar",
+    "mechanic_real_backend": "PASS - Page fetches OS from /api/v1/mechanic/os",
+    "mechanic_create_os": "PASS - Modal form sends data to backend",
+    "mechanic_os_in_table": "PASS - Created OS appears in table with real data",
+    "auth_protected_endpoints": "PASS - /api/v1/tax/calculate and /api/v1/mechanic/os require auth"
+  },
+  "screenshots": {
+    "simulator_page": ".screenshots/simulator_cesta_basica.png",
+    "mechanic_page": ".screenshots/mechanic_page.png"
+  }
+}

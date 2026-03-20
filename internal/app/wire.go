@@ -32,6 +32,7 @@ type Container struct {
 	AestheticsHandler *handlers.AestheticsHandler
 	AIHandler         *handlers.AIHandler
 	PaymentHandler    *handlers.PaymentHandler
+	SimulatorHandler  *handlers.SimulatorHandler
 	AuthService       *auth.Service
 	TaxEngine         *tax.Engine
 	tenantRepo        *memory.TenantRepo
@@ -76,6 +77,7 @@ func Wire(cfg Config) (*Container, error) {
 		AestheticsHandler: handlers.NewAestheticsHandler(agendaSvc),
 		AIHandler:         handlers.NewAIHandler(aiGateway, concierge),
 		PaymentHandler:    handlers.NewPaymentHandler(paymentSvc),
+		SimulatorHandler:  handlers.NewSimulatorHandler(taxEngine, taxRateRepo.ListRates),
 		AuthService:       authSvc,
 		TaxEngine:         taxEngine,
 		tenantRepo:        tenantRepo,

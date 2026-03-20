@@ -5,7 +5,7 @@ import Header from '@/components/layout/Header'
 
 export default function LayoutShell({ children }: { children: React.ReactNode }) {
   const pathname = usePathname()
-  const isAuth = pathname.startsWith('/login') || pathname.startsWith('/pricing')
+  const isAuth = pathname.startsWith('/login') || pathname.startsWith('/pricing') || pathname.startsWith('/simulador-fiscal')
 
   if (isAuth) {
     return <>{children}</>
