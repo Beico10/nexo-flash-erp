@@ -1,205 +1,98 @@
 'use client'
-import { useState } from 'react'
-import { Plus, ChevronLeft, ChevronRight, Clock, Scissors, User, DollarSign, AlertCircle } from 'lucide-react'
+import { useState, useEffect } from 'react'
+import { Scissors, Clock, CheckCircle, User, Loader2 } from 'lucide-react'
 
-const professionals = [
-  { id: '1', name: 'Ana Beatriz', color: '#1A47C8', initials: 'AB' },
-  { id: '2', name: 'Carla Souza', color: '#7C3AED', initials: 'CS' },
-  { id: '3', name: 'Daniela Lima', color: '#047857', initials: 'DL' },
-]
-
-const appointments = [
-  { id: '1', profId: '1', customerName: 'Maria Santos',    service: 'Coloração completa', start: 9,  duration: 2,   price: 280, status: 'confirmed' },
-  { id: '2', profId: '1', customerName: 'Joana Pereira',   service: 'Corte + escova',     start: 11.5, duration: 1.5, price: 120, status: 'scheduled' },
-  { id: '3', profId: '2', customerName: 'Fernanda Costa',  service: 'Manicure + pedicure',start: 9,  duration: 1.5, price: 85,  status: 'in_progress' },
-  { id: '4', profId: '2', customerName: 'Paula Rodrigues', service: 'Design de sobrancelha',start:11, duration: 1,   price: 60,  status: 'scheduled' },
-  { id: '5', profId: '3', customerName: 'Letícia Alves',   service: 'Hidratação',         start: 10, duration: 1.5, price: 95,  status: 'confirmed' },
-  { id: '6', profId: '3', customerName: 'Camila Torres',   service: 'Limpeza de pele',    start: 13, duration: 1,   price: 110, status: 'scheduled' },
-]
-
-const statusStyle: Record<string, { bg: string; border: string; label: string }> = {
-  scheduled:   { bg: 'rgba(26,71,200,0.06)',  border: 'rgba(26,71,200,0.2)',  label: 'Agendado' },
-  confirmed:   { bg: 'rgba(4,120,87,0.06)',   border: 'rgba(4,120,87,0.2)',   label: 'Confirmado' },
-  in_progress: { bg: 'rgba(180,83,9,0.06)',   border: 'rgba(180,83,9,0.2)',   label: 'Em andamento' },
-  done:        { bg: 'rgba(107,114,128,0.06)',border: 'rgba(107,114,128,0.2)',label: 'Concluído' },
+interface Appointment {
+  ID: string; ProfessionalID: string; CustomerName: string; ServiceName: string; ServicePrice: number; StartTime: string; EndTime: string; DurationMin: number; Status: string
 }
 
-const hours = [8, 9, 10, 11, 12, 13, 14, 15, 16, 17, 18]
-const CELL_H = 56 // px per hour
+function getToken() { return typeof window !== 'undefined' ? sessionStorage.getItem('access_token') || '' : '' }
+
+const statusStyles: Record<string, { label: string; cls: string }> = {
+  scheduled:    { label: 'Agendado',     cls: 'bg-blue-50 text-blue-600 border-blue-100' },
+  confirmed:    { label: 'Confirmado',   cls: 'bg-emerald-50 text-emerald-600 border-emerald-100' },
+  in_progress:  { label: 'Em atendimento', cls: 'bg-violet-50 text-violet-600 border-violet-100' },
+  completed:    { label: 'Concluido',    cls: 'bg-slate-50 text-slate-600 border-slate-100' },
+  no_show:      { label: 'Nao compareceu', cls: 'bg-red-50 text-red-600 border-red-100' },
+}
+
+const profNames: Record<string, string> = { 'prof-1': 'Ana Beatriz', 'prof-2': 'Carla Souza', 'prof-3': 'Daniela Lima' }
+const profColors: Record<string, string> = { 'prof-1': 'bg-pink-500', 'prof-2': 'bg-violet-500', 'prof-3': 'bg-blue-500' }
 
 export default function AestheticsPage() {
-  const [showModal, setShowModal] = useState(false)
-  const [selectedDate] = useState(new Date())
+  const [appointments, setAppointments] = useState<Appointment[]>([])
+  const [loading, setLoading] = useState(true)
 
-  const totalRevenue = appointments.reduce((s, a) => s + a.price, 0)
+  useEffect(() => {
+    const token = getToken()
+    fetch('/api/v1/aesthetics/appointments', { headers: { Authorization: `Bearer ${token}` } })
+      .then(r => r.json())
+      .then(d => { setAppointments(d.data || []); setLoading(false) })
+      .catch(() => setLoading(false))
+  }, [])
+
+  const fmt = (v: number) => v.toLocaleString('pt-BR', { style: 'currency', currency: 'BRL' })
+  const formatTime = (s: string) => { try { return new Date(s).toLocaleTimeString('pt-BR', { hour: '2-digit', minute: '2-digit' }) } catch { return '' } }
+
+  const professionals = [...new Set(appointments.map(a => a.ProfessionalID))]
+  const totalRevenue = appointments.reduce((sum, a) => sum + a.ServicePrice, 0)
+
+  if (loading) return <div className="flex items-center justify-center h-64"><Loader2 size={32} className="text-nexo-500 animate-spin" /></div>
 
   return (
-    <div className="space-y-5 animate-fade-in" style={{height:'calc(100vh - 10rem)',display:'flex',flexDirection:'column'}}>
-
-      {/* Top bar */}
-      <div className="flex items-center gap-4 flex-shrink-0">
-        <div className="card flex items-center gap-3 px-4 py-2.5">
-          <button className="w-7 h-7 rounded-lg flex items-center justify-center hover:bg-slate-50 transition-colors"><ChevronLeft size={14} /></button>
-          <div className="text-center px-2">
-            <p style={{fontSize:14,fontWeight:700,color:'#0D1B4B'}}>
-              {selectedDate.toLocaleDateString('pt-BR', { weekday: 'long', day: 'numeric', month: 'long' })}
-            </p>
-          </div>
-          <button className="w-7 h-7 rounded-lg flex items-center justify-center hover:bg-slate-50 transition-colors"><ChevronRight size={14} /></button>
+    <div className="space-y-5 animate-fade-in" data-testid="aesthetics-page">
+      {/* Stats */}
+      <div className="grid grid-cols-3 gap-4">
+        <div className="card p-4 flex items-center gap-3">
+          <div className="w-10 h-10 bg-pink-50 rounded-xl flex items-center justify-center"><Scissors size={18} className="text-pink-600" /></div>
+          <div><p className="text-lg font-bold text-slate-800">{appointments.length}</p><p className="text-xs text-slate-400">Agendamentos hoje</p></div>
         </div>
-
-        {/* Quick stats */}
-        <div className="card px-4 py-2.5 flex items-center gap-3">
-          <Scissors size={14} style={{color:'#1A47C8'}} />
-          <span style={{fontSize:13,fontWeight:600,color:'#0D1B4B'}}>{appointments.length} agendamentos</span>
+        <div className="card p-4 flex items-center gap-3">
+          <div className="w-10 h-10 bg-violet-50 rounded-xl flex items-center justify-center"><User size={18} className="text-violet-600" /></div>
+          <div><p className="text-lg font-bold text-slate-800">{professionals.length}</p><p className="text-xs text-slate-400">Profissionais ativos</p></div>
         </div>
-        <div className="card px-4 py-2.5 flex items-center gap-3">
-          <DollarSign size={14} style={{color:'#047857'}} />
-          <span style={{fontSize:13,fontWeight:600,color:'#047857'}}>R$ {totalRevenue.toLocaleString('pt-BR')} previsto</span>
-        </div>
-
-        <button onClick={() => setShowModal(true)} className="btn-primary ml-auto"><Plus size={14} />Novo Agendamento</button>
-      </div>
-
-      {/* Calendar grid */}
-      <div className="card overflow-hidden flex-1 min-h-0">
-        <div className="flex h-full overflow-hidden">
-
-          {/* Time column */}
-          <div style={{width:56,flexShrink:0,borderRight:'1px solid rgba(26,51,120,0.07)',paddingTop:48}}>
-            {hours.map(h => (
-              <div key={h} style={{height:CELL_H,display:'flex',alignItems:'flex-start',justifyContent:'center',paddingTop:6}}>
-                <span style={{fontSize:10,fontWeight:600,color:'#B0B8D8',fontFamily:'var(--font-jetbrains)'}}>{h}:00</span>
-              </div>
-            ))}
-          </div>
-
-          {/* Professional columns */}
-          <div className="flex flex-1 overflow-x-auto overflow-y-auto">
-            {professionals.map((prof) => {
-              const profApts = appointments.filter(a => a.profId === prof.id)
-              return (
-                <div key={prof.id} style={{flex:1,minWidth:200,borderRight:'1px solid rgba(26,51,120,0.05)',position:'relative'}}>
-                  {/* Header */}
-                  <div style={{height:48,borderBottom:'1px solid rgba(26,51,120,0.07)',display:'flex',alignItems:'center',gap:8,padding:'0 12px',background:'#FAFBFF',position:'sticky',top:0,zIndex:10}}>
-                    <div style={{width:28,height:28,borderRadius:8,background:prof.color,display:'flex',alignItems:'center',justifyContent:'center'}}>
-                      <span style={{fontSize:10,fontWeight:700,color:'#fff'}}>{prof.initials}</span>
-                    </div>
-                    <div>
-                      <p style={{fontSize:12,fontWeight:600,color:'#0D1B4B'}}>{prof.name}</p>
-                      <p style={{fontSize:10,color:'#8892B8'}}>{profApts.length} hoje · R$ {profApts.reduce((s,a)=>s+a.price,0)}</p>
-                    </div>
-                  </div>
-
-                  {/* Hour slots */}
-                  <div style={{position:'relative'}}>
-                    {hours.map(h => (
-                      <div key={h} style={{height:CELL_H,borderBottom:'1px dashed rgba(26,51,120,0.05)',cursor:'pointer'}}
-                        className="hover:bg-blue-50/30 transition-colors" />
-                    ))}
-
-                    {/* Appointments */}
-                    {profApts.map(apt => {
-                      const topPct = (apt.start - hours[0]) * CELL_H
-                      const heightPct = apt.duration * CELL_H - 4
-                      const s = statusStyle[apt.status]
-                      return (
-                        <div key={apt.id} style={{
-                          position:'absolute', top:topPct+2, left:6, right:6,
-                          height:heightPct, background:s.bg,
-                          border:`1px solid ${s.border}`, borderRadius:10,
-                          padding:'6px 8px', cursor:'pointer', overflow:'hidden',
-                          borderLeft:`3px solid ${prof.color}`,
-                          transition:'all 0.15s ease',
-                        }}
-                        className="hover:shadow-md group"
-                        >
-                          <p style={{fontSize:11,fontWeight:700,color:'#0D1B4B',lineHeight:1.2}}>{apt.customerName}</p>
-                          <p style={{fontSize:10,color:'#8892B8',marginTop:2,lineHeight:1.2}}>{apt.service}</p>
-                          {heightPct > 50 && (
-                            <div className="flex items-center justify-between mt-1.5">
-                              <div className="flex items-center gap-1">
-                                <Clock size={9} style={{color:'#8892B8'}} />
-                                <span style={{fontSize:9,color:'#8892B8'}}>{apt.duration}h</span>
-                              </div>
-                              <span style={{fontSize:10,fontWeight:700,color:prof.color}}>R$ {apt.price}</span>
-                            </div>
-                          )}
-                        </div>
-                      )
-                    })}
-                  </div>
-                </div>
-              )
-            })}
-          </div>
+        <div className="card p-4 flex items-center gap-3">
+          <div className="w-10 h-10 bg-emerald-50 rounded-xl flex items-center justify-center"><CheckCircle size={18} className="text-emerald-600" /></div>
+          <div><p className="text-lg font-bold text-slate-800">{fmt(totalRevenue)}</p><p className="text-xs text-slate-400">Receita prevista</p></div>
         </div>
       </div>
 
-      {/* New appointment modal */}
-      {showModal && (
-        <div className="fixed inset-0 z-50 flex items-center justify-center p-4" style={{background:'rgba(13,27,75,0.45)',backdropFilter:'blur(4px)'}}>
-          <div className="animate-scale-in" style={{background:'#fff',borderRadius:20,boxShadow:'0 24px 48px rgba(13,27,75,0.2)',width:'100%',maxWidth:480}}>
-            <div style={{padding:'20px 24px',borderBottom:'1px solid rgba(26,51,120,0.08)'}}>
-              <p style={{fontFamily:'var(--font-syne)',fontSize:17,fontWeight:800,color:'#0D1B4B'}}>Novo Agendamento</p>
-              <p style={{fontSize:12,color:'#8892B8',marginTop:2}}>A trava de conflito verifica automaticamente sobreposição de horários</p>
-            </div>
-            <div className="p-6 space-y-4">
-              <div>
-                <label className="label">Profissional</label>
-                <select className="input">
-                  {professionals.map(p => <option key={p.id}>{p.name}</option>)}
-                </select>
-              </div>
-              <div className="grid grid-cols-2 gap-4">
-                <div>
-                  <label className="label">Data</label>
-                  <input type="date" className="input" defaultValue="2026-03-19" />
+      {/* Timeline by professional */}
+      <div className="space-y-4">
+        {professionals.map(profId => {
+          const profApts = appointments.filter(a => a.ProfessionalID === profId).sort((a, b) => new Date(a.StartTime).getTime() - new Date(b.StartTime).getTime())
+          return (
+            <div key={profId} className="card p-4">
+              <div className="flex items-center gap-3 mb-3">
+                <div className={`w-8 h-8 rounded-full ${profColors[profId] || 'bg-slate-400'} flex items-center justify-center text-white text-xs font-bold`}>
+                  {(profNames[profId] || profId).charAt(0)}
                 </div>
-                <div>
-                  <label className="label">Horário</label>
-                  <input type="time" className="input" defaultValue="09:00" />
-                </div>
+                <span className="font-semibold text-slate-800 text-sm">{profNames[profId] || profId}</span>
+                <span className="text-xs text-slate-400">{profApts.length} agendamentos</span>
               </div>
-              <div>
-                <label className="label">Serviço</label>
-                <select className="input">
-                  <option>Corte + escova</option>
-                  <option>Coloração completa</option>
-                  <option>Manicure + pedicure</option>
-                  <option>Hidratação</option>
-                </select>
-              </div>
-              <div>
-                <label className="label">Nome do cliente</label>
-                <input className="input" placeholder="Nome completo" />
-              </div>
-              <div>
-                <label className="label">WhatsApp</label>
-                <input className="input" placeholder="(11) 99999-9999" />
-              </div>
-              {/* Split toggle */}
-              <div className="flex items-center justify-between px-4 py-3 rounded-xl" style={{background:'#F2F4FA',border:'1px solid rgba(26,51,120,0.08)'}}>
-                <div>
-                  <p style={{fontSize:12,fontWeight:600,color:'#0D1B4B'}}>Split de Pagamento</p>
-                  <p style={{fontSize:11,color:'#8892B8'}}>Dividir entre profissional e salão</p>
-                </div>
-                <div style={{width:36,height:20,borderRadius:10,background:'#1A47C8',cursor:'pointer',display:'flex',alignItems:'center',padding:2}}>
-                  <div style={{width:16,height:16,borderRadius:'50%',background:'#fff',marginLeft:'auto',boxShadow:'0 1px 3px rgba(0,0,0,0.2)'}} />
-                </div>
-              </div>
-              <div className="flex items-center gap-2 px-3 py-2.5 rounded-xl" style={{background:'#FFFBEB',border:'1px solid rgba(180,83,9,0.15)'}}>
-                <AlertCircle size={13} style={{color:'#B45309',flexShrink:0}} />
-                <p style={{fontSize:11,color:'#B45309'}}>Verificação de conflito automática ao salvar</p>
+              <div className="flex gap-2 overflow-x-auto pb-1">
+                {profApts.map(a => {
+                  const st = statusStyles[a.Status] || statusStyles.scheduled
+                  return (
+                    <div key={a.ID} className={`flex-shrink-0 rounded-xl p-3 border ${st.cls}`} style={{ minWidth: 180 }} data-testid={`apt-${a.ID}`}>
+                      <div className="flex items-center gap-1.5 mb-1">
+                        <Clock size={11} />
+                        <span className="text-xs font-bold">{formatTime(a.StartTime)} - {formatTime(a.EndTime)}</span>
+                      </div>
+                      <p className="text-sm font-medium mb-0.5">{a.ServiceName}</p>
+                      <p className="text-xs opacity-70">{a.CustomerName}</p>
+                      <div className="flex items-center justify-between mt-2">
+                        <span className="text-[10px] font-bold uppercase">{st.label}</span>
+                        <span className="text-xs font-bold">{fmt(a.ServicePrice)}</span>
+                      </div>
+                    </div>
+                  )
+                })}
               </div>
             </div>
-            <div className="flex gap-3 px-6 pb-6">
-              <button onClick={() => setShowModal(false)} className="btn-ghost flex-1 justify-center">Cancelar</button>
-              <button className="btn-primary flex-1 justify-center"><Plus size={14} />Agendar</button>
-            </div>
-          </div>
-        </div>
-      )}
+          )
+        })}
+      </div>
     </div>
   )
 }

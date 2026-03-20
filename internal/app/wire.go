@@ -12,6 +12,7 @@ import (
 	"github.com/nexoone/nexo-one/internal/baas"
 	"github.com/nexoone/nexo-one/internal/handlers"
 	"github.com/nexoone/nexo-one/internal/modules/aesthetics"
+	"github.com/nexoone/nexo-one/internal/modules/bakery"
 	"github.com/nexoone/nexo-one/internal/modules/logistics"
 	"github.com/nexoone/nexo-one/internal/modules/mechanic"
 	"github.com/nexoone/nexo-one/internal/repository/memory"
@@ -33,6 +34,7 @@ type Container struct {
 	AIHandler         *handlers.AIHandler
 	PaymentHandler    *handlers.PaymentHandler
 	SimulatorHandler  *handlers.SimulatorHandler
+	DashboardHandler  *handlers.DashboardHandler
 	AuthService       *auth.Service
 	TaxEngine         *tax.Engine
 	tenantRepo        *memory.TenantRepo
@@ -48,6 +50,7 @@ func Wire(cfg Config) (*Container, error) {
 	tenantRepo := memory.NewTenantRepo()
 	userRepo := memory.NewUserRepo()
 	mechanicRepo := memory.NewMechanicRepo()
+	bakeryRepo := memory.NewBakeryRepo()
 	taxRateRepo := memory.NewTaxRateRepo()
 	aiRepo := memory.NewAIRepo()
 	logisticsRepo := memory.NewLogisticsRepo()
@@ -65,19 +68,25 @@ func Wire(cfg Config) (*Container, error) {
 	agendaSvc := aesthetics.NewAgendaService(aestheticsRepo)
 	baasGW := baas.NewNoOpGateway()
 	paymentSvc := baas.NewPaymentService(baasGW, paymentRepo)
+	bakeryService := bakery.NewPDVService(bakeryRepo, nil)
+	dashboardProvider := memory.NewDashboardProvider(mechanicRepo, bakeryRepo, aestheticsRepo, aiRepo)
+
+	// Seed demo data
+	memory.SeedAllDemoData(mechanicRepo, bakeryRepo, aestheticsRepo, aiRepo)
 
 	// Auth
 	authSvc := auth.NewService(cfg.JWTSecret, &userProviderAdapter{tenants: tenantRepo, users: userRepo}, tokenStore)
 
 	return &Container{
 		MechanicHandler:   handlers.NewMechanicHandler(osSvc),
-		BakeryHandler:     handlers.NewBakeryHandler(nil),
+		BakeryHandler:     handlers.NewBakeryHandler(bakeryService),
 		TaxHandler:        handlers.NewTaxHandler(taxEngine),
 		LogisticsHandler:  handlers.NewLogisticsHandler(contractSvc),
 		AestheticsHandler: handlers.NewAestheticsHandler(agendaSvc),
 		AIHandler:         handlers.NewAIHandler(aiGateway, concierge),
 		PaymentHandler:    handlers.NewPaymentHandler(paymentSvc),
 		SimulatorHandler:  handlers.NewSimulatorHandler(taxEngine, taxRateRepo.ListRates),
+		DashboardHandler:  handlers.NewDashboardHandler(dashboardProvider),
 		AuthService:       authSvc,
 		TaxEngine:         taxEngine,
 		tenantRepo:        tenantRepo,

@@ -100,6 +100,7 @@ func buildRouter(c *app.Container) http.Handler {
 
 	// Rotas protegidas - precisam de JWT via AuthMiddleware
 	protectedMux := http.NewServeMux()
+	c.DashboardHandler.RegisterRoutes(protectedMux)
 	c.TaxHandler.RegisterRoutes(protectedMux)
 	c.MechanicHandler.RegisterRoutes(protectedMux)
 	c.BakeryHandler.RegisterRoutes(protectedMux)

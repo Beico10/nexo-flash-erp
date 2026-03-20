@@ -1,244 +1,160 @@
 'use client'
-import { TrendingUp, TrendingDown, DollarSign, FileText, Clock, CheckCircle, AlertTriangle, Brain } from 'lucide-react'
-import { AreaChart, Area, BarChart, Bar, XAxis, YAxis, CartesianGrid, Tooltip, ResponsiveContainer } from 'recharts'
-import Link from 'next/link'
+import { useState, useEffect } from 'react'
+import { BarChart3, TrendingUp, Wrench, Clock, AlertTriangle, CheckCircle, Brain, Wheat, Scissors, ArrowUpRight, ArrowDownRight, Loader2 } from 'lucide-react'
 
-const revenueData = [
-  { day: 'Seg', receita: 4200, impostos: 546 },
-  { day: 'Ter', receita: 5800, impostos: 754 },
-  { day: 'Qua', receita: 3900, impostos: 507 },
-  { day: 'Qui', receita: 6700, impostos: 871 },
-  { day: 'Sex', receita: 7200, impostos: 936 },
-  { day: 'Sáb', receita: 8100, impostos: 1053 },
-  { day: 'Dom', receita: 5400, impostos: 702 },
-]
-
-const moduleActivity = [
-  { module: 'Mecânica', os: 12 },
-  { module: 'Padaria', os: 89 },
-  { module: 'Logística', os: 7 },
-  { module: 'Estética', os: 23 },
-  { module: 'Calçados', os: 15 },
-]
-
-const recentOS = [
-  { id: 'OS-2026-001842', plate: 'BRA2E19', customer: 'Carlos Silva', status: 'await_approval', value: 850 },
-  { id: 'OS-2026-001841', plate: 'ABC1D23', customer: 'Maria Santos', status: 'in_progress', value: 1200 },
-  { id: 'OS-2026-001840', plate: 'XYZ9K87', customer: 'João Lima', status: 'done', value: 430 },
-  { id: 'OS-2026-001839', plate: 'DEF4G56', customer: 'Ana Costa', status: 'open', value: 0 },
-]
-
-const statusBadge: Record<string, { label: string; cls: string }> = {
-  open:           { label: 'Aberta',          cls: 'badge-open' },
-  await_approval: { label: 'Aguard. aprovação', cls: 'badge-pending' },
-  in_progress:    { label: 'Em andamento',     cls: 'badge-approved' },
-  done:           { label: 'Concluída',        cls: 'badge-done' },
+interface DashboardStats {
+  mechanic_os: { total: number; open: number; in_progress: number; await_approval: number; done: number }
+  bakery_products: number
+  appointments: number
+  pending_suggestions: number
+  revenue: { today: number; week: number; chart: { day: string; revenue: number; tax: number }[]; by_module: { module: string; count: number }[] }
 }
 
-const aiSuggestions = [
-  { id: '1', type: 'Mão de obra faltante', os: 'OS-001842', confidence: 0.94, urgency: 'high' },
-  { id: '2', type: 'Correção de NCM',      os: 'Produto A', confidence: 0.87, urgency: 'medium' },
-  { id: '3', type: 'Produto em NF-e',      os: '12 itens',  confidence: 0.92, urgency: 'low' },
-]
+function getToken() {
+  if (typeof window !== 'undefined') return sessionStorage.getItem('access_token') || ''
+  return ''
+}
 
 export default function DashboardPage() {
+  const [stats, setStats] = useState<DashboardStats | null>(null)
+  const [loading, setLoading] = useState(true)
+
+  useEffect(() => {
+    const token = getToken()
+    fetch('/api/v1/dashboard/stats', { headers: { Authorization: `Bearer ${token}` } })
+      .then(r => r.json())
+      .then(d => { setStats(d); setLoading(false) })
+      .catch(() => setLoading(false))
+  }, [])
+
+  if (loading) return <div className="flex items-center justify-center h-64"><Loader2 size={32} className="text-nexo-500 animate-spin" /></div>
+  if (!stats) return <div className="text-center py-16 text-slate-400">Falha ao carregar dados</div>
+
+  const fmt = (v: number) => v.toLocaleString('pt-BR', { style: 'currency', currency: 'BRL' })
+
+  const maxRev = Math.max(...stats.revenue.chart.map(d => d.revenue), 1)
+
   return (
-    <div className="space-y-6 animate-fade-in">
-
-      {/* KPI Cards */}
+    <div className="space-y-5 animate-fade-in" data-testid="dashboard-page">
+      {/* KPI Row */}
       <div className="grid grid-cols-2 lg:grid-cols-4 gap-4">
-        <KPICard
-          title="Receita Hoje"
-          value="R$ 8.100"
-          change="+12.4%"
-          positive
-          icon={<DollarSign size={18} className="text-nexo-500" />}
-          sub="vs. ontem R$ 7.200"
-        />
-        <KPICard
-          title="OS Abertas"
-          value="14"
-          change="+3"
-          positive={false}
-          icon={<FileText size={18} className="text-amber-500" />}
-          sub="4 aguardando aprovação"
-        />
-        <KPICard
-          title="IBS/CBS Devido"
-          value="R$ 1.053"
-          change="13,0%"
-          positive={true}
-          icon={<CheckCircle size={18} className="text-emerald-500" />}
-          sub="alíquota efetiva"
-        />
-        <KPICard
-          title="Cashback Tributário"
-          value="R$ 432"
-          change="crédito"
-          positive={true}
-          icon={<TrendingUp size={18} className="text-nexo-500" />}
-          sub="acumulado no mês"
-        />
+        <KPICard icon={<BarChart3 size={18} />} label="Faturamento Hoje" value={fmt(stats.revenue.today)} sub={`Semana: ${fmt(stats.revenue.week)}`} trend={+12.5} color="nexo" />
+        <KPICard icon={<Wrench size={18} />} label="OS Abertas" value={String(stats.mechanic_os.open + stats.mechanic_os.in_progress)} sub={`${stats.mechanic_os.total} total`} trend={-5} color="amber" />
+        <KPICard icon={<Brain size={18} />} label="Sugestoes IA" value={String(stats.pending_suggestions)} sub="aguardando aprovacao" color="violet" />
+        <KPICard icon={<Scissors size={18} />} label="Agendamentos Hoje" value={String(stats.appointments)} sub={`${stats.bakery_products} produtos padaria`} trend={+8} color="emerald" />
       </div>
 
-      {/* Charts row */}
-      <div className="grid grid-cols-1 lg:grid-cols-3 gap-4">
-
+      <div className="grid lg:grid-cols-3 gap-5">
         {/* Revenue Chart */}
-        <div className="card p-5 lg:col-span-2">
+        <div className="lg:col-span-2 card p-5">
           <div className="flex items-center justify-between mb-4">
-            <div>
-              <h2 className="font-semibold text-slate-800 text-sm">Receita × Impostos — 7 dias</h2>
-              <p className="text-xs text-slate-400 mt-0.5">IBS + CBS calculados automaticamente por NCM</p>
-            </div>
-            <span className="badge-approved">Esta semana</span>
+            <h3 className="font-semibold text-slate-800 text-sm">Faturamento Semanal</h3>
+            <span className="text-xs text-slate-400">Receita vs Impostos</span>
           </div>
-          <ResponsiveContainer width="100%" height={200}>
-            <AreaChart data={revenueData}>
-              <defs>
-                <linearGradient id="gradReceita" x1="0" y1="0" x2="0" y2="1">
-                  <stop offset="5%" stopColor="#1A6BFF" stopOpacity={0.15} />
-                  <stop offset="95%" stopColor="#1A6BFF" stopOpacity={0} />
-                </linearGradient>
-                <linearGradient id="gradImpostos" x1="0" y1="0" x2="0" y2="1">
-                  <stop offset="5%" stopColor="#F59E0B" stopOpacity={0.15} />
-                  <stop offset="95%" stopColor="#F59E0B" stopOpacity={0} />
-                </linearGradient>
-              </defs>
-              <CartesianGrid strokeDasharray="3 3" stroke="#EEF0F8" />
-              <XAxis dataKey="day" tick={{ fontSize: 11, fill: '#8892C8' }} axisLine={false} tickLine={false} />
-              <YAxis tick={{ fontSize: 11, fill: '#8892C8' }} axisLine={false} tickLine={false} tickFormatter={v => `R$${(v/1000).toFixed(0)}k`} />
-              <Tooltip
-                contentStyle={{ background: '#fff', border: '1px solid #EEF0F8', borderRadius: 12, fontSize: 12 }}
-                formatter={(v: number, n: string) => [`R$ ${v.toLocaleString('pt-BR')}`, n === 'receita' ? 'Receita' : 'IBS+CBS']}
-              />
-              <Area type="monotone" dataKey="receita"  stroke="#1A6BFF" strokeWidth={2} fill="url(#gradReceita)" />
-              <Area type="monotone" dataKey="impostos" stroke="#F59E0B" strokeWidth={2} fill="url(#gradImpostos)" />
-            </AreaChart>
-          </ResponsiveContainer>
-        </div>
-
-        {/* Module Activity */}
-        <div className="card p-5">
-          <h2 className="font-semibold text-slate-800 text-sm mb-4">Atividade por Módulo</h2>
-          <ResponsiveContainer width="100%" height={200}>
-            <BarChart data={moduleActivity} layout="vertical">
-              <XAxis type="number" tick={{ fontSize: 11, fill: '#8892C8' }} axisLine={false} tickLine={false} />
-              <YAxis type="category" dataKey="module" tick={{ fontSize: 11, fill: '#8892C8' }} axisLine={false} tickLine={false} width={70} />
-              <Tooltip
-                contentStyle={{ background: '#fff', border: '1px solid #EEF0F8', borderRadius: 12, fontSize: 12 }}
-                formatter={(v: number) => [v, 'Transações']}
-              />
-              <Bar dataKey="os" fill="#1A6BFF" radius={[0, 6, 6, 0]} />
-            </BarChart>
-          </ResponsiveContainer>
-        </div>
-      </div>
-
-      {/* Bottom row */}
-      <div className="grid grid-cols-1 lg:grid-cols-3 gap-4">
-
-        {/* Recent OS */}
-        <div className="card lg:col-span-2">
-          <div className="flex items-center justify-between px-5 py-4 border-b border-slate-50">
-            <h2 className="font-semibold text-slate-800 text-sm">Últimas Ordens de Serviço</h2>
-            <Link href="/mechanic" className="text-xs font-medium text-nexo-500 hover:text-nexo-700">Ver todas →</Link>
-          </div>
-          <table className="w-full">
-            <thead>
-              <tr>
-                <th className="table-header">Número</th>
-                <th className="table-header">Placa</th>
-                <th className="table-header">Cliente</th>
-                <th className="table-header">Status</th>
-                <th className="table-header text-right">Valor</th>
-              </tr>
-            </thead>
-            <tbody>
-              {recentOS.map((os) => {
-                const s = statusBadge[os.status]
-                return (
-                  <tr key={os.id} className="hover:bg-slate-50 transition-colors cursor-pointer">
-                    <td className="table-cell font-mono text-xs text-nexo-600">{os.id}</td>
-                    <td className="table-cell font-mono font-semibold text-slate-800">{os.plate}</td>
-                    <td className="table-cell">{os.customer}</td>
-                    <td className="table-cell"><span className={s.cls}>{s.label}</span></td>
-                    <td className="table-cell text-right font-medium">
-                      {os.value > 0 ? `R$ ${os.value.toLocaleString('pt-BR')}` : '—'}
-                    </td>
-                  </tr>
-                )
-              })}
-            </tbody>
-          </table>
-        </div>
-
-        {/* AI Suggestions Panel */}
-        <div className="card p-5">
-          <div className="flex items-center gap-2 mb-4">
-            <div className="w-7 h-7 bg-nexo-50 rounded-lg flex items-center justify-center">
-              <Brain size={14} className="text-nexo-500" />
-            </div>
-            <h2 className="font-semibold text-slate-800 text-sm">IA — Pendentes</h2>
-            <span className="ml-auto text-[10px] font-bold bg-nexo-500 text-white px-1.5 py-0.5 rounded-full">
-              {aiSuggestions.length}
-            </span>
-          </div>
-          <div className="space-y-2.5">
-            {aiSuggestions.map((s) => (
-              <div key={s.id} className="p-3 bg-slate-50 rounded-xl border border-slate-100 hover:border-nexo-200 transition-colors cursor-pointer">
-                <div className="flex items-start justify-between gap-2">
-                  <div>
-                    <p className="text-xs font-semibold text-slate-700">{s.type}</p>
-                    <p className="text-xs text-slate-400 mt-0.5">{s.os}</p>
-                  </div>
-                  <span className={`text-[10px] font-bold px-1.5 py-0.5 rounded-full ${
-                    s.urgency === 'high' ? 'bg-red-100 text-red-600' :
-                    s.urgency === 'medium' ? 'bg-amber-100 text-amber-600' :
-                    'bg-nexo-100 text-nexo-600'
-                  }`}>
-                    {Math.round(s.confidence * 100)}%
-                  </span>
+          <div className="flex items-end gap-2 h-44">
+            {stats.revenue.chart.map((d, i) => (
+              <div key={i} className="flex-1 flex flex-col items-center gap-1">
+                <div className="w-full flex flex-col items-center gap-0.5" style={{ height: 160 }}>
+                  <div className="w-full rounded-t-lg bg-nexo-500 transition-all" style={{ height: `${(d.revenue / maxRev) * 100}%`, minHeight: 4 }} />
+                  <div className="w-full rounded-b-lg bg-red-400/40 transition-all" style={{ height: `${(d.tax / maxRev) * 100}%`, minHeight: 2 }} />
                 </div>
-                <div className="flex gap-2 mt-2.5">
-                  <button className="flex-1 text-xs font-medium py-1 bg-nexo-500 text-white rounded-lg hover:bg-nexo-600 transition-colors">
-                    Aprovar
-                  </button>
-                  <button className="text-xs font-medium py-1 px-3 bg-white text-slate-500 border border-slate-200 rounded-lg hover:bg-slate-50 transition-colors">
-                    Ver
-                  </button>
-                </div>
+                <span className="text-[10px] text-slate-400 font-medium">{d.day}</span>
               </div>
             ))}
           </div>
-          <Link href="/ai-approvals" className="mt-3 flex items-center justify-center text-xs font-medium text-nexo-500 hover:text-nexo-700 py-2">
-            Ver todas as sugestões →
-          </Link>
+          <div className="flex items-center gap-4 mt-3 pt-3 border-t border-slate-100">
+            <div className="flex items-center gap-1.5 text-xs text-slate-500"><div className="w-2.5 h-2.5 rounded bg-nexo-500" /> Receita</div>
+            <div className="flex items-center gap-1.5 text-xs text-slate-500"><div className="w-2.5 h-2.5 rounded bg-red-400/40" /> Impostos</div>
+          </div>
+        </div>
+
+        {/* Mechanic OS Status */}
+        <div className="card p-5">
+          <h3 className="font-semibold text-slate-800 text-sm mb-4">Status das Ordens</h3>
+          <div className="space-y-3">
+            <StatusRow icon={<Clock size={13} />} label="Abertas" value={stats.mechanic_os.open} total={stats.mechanic_os.total} color="#3B82F6" />
+            <StatusRow icon={<AlertTriangle size={13} />} label="Aguard. Aprovacao" value={stats.mechanic_os.await_approval} total={stats.mechanic_os.total} color="#F59E0B" />
+            <StatusRow icon={<Wrench size={13} />} label="Em Andamento" value={stats.mechanic_os.in_progress} total={stats.mechanic_os.total} color="#8B5CF6" />
+            <StatusRow icon={<CheckCircle size={13} />} label="Concluidas" value={stats.mechanic_os.done} total={stats.mechanic_os.total} color="#10B981" />
+          </div>
+          <div className="mt-4 pt-3 border-t border-slate-100">
+            <div className="flex items-center justify-between">
+              <span className="text-xs text-slate-400">Total de OS</span>
+              <span className="text-lg font-bold text-slate-800">{stats.mechanic_os.total}</span>
+            </div>
+          </div>
+        </div>
+      </div>
+
+      {/* Module Activity */}
+      <div className="grid lg:grid-cols-3 gap-5">
+        <div className="card p-5 lg:col-span-2">
+          <h3 className="font-semibold text-slate-800 text-sm mb-3">Atividade por Modulo</h3>
+          <div className="space-y-2">
+            {stats.revenue.by_module.map((m, i) => {
+              const icons = [<Wrench size={14} key="w" />, <Wheat size={14} key="wh" />, <Scissors size={14} key="s" />]
+              const colors = ['bg-nexo-500', 'bg-amber-500', 'bg-pink-500']
+              const maxCount = Math.max(...stats.revenue.by_module.map(x => x.count), 1)
+              return (
+                <div key={i} className="flex items-center gap-3">
+                  <div className={`w-8 h-8 rounded-lg ${colors[i] || 'bg-slate-400'} flex items-center justify-center text-white`}>
+                    {icons[i]}
+                  </div>
+                  <span className="text-sm text-slate-700 w-24 font-medium">{m.module}</span>
+                  <div className="flex-1 h-6 rounded-lg bg-slate-100 overflow-hidden">
+                    <div className={`h-full rounded-lg ${colors[i] || 'bg-slate-400'} transition-all flex items-center px-2`} style={{ width: `${(m.count / maxCount) * 100}%`, minWidth: 30 }}>
+                      <span className="text-[10px] font-bold text-white">{m.count}</span>
+                    </div>
+                  </div>
+                </div>
+              )
+            })}
+          </div>
+        </div>
+        <div className="card p-5">
+          <h3 className="font-semibold text-slate-800 text-sm mb-3">IA Co-Piloto</h3>
+          <div className="text-center py-4">
+            <div className="w-14 h-14 mx-auto rounded-2xl bg-violet-50 flex items-center justify-center mb-3">
+              <Brain size={24} className="text-violet-500" />
+            </div>
+            <p className="text-2xl font-bold text-slate-800">{stats.pending_suggestions}</p>
+            <p className="text-xs text-slate-400 mt-1">sugestoes pendentes</p>
+            <a href="/ai-approvals" className="btn-primary mt-4 text-xs inline-flex">Ver sugestoes</a>
+          </div>
         </div>
       </div>
     </div>
   )
 }
 
-function KPICard({ title, value, change, positive, icon, sub }: {
-  title: string; value: string; change: string; positive: boolean; icon: React.ReactNode; sub: string
-}) {
+function KPICard({ icon, label, value, sub, trend, color }: { icon: React.ReactNode; label: string; value: string; sub: string; trend?: number; color: string }) {
+  const colorMap: Record<string, string> = { nexo: 'bg-nexo-50 text-nexo-600', amber: 'bg-amber-50 text-amber-600', violet: 'bg-violet-50 text-violet-600', emerald: 'bg-emerald-50 text-emerald-600' }
   return (
-    <div className="stat-card animate-slide-up">
-      <div className="flex items-center justify-between">
-        <p className="text-xs font-semibold text-slate-400 uppercase tracking-wide">{title}</p>
-        <div className="w-8 h-8 bg-slate-50 rounded-xl flex items-center justify-center">{icon}</div>
+    <div className="card p-4">
+      <div className="flex items-center justify-between mb-2">
+        <div className={`w-9 h-9 rounded-xl ${colorMap[color]} flex items-center justify-center`}>{icon}</div>
+        {trend !== undefined && (
+          <span className={`text-xs font-semibold flex items-center gap-0.5 ${trend >= 0 ? 'text-emerald-600' : 'text-red-500'}`}>
+            {trend >= 0 ? <ArrowUpRight size={12} /> : <ArrowDownRight size={12} />}
+            {Math.abs(trend)}%
+          </span>
+        )}
       </div>
-      <div>
-        <p className="text-2xl font-display font-700 text-slate-900">{value}</p>
-        <div className="flex items-center gap-1.5 mt-1">
-          {positive
-            ? <TrendingUp size={12} className="text-emerald-500" />
-            : <TrendingDown size={12} className="text-red-400" />
-          }
-          <span className={`text-xs font-medium ${positive ? 'text-emerald-600' : 'text-red-500'}`}>{change}</span>
-          <span className="text-xs text-slate-400">{sub}</span>
-        </div>
+      <p className="text-xl font-bold text-slate-800">{value}</p>
+      <p className="text-xs text-slate-400 mt-0.5">{sub}</p>
+    </div>
+  )
+}
+
+function StatusRow({ icon, label, value, total, color }: { icon: React.ReactNode; label: string; value: number; total: number; color: string }) {
+  const pct = total > 0 ? (value / total) * 100 : 0
+  return (
+    <div className="flex items-center gap-2">
+      <div className="w-6 h-6 rounded-lg flex items-center justify-center" style={{ background: `${color}15`, color }}>{icon}</div>
+      <span className="text-xs text-slate-600 flex-1">{label}</span>
+      <span className="text-sm font-bold text-slate-800 w-6 text-right">{value}</span>
+      <div className="w-20 h-1.5 rounded-full bg-slate-100 overflow-hidden">
+        <div className="h-full rounded-full transition-all" style={{ width: `${pct}%`, background: color }} />
       </div>
     </div>
   )
