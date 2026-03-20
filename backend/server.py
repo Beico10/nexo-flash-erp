@@ -7,6 +7,7 @@ from fastapi import FastAPI, Request, Response
 from contextlib import asynccontextmanager
 import httpx
 import asyncio
+from router_module import router_api
 
 GO_BINARY = "/app/nexo-one"
 go_process = None
@@ -78,6 +79,7 @@ async def lifespan(app: FastAPI):
             go_process.kill()
 
 app = FastAPI(lifespan=lifespan, title="Nexo One Proxy")
+app.include_router(router_api)
 
 @app.api_route("/{path:path}", methods=["GET", "POST", "PUT", "PATCH", "DELETE", "OPTIONS", "HEAD"])
 async def proxy(request: Request, path: str):

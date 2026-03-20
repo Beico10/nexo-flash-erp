@@ -11,7 +11,7 @@ from datetime import datetime
 from typing import Optional
 
 class NexoGoAPITester:
-    def __init__(self, base_url: str = "https://repo-status-check-2.preview.emergentagent.com"):
+    def __init__(self, base_url: str = "https://fastapi-router-setup.preview.emergentagent.com"):
         self.base_url = base_url
         self.session = requests.Session()
         self.access_token: Optional[str] = None
