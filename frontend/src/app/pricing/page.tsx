@@ -71,7 +71,7 @@ export default function PricingPage() {
 
   const fetchPlans = async () => {
     try {
-      const res = await fetch(`${process.env.NEXT_PUBLIC_API_URL}/api/billing/plans`)
+      const res = await fetch('/api/billing/plans')
       const data = await res.json()
       setPlans(data.plans || [])
     } catch (error) {
@@ -84,7 +84,7 @@ export default function PricingPage() {
   const validateCoupon = async () => {
     if (!couponCode) return
     try {
-      const res = await fetch(`${process.env.NEXT_PUBLIC_API_URL}/api/billing/coupon/validate`, {
+      const res = await fetch('/api/billing/coupon/validate', {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify({ code: couponCode, plan_code: 'pro' }),

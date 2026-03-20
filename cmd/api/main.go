@@ -98,6 +98,15 @@ func buildRouter(c *app.Container) http.Handler {
 	// Simulador Fiscal (publico - sem autenticacao)
 	c.SimulatorHandler.RegisterPublicRoutes(mux)
 
+	// Billing publico (planos e cupons)
+	mux.HandleFunc("GET /api/billing/plans", c.BillingHandler.ListPlans)
+	mux.HandleFunc("POST /api/billing/coupon/validate", c.BillingHandler.ValidateCoupon)
+
+	// Trial & Verificacao WhatsApp (publico)
+	mux.HandleFunc("POST /api/auth/verify/start", c.TrialHandler.StartVerification)
+	mux.HandleFunc("POST /api/auth/verify/confirm", c.TrialHandler.VerifyCode)
+	mux.HandleFunc("POST /api/webhooks/whatsapp", c.TrialHandler.WhatsAppWebhook)
+
 	// Rotas protegidas - precisam de JWT via AuthMiddleware
 	protectedMux := http.NewServeMux()
 	c.DashboardHandler.RegisterRoutes(protectedMux)
@@ -108,6 +117,24 @@ func buildRouter(c *app.Container) http.Handler {
 	c.AestheticsHandler.RegisterRoutes(protectedMux)
 	c.AIHandler.RegisterRoutes(protectedMux)
 	c.PaymentHandler.RegisterRoutes(protectedMux)
+
+	// Billing autenticado
+	protectedMux.HandleFunc("GET /api/v1/billing/subscription", c.BillingHandler.GetSubscription)
+	protectedMux.HandleFunc("POST /api/v1/billing/convert", c.BillingHandler.ConvertTrial)
+	protectedMux.HandleFunc("POST /api/v1/billing/change-plan", c.BillingHandler.ChangePlan)
+	protectedMux.HandleFunc("GET /api/v1/billing/usage", c.BillingHandler.GetUsage)
+	protectedMux.HandleFunc("GET /api/v1/billing/feature", c.BillingHandler.CheckFeature)
+
+	// Onboarding autenticado
+	protectedMux.HandleFunc("GET /api/v1/onboarding/steps", c.OnboardingHandler.GetSteps)
+	protectedMux.HandleFunc("GET /api/v1/onboarding/progress", c.OnboardingHandler.GetProgress)
+	protectedMux.HandleFunc("POST /api/v1/onboarding/complete", c.OnboardingHandler.CompleteStep)
+	protectedMux.HandleFunc("POST /api/v1/onboarding/skip", c.OnboardingHandler.SkipOnboarding)
+
+	// Journey tracking autenticado
+	protectedMux.HandleFunc("POST /api/v1/track", c.TrackingHandler.TrackEvent)
+	protectedMux.HandleFunc("GET /api/v1/analytics/funnel", c.AnalyticsHandler.GetFunnel)
+	protectedMux.HandleFunc("GET /api/v1/analytics/drops", c.AnalyticsHandler.GetDropPoints)
 
 	// Monta as rotas protegidas no mux principal com middleware
 	mux.Handle("/api/v1/", authMW(protectedMux))

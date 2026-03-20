@@ -6,6 +6,7 @@ import (
 	"net/http"
 
 	"github.com/nexoone/nexo-one/internal/billing"
+	"github.com/nexoone/nexo-one/pkg/middleware"
 )
 
 type BillingHandler struct {
@@ -63,7 +64,11 @@ func (h *BillingHandler) ValidateCoupon(w http.ResponseWriter, r *http.Request) 
 
 // GetSubscription GET /api/billing/subscription - Retorna assinatura atual.
 func (h *BillingHandler) GetSubscription(w http.ResponseWriter, r *http.Request) {
-	tenantID := r.Context().Value("tenant_id").(string)
+	tenantID, ok := middleware.GetTenantID(r.Context())
+	if !ok {
+		respondError(w, http.StatusUnauthorized, "tenant nao identificado")
+		return
+	}
 
 	sub, err := h.svc.GetSubscription(r.Context(), tenantID)
 	if err != nil {
@@ -81,7 +86,11 @@ func (h *BillingHandler) GetSubscription(w http.ResponseWriter, r *http.Request)
 
 // ConvertTrial POST /api/billing/convert - Converte trial em assinatura paga.
 func (h *BillingHandler) ConvertTrial(w http.ResponseWriter, r *http.Request) {
-	tenantID := r.Context().Value("tenant_id").(string)
+	tenantID, ok := middleware.GetTenantID(r.Context())
+	if !ok {
+		respondError(w, http.StatusUnauthorized, "tenant nao identificado")
+		return
+	}
 
 	var req struct {
 		PaymentMethod string `json:"payment_method"` // "pix", "credit_card", "boleto"
@@ -106,7 +115,11 @@ func (h *BillingHandler) ConvertTrial(w http.ResponseWriter, r *http.Request) {
 
 // ChangePlan POST /api/billing/change-plan - Upgrade ou downgrade de plano.
 func (h *BillingHandler) ChangePlan(w http.ResponseWriter, r *http.Request) {
-	tenantID := r.Context().Value("tenant_id").(string)
+	tenantID, ok := middleware.GetTenantID(r.Context())
+	if !ok {
+		respondError(w, http.StatusUnauthorized, "tenant nao identificado")
+		return
+	}
 
 	var req struct {
 		PlanCode string `json:"plan_code"`
@@ -130,7 +143,11 @@ func (h *BillingHandler) ChangePlan(w http.ResponseWriter, r *http.Request) {
 
 // GetUsage GET /api/billing/usage - Retorna uso atual vs limites.
 func (h *BillingHandler) GetUsage(w http.ResponseWriter, r *http.Request) {
-	tenantID := r.Context().Value("tenant_id").(string)
+	tenantID, ok := middleware.GetTenantID(r.Context())
+	if !ok {
+		respondError(w, http.StatusUnauthorized, "tenant nao identificado")
+		return
+	}
 
 	usage, err := h.svc.GetUsageStatus(r.Context(), tenantID)
 	if err != nil {
@@ -145,7 +162,11 @@ func (h *BillingHandler) GetUsage(w http.ResponseWriter, r *http.Request) {
 
 // CheckFeature GET /api/billing/feature/{feature} - Verifica se tem acesso a recurso.
 func (h *BillingHandler) CheckFeature(w http.ResponseWriter, r *http.Request) {
-	tenantID := r.Context().Value("tenant_id").(string)
+	tenantID, ok := middleware.GetTenantID(r.Context())
+	if !ok {
+		respondError(w, http.StatusUnauthorized, "tenant nao identificado")
+		return
+	}
 	feature := r.URL.Query().Get("feature")
 
 	if feature == "" {
@@ -208,7 +229,7 @@ func (h *BillingHandler) AdminUpdatePlan(w http.ResponseWriter, r *http.Request)
 func (h *BillingHandler) LimitMiddleware(metric string) func(http.Handler) http.Handler {
 	return func(next http.Handler) http.Handler {
 		return http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
-			tenantID, ok := r.Context().Value("tenant_id").(string)
+			tenantID, ok := middleware.GetTenantID(r.Context())
 			if !ok {
 				next.ServeHTTP(w, r)
 				return
@@ -228,7 +249,7 @@ func (h *BillingHandler) LimitMiddleware(metric string) func(http.Handler) http.
 func (h *BillingHandler) FeatureMiddleware(feature string) func(http.Handler) http.Handler {
 	return func(next http.Handler) http.Handler {
 		return http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
-			tenantID, ok := r.Context().Value("tenant_id").(string)
+			tenantID, ok := middleware.GetTenantID(r.Context())
 			if !ok {
 				next.ServeHTTP(w, r)
 				return

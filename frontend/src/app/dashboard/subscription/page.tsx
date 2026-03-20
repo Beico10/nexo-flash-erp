@@ -56,10 +56,12 @@ export default function SubscriptionPage() {
 
   const fetchSubscription = async () => {
     try {
-      const token = localStorage.getItem('token')
-      const res = await fetch(`${process.env.NEXT_PUBLIC_API_URL}/api/billing/subscription`, {
+      const token = sessionStorage.getItem('access_token')
+      if (!token) { window.location.href = '/login'; return }
+      const res = await fetch('/api/v1/billing/subscription', {
         headers: { Authorization: `Bearer ${token}` },
       })
+      if (res.status === 401) { window.location.href = '/login'; return }
       const data = await res.json()
       setSubscription(data.subscription)
       setUsage(data.usage || [])

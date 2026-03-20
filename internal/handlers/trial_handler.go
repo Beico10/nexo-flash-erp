@@ -8,6 +8,7 @@ import (
 
 	"github.com/nexoone/nexo-one/internal/journey"
 	"github.com/nexoone/nexo-one/internal/trial"
+	"github.com/nexoone/nexo-one/pkg/middleware"
 )
 
 // ════════════════════════════════════════════════════════════
@@ -160,15 +161,11 @@ func NewOnboardingHandler(j *journey.Service) *OnboardingHandler {
 func (h *OnboardingHandler) GetSteps(w http.ResponseWriter, r *http.Request) {
 	businessType := r.URL.Query().Get("business_type")
 	if businessType == "" {
-		// Pegar do contexto (tenant autenticado)
-		if bt, ok := r.Context().Value("business_type").(string); ok {
-			businessType = bt
+		claims, ok := middleware.GetClaims(r.Context())
+		if ok {
+			_ = claims // business_type not in JWT claims, use default
 		}
-	}
-
-	if businessType == "" {
-		respondError(w, http.StatusBadRequest, "business_type é obrigatório")
-		return
+		businessType = "mechanic"
 	}
 
 	steps, err := h.journeySvc.GetOnboardingSteps(r.Context(), businessType)
@@ -186,7 +183,11 @@ func (h *OnboardingHandler) GetSteps(w http.ResponseWriter, r *http.Request) {
 // GetProgress GET /api/onboarding/progress
 // Retorna o progresso do onboarding do tenant.
 func (h *OnboardingHandler) GetProgress(w http.ResponseWriter, r *http.Request) {
-	tenantID := r.Context().Value("tenant_id").(string)
+	tenantID, ok := middleware.GetTenantID(r.Context())
+	if !ok {
+		respondError(w, http.StatusUnauthorized, "tenant nao identificado")
+		return
+	}
 
 	progress, err := h.journeySvc.GetOnboardingProgress(r.Context(), tenantID)
 	if err != nil {
@@ -214,8 +215,12 @@ func (h *OnboardingHandler) GetProgress(w http.ResponseWriter, r *http.Request) 
 // CompleteStep POST /api/onboarding/complete
 // Marca um passo como completo.
 func (h *OnboardingHandler) CompleteStep(w http.ResponseWriter, r *http.Request) {
-	tenantID := r.Context().Value("tenant_id").(string)
-	userID := r.Context().Value("user_id").(string)
+	tenantID, _ := middleware.GetTenantID(r.Context())
+	claims, _ := middleware.GetClaims(r.Context())
+	userID := ""
+	if claims != nil {
+		userID = claims.UserID
+	}
 
 	var req struct {
 		StepCode string `json:"step_code"`
@@ -241,7 +246,7 @@ func (h *OnboardingHandler) CompleteStep(w http.ResponseWriter, r *http.Request)
 // SkipOnboarding POST /api/onboarding/skip
 // Pula o onboarding (usuário quer explorar sozinho).
 func (h *OnboardingHandler) SkipOnboarding(w http.ResponseWriter, r *http.Request) {
-	tenantID := r.Context().Value("tenant_id").(string)
+	tenantID, _ := middleware.GetTenantID(r.Context())
 
 	if err := h.journeySvc.SkipOnboarding(r.Context(), tenantID); err != nil {
 		respondError(w, http.StatusInternalServerError, err.Error())
@@ -286,11 +291,11 @@ func (h *TrackingHandler) TrackEvent(w http.ResponseWriter, r *http.Request) {
 
 	// Pegar tenant/user do contexto se autenticado
 	var tenantID, userID string
-	if tid, ok := r.Context().Value("tenant_id").(string); ok {
+	if tid, ok := middleware.GetTenantID(r.Context()); ok {
 		tenantID = tid
 	}
-	if uid, ok := r.Context().Value("user_id").(string); ok {
-		userID = uid
+	if claims, ok := middleware.GetClaims(r.Context()); ok {
+		userID = claims.UserID
 	}
 
 	event := &journey.Event{

@@ -10,13 +10,16 @@ import (
 	"github.com/nexoone/nexo-one/internal/ai"
 	"github.com/nexoone/nexo-one/internal/auth"
 	"github.com/nexoone/nexo-one/internal/baas"
+	"github.com/nexoone/nexo-one/internal/billing"
 	"github.com/nexoone/nexo-one/internal/handlers"
+	"github.com/nexoone/nexo-one/internal/journey"
 	"github.com/nexoone/nexo-one/internal/modules/aesthetics"
 	"github.com/nexoone/nexo-one/internal/modules/bakery"
 	"github.com/nexoone/nexo-one/internal/modules/logistics"
 	"github.com/nexoone/nexo-one/internal/modules/mechanic"
 	"github.com/nexoone/nexo-one/internal/repository/memory"
 	"github.com/nexoone/nexo-one/internal/tax"
+	"github.com/nexoone/nexo-one/internal/trial"
 )
 
 type Config struct {
@@ -26,21 +29,26 @@ type Config struct {
 }
 
 type Container struct {
-	MechanicHandler   *handlers.MechanicHandler
-	BakeryHandler     *handlers.BakeryHandler
-	TaxHandler        *handlers.TaxHandler
-	LogisticsHandler  *handlers.LogisticsHandler
-	AestheticsHandler *handlers.AestheticsHandler
-	AIHandler         *handlers.AIHandler
-	PaymentHandler    *handlers.PaymentHandler
-	SimulatorHandler  *handlers.SimulatorHandler
-	DashboardHandler  *handlers.DashboardHandler
-	AuthService       *auth.Service
-	TaxEngine         *tax.Engine
-	tenantRepo        *memory.TenantRepo
-	userRepo          *memory.UserRepo
-	tokenStore        *auth.RedisTokenStore
-	Close             func()
+	MechanicHandler    *handlers.MechanicHandler
+	BakeryHandler      *handlers.BakeryHandler
+	TaxHandler         *handlers.TaxHandler
+	LogisticsHandler   *handlers.LogisticsHandler
+	AestheticsHandler  *handlers.AestheticsHandler
+	AIHandler          *handlers.AIHandler
+	PaymentHandler     *handlers.PaymentHandler
+	SimulatorHandler   *handlers.SimulatorHandler
+	DashboardHandler   *handlers.DashboardHandler
+	BillingHandler     *handlers.BillingHandler
+	TrialHandler       *handlers.TrialHandler
+	OnboardingHandler  *handlers.OnboardingHandler
+	TrackingHandler    *handlers.TrackingHandler
+	AnalyticsHandler   *handlers.AnalyticsHandler
+	AuthService        *auth.Service
+	TaxEngine          *tax.Engine
+	tenantRepo         *memory.TenantRepo
+	userRepo           *memory.UserRepo
+	tokenStore         *auth.RedisTokenStore
+	Close              func()
 }
 
 func Wire(cfg Config) (*Container, error) {
@@ -56,6 +64,9 @@ func Wire(cfg Config) (*Container, error) {
 	logisticsRepo := memory.NewLogisticsRepo()
 	paymentRepo := memory.NewPaymentRepo()
 	aestheticsRepo := memory.NewAestheticsRepo()
+	billingRepo := memory.NewBillingRepo()
+	trialRepo := memory.NewTrialRepo()
+	journeyRepo := memory.NewJourneyRepo()
 	tokenStore := auth.NewRedisTokenStore(cache)
 
 	// Servicos
@@ -70,6 +81,9 @@ func Wire(cfg Config) (*Container, error) {
 	paymentSvc := baas.NewPaymentService(baasGW, paymentRepo)
 	bakeryService := bakery.NewPDVService(bakeryRepo, nil)
 	dashboardProvider := memory.NewDashboardProvider(mechanicRepo, bakeryRepo, aestheticsRepo, aiRepo)
+	billingSvc := billing.NewService(billingRepo)
+	trialSvc := trial.NewService(trialRepo)
+	journeySvc := journey.NewService(journeyRepo)
 
 	// Seed demo data
 	memory.SeedAllDemoData(mechanicRepo, bakeryRepo, aestheticsRepo, aiRepo)
@@ -78,21 +92,26 @@ func Wire(cfg Config) (*Container, error) {
 	authSvc := auth.NewService(cfg.JWTSecret, &userProviderAdapter{tenants: tenantRepo, users: userRepo}, tokenStore)
 
 	return &Container{
-		MechanicHandler:   handlers.NewMechanicHandler(osSvc),
-		BakeryHandler:     handlers.NewBakeryHandler(bakeryService),
-		TaxHandler:        handlers.NewTaxHandler(taxEngine),
-		LogisticsHandler:  handlers.NewLogisticsHandler(contractSvc),
-		AestheticsHandler: handlers.NewAestheticsHandler(agendaSvc),
-		AIHandler:         handlers.NewAIHandler(aiGateway, concierge),
-		PaymentHandler:    handlers.NewPaymentHandler(paymentSvc),
-		SimulatorHandler:  handlers.NewSimulatorHandler(taxEngine, taxRateRepo.ListRates),
-		DashboardHandler:  handlers.NewDashboardHandler(dashboardProvider),
-		AuthService:       authSvc,
-		TaxEngine:         taxEngine,
-		tenantRepo:        tenantRepo,
-		userRepo:          userRepo,
-		tokenStore:        tokenStore,
-		Close:             func() { cache.Close() },
+		MechanicHandler:    handlers.NewMechanicHandler(osSvc),
+		BakeryHandler:      handlers.NewBakeryHandler(bakeryService),
+		TaxHandler:         handlers.NewTaxHandler(taxEngine),
+		LogisticsHandler:   handlers.NewLogisticsHandler(contractSvc),
+		AestheticsHandler:  handlers.NewAestheticsHandler(agendaSvc),
+		AIHandler:          handlers.NewAIHandler(aiGateway, concierge),
+		PaymentHandler:     handlers.NewPaymentHandler(paymentSvc),
+		SimulatorHandler:   handlers.NewSimulatorHandler(taxEngine, taxRateRepo.ListRates),
+		DashboardHandler:   handlers.NewDashboardHandler(dashboardProvider),
+		BillingHandler:     handlers.NewBillingHandler(billingSvc),
+		TrialHandler:       handlers.NewTrialHandler(trialSvc, journeySvc),
+		OnboardingHandler:  handlers.NewOnboardingHandler(journeySvc),
+		TrackingHandler:    handlers.NewTrackingHandler(journeySvc),
+		AnalyticsHandler:   handlers.NewAnalyticsHandler(journeySvc),
+		AuthService:        authSvc,
+		TaxEngine:          taxEngine,
+		tenantRepo:         tenantRepo,
+		userRepo:           userRepo,
+		tokenStore:         tokenStore,
+		Close:              func() { cache.Close() },
 	}, nil
 }
 
