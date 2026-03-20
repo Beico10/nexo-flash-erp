@@ -35,55 +35,110 @@ func (h *BillingHandler) ListPlans(w http.ResponseWriter, r *http.Request) {
 
 // UpdatePlan PUT /api/v1/admin/plans - Atualiza preco/config de um plano (Admin).
 func (h *BillingHandler) UpdatePlan(w http.ResponseWriter, r *http.Request) {
-	var req billing.Plan
-	if err := json.NewDecoder(r.Body).Decode(&req); err != nil {
+	var raw map[string]interface{}
+	if err := json.NewDecoder(r.Body).Decode(&raw); err != nil {
 		respondError(w, http.StatusBadRequest, "JSON invalido")
 		return
 	}
-	if req.ID == "" && req.Code == "" {
+
+	code, _ := raw["code"].(string)
+	id, _ := raw["id"].(string)
+	if code == "" && id == "" {
 		respondError(w, http.StatusBadRequest, "id ou code do plano obrigatorio")
 		return
 	}
 
-	// Se veio por code, busca o plano existente
-	existing, err := h.svc.GetPlanByCode(r.Context(), req.Code)
+	existing, err := h.svc.GetPlanByCode(r.Context(), code)
 	if err != nil {
 		respondError(w, http.StatusNotFound, "plano nao encontrado")
 		return
 	}
 
-	// Atualiza apenas campos enviados
-	if req.Name != "" {
-		existing.Name = req.Name
+	// Atualiza apenas campos presentes no request
+	if v, ok := raw["name"].(string); ok && v != "" {
+		existing.Name = v
 	}
-	if req.Description != "" {
-		existing.Description = req.Description
+	if v, ok := raw["description"].(string); ok && v != "" {
+		existing.Description = v
 	}
-	if req.PriceMonthly > 0 {
-		existing.PriceMonthly = req.PriceMonthly
+	if v, ok := raw["price_monthly"].(float64); ok {
+		existing.PriceMonthly = v
 	}
-	if req.PriceYearly > 0 {
-		existing.PriceYearly = req.PriceYearly
+	if v, ok := raw["price_yearly"].(float64); ok {
+		existing.PriceYearly = v
 	}
-	existing.SetupFee = req.SetupFee // 0 is valid (gratis)
-	if req.MaxUsers != nil {
-		existing.MaxUsers = req.MaxUsers
+	if _, ok := raw["setup_fee"]; ok {
+		if v, ok := raw["setup_fee"].(float64); ok {
+			existing.SetupFee = v
+		}
 	}
-	if req.MaxTransactions != nil {
-		existing.MaxTransactions = req.MaxTransactions
+	if v, ok := raw["max_users"]; ok {
+		if v == nil {
+			existing.MaxUsers = nil
+		} else if f, ok := v.(float64); ok {
+			i := int(f); existing.MaxUsers = &i
+		}
 	}
-	if req.MaxProducts != nil {
-		existing.MaxProducts = req.MaxProducts
+	if v, ok := raw["max_transactions"]; ok {
+		if v == nil {
+			existing.MaxTransactions = nil
+		} else if f, ok := v.(float64); ok {
+			i := int(f); existing.MaxTransactions = &i
+		}
 	}
-	if req.MaxInvoices != nil {
-		existing.MaxInvoices = req.MaxInvoices
+	if v, ok := raw["max_products"]; ok {
+		if v == nil {
+			existing.MaxProducts = nil
+		} else if f, ok := v.(float64); ok {
+			i := int(f); existing.MaxProducts = &i
+		}
 	}
-	if len(req.AllowedNiches) > 0 {
-		existing.AllowedNiches = req.AllowedNiches
+	if v, ok := raw["max_invoices"]; ok {
+		if v == nil {
+			existing.MaxInvoices = nil
+		} else if f, ok := v.(float64); ok {
+			i := int(f); existing.MaxInvoices = &i
+		}
 	}
-	existing.IsFeatured = req.IsFeatured
-	existing.IsActive = req.IsActive
-	existing.Features = req.Features
+	if v, ok := raw["allowed_niches"]; ok {
+		if arr, ok := v.([]interface{}); ok && len(arr) > 0 {
+			niches := make([]string, 0, len(arr))
+			for _, n := range arr {
+				if s, ok := n.(string); ok {
+					niches = append(niches, s)
+				}
+			}
+			existing.AllowedNiches = niches
+		}
+	}
+	if v, ok := raw["is_featured"]; ok {
+		if b, ok := v.(bool); ok {
+			existing.IsFeatured = b
+		}
+	}
+	if v, ok := raw["is_active"]; ok {
+		if b, ok := v.(bool); ok {
+			existing.IsActive = b
+		}
+	}
+	if v, ok := raw["features"]; ok {
+		if fm, ok := v.(map[string]interface{}); ok {
+			if b, ok := fm["fiscal_2026"].(bool); ok { existing.Features.Fiscal2026 = b }
+			if b, ok := fm["baas_pix"].(bool); ok { existing.Features.BaaSPix = b }
+			if b, ok := fm["baas_boleto"].(bool); ok { existing.Features.BaaSBoleto = b }
+			if b, ok := fm["baas_split"].(bool); ok { existing.Features.BaaSSplit = b }
+			if b, ok := fm["whatsapp"].(bool); ok { existing.Features.WhatsApp = b }
+			if b, ok := fm["ai_copilot"].(bool); ok { existing.Features.AICopilot = b }
+			if b, ok := fm["ai_concierge"].(bool); ok { existing.Features.AIConcierge = b }
+			if b, ok := fm["roteirizador"].(bool); ok { existing.Features.Roteirizador = b }
+			if b, ok := fm["multi_pdv"].(bool); ok { existing.Features.MultiPDV = b }
+			if b, ok := fm["api_access"].(bool); ok { existing.Features.APIAccess = b }
+			if b, ok := fm["priority_support"].(bool); ok { existing.Features.PrioritySupport = b }
+			if b, ok := fm["custom_reports"].(bool); ok { existing.Features.CustomReports = b }
+			if b, ok := fm["dedicated_support"].(bool); ok { existing.Features.DedicatedSupport = b }
+			if b, ok := fm["sla_99_9"].(bool); ok { existing.Features.SLA999 = b }
+		}
+	}
 
 	if err := h.svc.UpdatePlan(r.Context(), existing); err != nil {
 		respondError(w, http.StatusInternalServerError, err.Error())
