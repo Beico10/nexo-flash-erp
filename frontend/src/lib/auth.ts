@@ -14,7 +14,7 @@
 
 import { useCallback, useEffect, useRef, useState } from 'react'
 
-const API_URL = process.env.NEXT_PUBLIC_API_URL || 'http://localhost:8080'
+const API_URL = ''
 
 export interface AuthUser {
   user_id:       string
@@ -79,7 +79,7 @@ export async function apiFetch(path: string, options: RequestInit = {}): Promise
 // tryRefresh tenta renovar o access_token usando o refresh_token do cookie.
 async function tryRefresh(): Promise<boolean> {
   try {
-    const res = await fetch(`${API_URL}/auth/refresh`, {
+    const res = await fetch(`${API_URL}/api/auth/refresh`, {
       method: 'POST',
       credentials: 'include', // inclui o cookie refresh_token
     })
@@ -101,7 +101,7 @@ export function useAuth() {
   // Buscar dados do usuário autenticado
   const fetchMe = useCallback(async () => {
     try {
-      const res = await apiFetch('/auth/me')
+      const res = await apiFetch('/api/auth/me')
       if (res.ok) {
         const data = await res.json()
         setUser(data)
@@ -137,7 +137,7 @@ export function useAuth() {
   }, [fetchMe])
 
   const logout = async () => {
-    await fetch(`${API_URL}/auth/logout`, {
+    await fetch(`${API_URL}/api/auth/logout`, {
       method: 'POST',
       credentials: 'include',
     })
