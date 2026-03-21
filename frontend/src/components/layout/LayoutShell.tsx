@@ -273,7 +273,7 @@ export default function LayoutShell({ children }: { children: React.ReactNode })
   const [showLoginModal, setShowLoginModal] = useState(false)
   const [mounted, setMounted] = useState(false)
 
-  const isLoginPage = pathname === '/login' || pathname === '/cadastro'
+  const isLoginPage = pathname === '/login' || pathname === '/cadastro' || pathname === '/' || pathname === '/checkout'
 
   useEffect(() => {
     setMounted(true)
@@ -287,15 +287,14 @@ export default function LayoutShell({ children }: { children: React.ReactNode })
     const isDemoMode = localStorage.getItem('nexo_demo_mode') === 'true'
     const isDemoToken = token === 'demo-token' || token.startsWith('demo')
 
-    // Se não tem token nenhum — redirecionar para login
-    if (!token) {
-      router.push('/login')
-      return
-    }
+    // Demo mode ou demo token: navega LIVREMENTE por todas as telas
+    // O modal só aparece quando o usuário chama showLoginPrompt() em ações reais
+    if (isDemoMode || isDemoToken) return
 
-    // Se é demo mode e tenta acessar rota protegida — mostrar modal suave
-    if ((isDemoMode || isDemoToken) && PROTECTED_ROUTES.some(r => pathname?.startsWith(r))) {
-      setShowLoginModal(true)
+    // Sem token nenhum: redirecionar para entrada
+    if (!token) {
+      router.push('/')
+      return
     }
   }, [pathname, mounted])
 
