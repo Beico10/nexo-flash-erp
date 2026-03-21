@@ -1,6 +1,5 @@
 'use client'
 import { useState } from 'react'
-import Sidebar from '@/components/layout/Sidebar'
 import { Zap, Key, Building2, Webhook, Plus, Copy, Eye, EyeOff, Trash2, Check, AlertCircle, Globe, Shield, Database, FileText } from 'lucide-react'
 
 type Tab = 'api-keys' | 'branches' | 'webhooks'
@@ -145,21 +144,19 @@ export default function EnterprisePage() {
   ]
 
   return (
-    <div className="flex min-h-screen bg-[#F8F9FC]">
-      <Sidebar />
-      <main className="flex-1 p-8">
-        {/* Header */}
-        <div className="mb-8">
-          <div className="flex items-center gap-3 mb-2">
-            <div className="w-10 h-10 rounded-xl flex items-center justify-center" style={{ background: 'linear-gradient(135deg, #1A47C8 0%, #0F2D8A 100%)' }}>
-              <Zap size={20} className="text-white" />
-            </div>
-            <div>
-              <h1 style={{ fontFamily: 'var(--font-syne)', fontWeight: 700, fontSize: 24, color: '#0D1B4B' }}>Enterprise</h1>
-              <p style={{ fontSize: 14, color: '#8892B8' }}>Gerencie integrações, filiais e configurações avançadas</p>
-            </div>
+    <div className="space-y-6">
+      {/* Header */}
+      <div>
+        <div className="flex items-center gap-3 mb-2">
+          <div className="w-10 h-10 rounded-xl flex items-center justify-center" style={{ background: 'linear-gradient(135deg, #1A47C8 0%, #0F2D8A 100%)' }}>
+            <Zap size={20} className="text-white" />
+          </div>
+          <div>
+            <h1 style={{ fontFamily: 'var(--font-syne)', fontWeight: 700, fontSize: 24, color: '#0D1B4B' }}>Enterprise</h1>
+            <p style={{ fontSize: 14, color: '#8892B8' }}>Gerencie integrações, filiais e configurações avançadas</p>
           </div>
         </div>
+      </div>
 
         {/* Tabs */}
         <div className="flex gap-2 mb-6 p-1 bg-white rounded-xl border border-slate-200 w-fit">
@@ -602,7 +599,6 @@ export default function EnterprisePage() {
             </div>
           )}
         </div>
-      </main>
     </div>
   )
 }
