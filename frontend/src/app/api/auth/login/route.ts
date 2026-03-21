@@ -5,7 +5,7 @@
 
 import { NextRequest, NextResponse } from 'next/server'
 
-const API_URL = process.env.NEXT_PUBLIC_API_URL || 'http://localhost:8080'
+const API_URL = process.env.NEXT_PUBLIC_API_URL || 'http://localhost:8002'
 
 export async function POST(req: NextRequest) {
   const body = await req.json()
