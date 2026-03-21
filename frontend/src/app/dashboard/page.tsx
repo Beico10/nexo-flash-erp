@@ -469,8 +469,13 @@ export default function DashboardPage() {
 
   useEffect(() => {
     const configured = localStorage.getItem('nexo_dash_configured')
-    if (!configured) {
+    const nichoJaEscolhido = localStorage.getItem('nexo_business_type')
+    // Se o nicho ja foi escolhido na tela de entrada, nao mostra onboarding de novo
+    if (!configured && !nichoJaEscolhido) {
       setTimeout(() => setShowOnboarding(true), 600)
+    } else if (!configured && nichoJaEscolhido) {
+      // Nicho ja escolhido na entrada — usar cards padrao do nicho
+      localStorage.setItem('nexo_dash_configured', 'true')
     } else {
       const saved = localStorage.getItem('nexo_dash_cards')
       if (saved) setCards(JSON.parse(saved))
