@@ -13,11 +13,14 @@ export default function LayoutShell({ children }: { children: React.ReactNode })
 
   useEffect(() => {
     if (typeof window !== 'undefined') {
-      const token = sessionStorage.getItem('access_token')
+      const sessionToken = sessionStorage.getItem('access_token')
+      const localToken = localStorage.getItem('nexo_token')
       const demoMode = localStorage.getItem('nexo_demo_mode') === 'true'
       
-      // Se não é rota pública e não tem token nem demo mode, redireciona
-      if (!isPublicRoute && !token && !demoMode) {
+      const hasAccess = sessionToken || localToken || demoMode
+      
+      // Se não é rota pública e não tem acesso, redireciona
+      if (!isPublicRoute && !hasAccess) {
         router.push('/login')
         return
       }

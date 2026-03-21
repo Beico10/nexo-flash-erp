@@ -54,12 +54,20 @@ export default function LoginPage() {
       localStorage.setItem('nexo_token', 'demo-token')
       localStorage.setItem('nexo_tenant', 'demo')
       localStorage.setItem('nexo_demo_mode', 'true')
+      sessionStorage.setItem('access_token', 'demo-token')
+      window.location.href = '/dashboard'
     }
-    router.push('/dashboard')
   }
 
   const handleTrial = () => {
-    router.push('/cadastro')
+    // Por enquanto, entra em modo demo também
+    if (typeof window !== 'undefined') {
+      localStorage.setItem('nexo_token', 'demo-token')
+      localStorage.setItem('nexo_tenant', 'demo')
+      localStorage.setItem('nexo_demo_mode', 'true')
+      sessionStorage.setItem('access_token', 'demo-token')
+      window.location.href = '/dashboard'
+    }
   }
 
   if (!mounted) return null
@@ -219,7 +227,9 @@ export default function LoginPage() {
 
           {/* BOTÃO PRINCIPAL — explorar sem login */}
           <button
+            type="button"
             onClick={handleExplore}
+            data-testid="explore-btn"
             style={{
               width: '100%',
               background: '#0A3D8F',
@@ -227,19 +237,19 @@ export default function LoginPage() {
               padding: '15px 18px', textAlign: 'center',
               cursor: 'pointer', marginBottom: 8,
               animation: 'pulseBtn 2s infinite',
+              color: 'white',
+              fontSize: 14,
+              fontWeight: 500,
             }}
           >
-            <p style={{ fontSize: 14, fontWeight: 500, margin: '0 0 3px', color: 'white' }}>
-              Explorar o sistema agora →
-            </p>
-            <p style={{ fontSize: 11, color: 'rgba(255,255,255,0.65)', margin: 0 }}>
-              Sem cadastro · Entre e conheça à vontade
-            </p>
+            Explorar o sistema agora →
           </button>
 
           {/* Trial */}
           <button
+            type="button"
             onClick={handleTrial}
+            data-testid="trial-btn"
             style={{
               width: '100%',
               background: 'white',
@@ -247,14 +257,12 @@ export default function LoginPage() {
               borderRadius: 8, padding: '12px 16px',
               textAlign: 'center', cursor: 'pointer',
               marginBottom: 20,
+              color: '#0A3D8F',
+              fontSize: 13,
+              fontWeight: 500,
             }}
           >
-            <p style={{ fontSize: 13, fontWeight: 500, color: '#0A3D8F', margin: '0 0 3px' }}>
-              Começar grátis por 7 dias
-            </p>
-            <p style={{ fontSize: 11, color: '#64748b', margin: 0 }}>
-              Sem cadastro de cartão · Cancele quando quiser
-            </p>
+            Começar grátis por 7 dias
           </button>
 
           {/* Divisor */}

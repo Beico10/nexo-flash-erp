@@ -12,16 +12,10 @@ const nextConfig = {
     ]
   },
 
-  // Configurações de produção
-  output: 'standalone',
-  
   // Permite imagens do domínio do sistema
   images: {
     domains: ['localhost'],
   },
-
-  // Desabilitar telemetria
-  telemetry: false,
 }
 
 module.exports = nextConfig

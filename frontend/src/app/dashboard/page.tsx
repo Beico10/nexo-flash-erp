@@ -15,8 +15,42 @@ export default function DashboardPage() {
   const [loading, setLoading] = useState(true)
 
   useEffect(() => {
-    const token = typeof window !== 'undefined' ? sessionStorage.getItem('access_token') || '' : ''
-    if (!token) { window.location.href = '/login'; return }
+    const token = typeof window !== 'undefined' ? sessionStorage.getItem('access_token') || localStorage.getItem('nexo_token') || '' : ''
+    const demoMode = typeof window !== 'undefined' ? localStorage.getItem('nexo_demo_mode') === 'true' : false
+    const isDemoToken = token === 'demo-token'
+    
+    if (!token && !demoMode) { window.location.href = '/login'; return }
+    
+    // Em demo mode ou com demo-token, usar dados mockados
+    if (demoMode || isDemoToken) {
+      setStats({
+        mechanic_os: { total: 5, open: 2, in_progress: 1, await_approval: 1, done: 1 },
+        bakery_products: 6,
+        appointments: 3,
+        pending_suggestions: 3,
+        revenue: { 
+          today: 1250, 
+          week: 8100, 
+          chart: [
+            { day: 'Seg', revenue: 1200, tax: 180 },
+            { day: 'Ter', revenue: 980, tax: 147 },
+            { day: 'Qua', revenue: 1450, tax: 218 },
+            { day: 'Qui', revenue: 1100, tax: 165 },
+            { day: 'Sex', revenue: 1370, tax: 206 },
+            { day: 'Sab', revenue: 1200, tax: 180 },
+            { day: 'Dom', revenue: 800, tax: 120 },
+          ],
+          by_module: [
+            { module: 'Mecanica', count: 5 },
+            { module: 'Padaria', count: 6 },
+            { module: 'Estetica', count: 6 },
+          ]
+        }
+      })
+      setLoading(false)
+      return
+    }
+    
     fetch('/api/v1/dashboard/stats', { headers: { Authorization: `Bearer ${token}` } })
       .then(r => { if (r.status === 401) { window.location.href = '/login'; return null }; return r.json() })
       .then(d => { if (d) { setStats(d); setLoading(false) } })
