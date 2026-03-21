@@ -17,12 +17,13 @@ import (
 
 // Claims representa o payload do JWT do Nexo One.
 type Claims struct {
-	UserID     string   `json:"sub"`
-	TenantID   string   `json:"tenant_id"`
-	TenantSlug string   `json:"tenant_slug"`
-	Role       string   `json:"role"`
-	Permissions []string `json:"permissions"`
-	ExpiresAt  time.Time `json:"exp"`
+	UserID       string   `json:"sub"`
+	TenantID     string   `json:"tenant_id"`
+	TenantSlug   string   `json:"tenant_slug"`
+	BusinessType string   `json:"business_type"`
+	Role         string   `json:"role"`
+	Permissions  []string `json:"permissions"`
+	ExpiresAt    time.Time `json:"exp"`
 }
 
 // contextKey para armazenar claims no contexto HTTP.
