@@ -28,6 +28,7 @@ const navGroups = [
     { label: 'Calçados', icon: ShoppingBag, href: '/shoes' },
   ]},
   { label: 'Sistema', items: [
+    { label: 'Enterprise', icon: Zap, href: '/enterprise' },
     { label: 'Minha Assinatura', icon: Crown, href: '/dashboard/subscription' },
     { label: 'Onboarding', icon: Compass, href: '/onboarding' },
     { label: 'Gestao de Planos', icon: SlidersHorizontal, href: '/admin/plans' },
