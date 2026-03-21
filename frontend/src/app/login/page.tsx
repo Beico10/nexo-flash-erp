@@ -1,311 +1,353 @@
 'use client'
-import { useState } from 'react'
-import { Eye, EyeOff, Zap, ArrowRight, Shield, Activity, Lock } from 'lucide-react'
+import { useState, useEffect } from 'react'
+import { useRouter } from 'next/navigation'
 
 export default function LoginPage() {
-  const [form, setForm] = useState({ tenantSlug: '', email: '', password: '' })
-  const [showPass, setShowPass] = useState(false)
+  const router = useRouter()
+  const [email, setEmail] = useState('')
+  const [password, setPassword] = useState('')
   const [loading, setLoading] = useState(false)
   const [error, setError] = useState('')
-  const [step, setStep] = useState<'slug' | 'credentials'>('slug')
+  const [mounted, setMounted] = useState(false)
 
-  const handleSlugNext = (e: React.FormEvent) => {
-    e.preventDefault()
-    if (form.tenantSlug.trim()) setStep('credentials')
-  }
+  useEffect(() => { setMounted(true) }, [])
 
   const handleLogin = async (e: React.FormEvent) => {
     e.preventDefault()
     setLoading(true)
     setError('')
+
     try {
-      const res = await fetch('/api/auth/login', {
+      const res = await fetch('/api/v1/auth/login', {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({
-          tenant_slug: form.tenantSlug,
-          email: form.email,
-          password: form.password,
-        }),
+        body: JSON.stringify({ email, password }),
       })
+
       const data = await res.json()
-      if (!res.ok) throw new Error(data.error || 'Falha no login')
-      // Salvar access_token em memória (nunca localStorage)
-      sessionStorage.setItem('access_token', data.access_token)
-      window.location.href = '/dashboard'
-    } catch (err: any) {
-      setError(err.message)
+
+      if (!res.ok) {
+        setError(data.error || 'E-mail ou senha incorretos')
+        return
+      }
+
+      // Salvar token e redirecionar
+      if (typeof window !== 'undefined') {
+        localStorage.setItem('nexo_token', data.access_token)
+        if (data.tenant_slug) {
+          localStorage.setItem('nexo_tenant', data.tenant_slug)
+        }
+      }
+
+      router.push('/dashboard')
+    } catch {
+      setError('Erro de conexão. Tente novamente.')
     } finally {
       setLoading(false)
     }
   }
 
+  const handleExplore = () => {
+    // Entra no sistema sem login — modo demonstração
+    if (typeof window !== 'undefined') {
+      localStorage.setItem('nexo_token', 'demo-token')
+      localStorage.setItem('nexo_tenant', 'demo')
+      localStorage.setItem('nexo_demo_mode', 'true')
+    }
+    router.push('/dashboard')
+  }
+
+  const handleTrial = () => {
+    router.push('/cadastro')
+  }
+
+  if (!mounted) return null
+
   return (
-    <div className="min-h-screen flex" style={{ background: '#F2F4FA' }}>
+    <div style={{
+      display: 'flex',
+      minHeight: '100vh',
+      fontFamily: '-apple-system, BlinkMacSystemFont, "Segoe UI", sans-serif',
+    }}>
 
-      {/* Left panel — branding */}
-      <div
-        className="hidden lg:flex flex-col justify-between w-[480px] flex-shrink-0 p-12 relative overflow-hidden"
-        style={{ background: 'linear-gradient(145deg, #0F2D8A 0%, #1A47C8 50%, #2255E0 100%)' }}
-      >
-        {/* Background decoration */}
-        <div style={{
-          position: 'absolute', inset: 0, opacity: 0.06,
-          backgroundImage: 'radial-gradient(circle at 1px 1px, white 1px, transparent 0)',
-          backgroundSize: '32px 32px',
-        }} />
-        <div style={{
-          position: 'absolute', bottom: -100, right: -100,
-          width: 400, height: 400,
-          borderRadius: '50%',
-          background: 'radial-gradient(circle, rgba(255,255,255,0.08) 0%, transparent 70%)',
-        }} />
-        <div style={{
-          position: 'absolute', top: -60, left: -60,
-          width: 240, height: 240,
-          borderRadius: '50%',
-          background: 'radial-gradient(circle, rgba(255,255,255,0.05) 0%, transparent 70%)',
-        }} />
+      {/* ── LADO ESQUERDO — azul ── */}
+      <div style={{
+        width: '46%',
+        background: '#0A3D8F',
+        padding: '40px 36px',
+        display: 'flex',
+        flexDirection: 'column',
+        justifyContent: 'space-between',
+      }}>
+        <div>
 
-        {/* Logo */}
-        <div className="relative">
-          <div className="flex items-center gap-3">
+          {/* Logo */}
+          <div style={{ display: 'flex', alignItems: 'center', gap: 10, marginBottom: 36 }}>
             <div style={{
-              width: 44, height: 44, borderRadius: 14,
+              width: 36, height: 36, borderRadius: 8,
               background: 'rgba(255,255,255,0.15)',
-              border: '1px solid rgba(255,255,255,0.2)',
               display: 'flex', alignItems: 'center', justifyContent: 'center',
-              backdropFilter: 'blur(10px)',
+              flexShrink: 0,
             }}>
-              <Zap size={22} className="text-white" strokeWidth={2.5} />
+              <svg width="18" height="18" viewBox="0 0 18 18" fill="none">
+                <rect x="2" y="2" width="6" height="6" rx="1.5" fill="white" opacity="0.9"/>
+                <rect x="10" y="2" width="6" height="6" rx="1.5" fill="white" opacity="0.55"/>
+                <rect x="2" y="10" width="6" height="6" rx="1.5" fill="white" opacity="0.55"/>
+                <rect x="10" y="10" width="6" height="6" rx="1.5" fill="white" opacity="0.9"/>
+              </svg>
             </div>
             <div>
-              <div style={{ fontFamily: 'var(--font-syne)', fontWeight: 800, fontSize: 24, color: '#fff', letterSpacing: '-0.02em' }}>
-                NexoOne
+              <div style={{ fontSize: 15, fontWeight: 500, color: 'white', letterSpacing: -0.3 }}>
+                Gestão Para Todos
               </div>
-              <div style={{ fontSize: 11, color: 'rgba(255,255,255,0.5)', fontWeight: 600, letterSpacing: '0.06em', textTransform: 'uppercase' }}>
-                ERP Inteligente
+              <div style={{ fontSize: 11, color: 'rgba(255,255,255,0.4)', marginTop: 1 }}>
+                ERP inteligente
               </div>
             </div>
           </div>
-        </div>
 
-        {/* Middle content */}
-        <div className="relative space-y-8">
-          <div>
-            <p style={{ fontFamily: 'var(--font-syne)', fontSize: 34, fontWeight: 800, color: '#fff', lineHeight: 1.15, letterSpacing: '-0.03em' }}>
-              Do TOTVS ao cafezinho — gestão para todos.
-            </p>
-            <p style={{ fontSize: 15, color: 'rgba(255,255,255,0.65)', marginTop: 16, lineHeight: 1.7 }}>
-              ERP multi-nicho com motor fiscal IBS/CBS 2026, IA assistente com aprovação humana e zero burocracia.
-            </p>
+          {/* Headline + Badge lado a lado */}
+          <div style={{ display: 'flex', gap: 14, alignItems: 'flex-start', marginBottom: 28 }}>
+
+            {/* Headline */}
+            <div style={{ flex: 1 }}>
+              <p style={{ fontSize: 26, fontWeight: 500, color: 'white', lineHeight: 1.3, margin: '0 0 12px' }}>
+                Você trabalha.<br />A gente cuida<br />da gestão.
+              </p>
+              <p style={{ fontSize: 13, color: 'rgba(255,255,255,0.6)', lineHeight: 1.65, margin: 0 }}>
+                Não pague imposto duas vezes.<br />
+                Gerencie tudo em um só lugar.
+              </p>
+            </div>
+
+            {/* Badge Reforma Tributária */}
+            <div style={{
+              width: 130, flexShrink: 0,
+              background: 'rgba(255,255,255,0.1)',
+              border: '1px solid rgba(255,255,255,0.2)',
+              borderRadius: 12, padding: '14px 12px',
+              textAlign: 'center',
+            }}>
+              <div style={{
+                width: 10, height: 10, borderRadius: '50%',
+                background: '#4ADE80', margin: '0 auto 10px',
+                animation: 'dotPulse 2s infinite',
+              }} />
+              <p style={{ fontSize: 11, fontWeight: 500, color: 'white', margin: '0 0 6px', lineHeight: 1.35 }}>
+                Pronto para a<br />Reforma Tributária
+              </p>
+              <p style={{ fontSize: 24, fontWeight: 500, color: '#4ADE80', margin: '0 0 6px' }}>
+                2026
+              </p>
+              <p style={{ fontSize: 10, color: 'rgba(255,255,255,0.5)', margin: 0, lineHeight: 1.4 }}>
+                IBS + CBS calculados automaticamente
+              </p>
+            </div>
           </div>
 
-          {/* Feature pills */}
-          <div className="space-y-3">
+          {/* Benefícios */}
+          <div style={{ display: 'flex', flexDirection: 'column', gap: 7 }}>
             {[
-              { icon: <Shield size={14} />, text: 'Dados isolados por empresa — Row Level Security' },
-              { icon: <Activity size={14} />, text: 'Motor fiscal IBS/CBS 2026 automático' },
-              { icon: <Lock size={14} />, text: 'IA assistente com aprovação humana obrigatória' },
-            ].map((f, i) => (
-              <div key={i} className="flex items-center gap-3" style={{
-                background: 'rgba(255,255,255,0.08)',
-                border: '1px solid rgba(255,255,255,0.12)',
-                borderRadius: 12, padding: '10px 14px',
+              'Dados criptografados — segurança bancária',
+              'IBS/CBS 2026 calculado automaticamente',
+              'IA assistente com aprovação humana',
+              'Empresa pequena, média ou grande — nosso sistema atende',
+            ].map((item, i) => (
+              <div key={i} style={{
+                display: 'flex', alignItems: 'center', gap: 10,
+                background: 'rgba(255,255,255,0.07)',
+                borderRadius: 8, padding: '9px 13px',
               }}>
-                <div style={{ color: 'rgba(255,255,255,0.7)' }}>{f.icon}</div>
-                <span style={{ fontSize: 13, color: 'rgba(255,255,255,0.8)', fontWeight: 500 }}>{f.text}</span>
+                <svg width="12" height="12" viewBox="0 0 12 12" fill="none" style={{ flexShrink: 0 }}>
+                  <path d="M1 6l3.5 3.5L11 2" stroke="rgba(255,255,255,0.7)" strokeWidth="1.5" strokeLinecap="round" strokeLinejoin="round"/>
+                </svg>
+                <span style={{ fontSize: 12, color: 'rgba(255,255,255,0.8)' }}>{item}</span>
               </div>
             ))}
           </div>
         </div>
 
-        {/* Footer */}
-        <div className="relative">
-          <p style={{ fontSize: 11, color: 'rgba(255,255,255,0.3)', fontWeight: 500 }}>
-            © 2026 Nexo One ERP · Reforma Tributária Brasil 2026
-          </p>
-        </div>
+        <p style={{ fontSize: 11, color: 'rgba(255,255,255,0.2)', margin: '24px 0 0' }}>
+          © 2026 Gestão Para Todos · Reforma Tributária Brasil
+        </p>
       </div>
 
-      {/* Right panel — form */}
-      <div className="flex-1 flex items-center justify-center p-8">
-        <div className="w-full max-w-[400px] animate-fade-in">
+      {/* ── LADO DIREITO — azul claro com pontos ── */}
+      <div style={{
+        flex: 1,
+        background: '#F0F4FF',
+        padding: '40px 44px',
+        display: 'flex',
+        flexDirection: 'column',
+        justifyContent: 'center',
+        position: 'relative',
+        overflow: 'hidden',
+      }}>
 
-          {/* Mobile logo */}
-          <div className="lg:hidden flex items-center gap-2.5 mb-10 justify-center">
-            <div style={{ width: 36, height: 36, borderRadius: 10, background: 'linear-gradient(135deg,#1A47C8,#0F2D8A)', display: 'flex', alignItems: 'center', justifyContent: 'center' }}>
-              <Zap size={18} className="text-white" strokeWidth={2.5} />
+        {/* Padrão de pontos decorativos */}
+        <svg
+          style={{ position: 'absolute', inset: 0, width: '100%', height: '100%', pointerEvents: 'none' }}
+          xmlns="http://www.w3.org/2000/svg"
+        >
+          <defs>
+            <pattern id="dots" x="0" y="0" width="24" height="24" patternUnits="userSpaceOnUse">
+              <circle cx="2" cy="2" r="1.2" fill="#0A3D8F" opacity="0.07"/>
+            </pattern>
+          </defs>
+          <rect width="100%" height="100%" fill="url(#dots)"/>
+        </svg>
+
+        <div style={{ maxWidth: 320, margin: '0 auto', width: '100%', position: 'relative' }}>
+
+          {/* Saudação */}
+          <div style={{ marginBottom: 24 }}>
+            <p style={{ fontSize: 22, fontWeight: 500, color: '#1a1a2e', margin: '0 0 3px' }}>
+              Bem-vindo ao
+            </p>
+            <p style={{ fontSize: 22, fontWeight: 500, color: '#0A3D8F', margin: '0 0 8px' }}>
+              Gestão Para Todos
+            </p>
+            <p style={{ fontSize: 12, color: '#64748b', margin: 0 }}>
+              Conheça o sistema sem precisar se cadastrar
+            </p>
+          </div>
+
+          {/* BOTÃO PRINCIPAL — explorar sem login */}
+          <button
+            onClick={handleExplore}
+            style={{
+              width: '100%',
+              background: '#0A3D8F',
+              borderRadius: 8, border: 'none',
+              padding: '15px 18px', textAlign: 'center',
+              cursor: 'pointer', marginBottom: 8,
+              animation: 'pulseBtn 2s infinite',
+            }}
+          >
+            <p style={{ fontSize: 14, fontWeight: 500, margin: '0 0 3px', color: 'white' }}>
+              Explorar o sistema agora →
+            </p>
+            <p style={{ fontSize: 11, color: 'rgba(255,255,255,0.65)', margin: 0 }}>
+              Sem cadastro · Entre e conheça à vontade
+            </p>
+          </button>
+
+          {/* Trial */}
+          <button
+            onClick={handleTrial}
+            style={{
+              width: '100%',
+              background: 'white',
+              border: '1.5px solid #0A3D8F',
+              borderRadius: 8, padding: '12px 16px',
+              textAlign: 'center', cursor: 'pointer',
+              marginBottom: 20,
+            }}
+          >
+            <p style={{ fontSize: 13, fontWeight: 500, color: '#0A3D8F', margin: '0 0 3px' }}>
+              Começar grátis por 7 dias
+            </p>
+            <p style={{ fontSize: 11, color: '#64748b', margin: 0 }}>
+              Sem cadastro de cartão · Cancele quando quiser
+            </p>
+          </button>
+
+          {/* Divisor */}
+          <div style={{ display: 'flex', alignItems: 'center', gap: 10, marginBottom: 14 }}>
+            <div style={{ flex: 1, height: 0.5, background: '#cbd5e1' }} />
+            <span style={{ fontSize: 11, color: '#94a3b8' }}>já tenho conta</span>
+            <div style={{ flex: 1, height: 0.5, background: '#cbd5e1' }} />
+          </div>
+
+          {/* Formulário de login */}
+          <form onSubmit={handleLogin}>
+            <div style={{ display: 'flex', flexDirection: 'column', gap: 9, marginBottom: 12 }}>
+              <input
+                type="email"
+                placeholder="seu@email.com.br"
+                value={email}
+                onChange={e => setEmail(e.target.value)}
+                style={{
+                  border: '0.5px solid #cbd5e1',
+                  borderRadius: 8, padding: '11px 14px',
+                  fontSize: 13, color: '#1a1a2e',
+                  background: 'white', outline: 'none',
+                  width: '100%', boxSizing: 'border-box',
+                }}
+              />
+              <input
+                type="password"
+                placeholder="••••••••"
+                value={password}
+                onChange={e => setPassword(e.target.value)}
+                style={{
+                  border: '0.5px solid #cbd5e1',
+                  borderRadius: 8, padding: '11px 14px',
+                  fontSize: 13, color: '#1a1a2e',
+                  background: 'white', outline: 'none',
+                  width: '100%', boxSizing: 'border-box',
+                }}
+              />
+              <div style={{ textAlign: 'right' }}>
+                <a href="/recuperar-senha" style={{ fontSize: 11, color: '#0A3D8F', textDecoration: 'none' }}>
+                  Esqueceu a senha?
+                </a>
+              </div>
             </div>
-            <span style={{ fontFamily: 'var(--font-syne)', fontWeight: 800, fontSize: 22, color: '#0D1B4B', letterSpacing: '-0.02em' }}>
-              Nexo<span style={{ color: '#1A47C8' }}>One</span>
+
+            {error && (
+              <p style={{ fontSize: 12, color: '#ef4444', marginBottom: 10, textAlign: 'center' }}>
+                {error}
+              </p>
+            )}
+
+            <button
+              type="submit"
+              disabled={loading}
+              style={{
+                width: '100%',
+                border: '0.5px solid #cbd5e1',
+                background: 'white',
+                borderRadius: 8, padding: '11px',
+                textAlign: 'center', fontSize: 13,
+                color: '#475569', cursor: 'pointer',
+                marginBottom: 20,
+                opacity: loading ? 0.7 : 1,
+              }}
+            >
+              {loading ? 'Entrando...' : 'Entrar na minha conta'}
+            </button>
+          </form>
+
+          {/* Segurança */}
+          <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'center', gap: 5 }}>
+            <svg width="11" height="11" viewBox="0 0 11 11" fill="none">
+              <path d="M5.5 1L2 2.8v2.7c0 2.3 1.5 4 3.5 4.5 2-.5 3.5-2.2 3.5-4.5V2.8L5.5 1z" stroke="#94a3b8" strokeWidth="0.9" fill="none"/>
+            </svg>
+            <span style={{ fontSize: 11, color: '#94a3b8' }}>
+              Conexão segura · Dados criptografados · LGPD
             </span>
           </div>
-
-          {/* Step indicator */}
-          <div className="flex items-center gap-2 mb-8">
-            {['Empresa', 'Acesso'].map((s, i) => {
-              const active = (i === 0 && step === 'slug') || (i === 1 && step === 'credentials')
-              const done = i === 0 && step === 'credentials'
-              return (
-                <div key={s} className="flex items-center gap-2">
-                  <div style={{
-                    width: 24, height: 24, borderRadius: '50%',
-                    background: done ? '#047857' : active ? '#1A47C8' : 'rgba(26,51,120,0.1)',
-                    display: 'flex', alignItems: 'center', justifyContent: 'center',
-                    fontSize: 11, fontWeight: 700,
-                    color: (done || active) ? '#fff' : '#8892B8',
-                    transition: 'all 0.3s',
-                  }}>
-                    {done ? '✓' : i + 1}
-                  </div>
-                  <span style={{ fontSize: 12, fontWeight: 600, color: active ? '#0D1B4B' : '#8892B8', transition: 'all 0.3s' }}>{s}</span>
-                  {i < 1 && <div style={{ width: 24, height: 1, background: done ? '#047857' : 'rgba(26,51,120,0.12)', transition: 'all 0.3s' }} />}
-                </div>
-              )
-            })}
-          </div>
-
-          {/* Heading */}
-          <div className="mb-8">
-            <h1 style={{ fontFamily: 'var(--font-syne)', fontSize: 28, fontWeight: 800, color: '#0D1B4B', letterSpacing: '-0.025em', lineHeight: 1.2 }}>
-              {step === 'slug' ? 'Bem-vindo de volta' : `Olá, ${form.tenantSlug}`}
-            </h1>
-            <p style={{ fontSize: 14, color: '#8892B8', marginTop: 6 }}>
-              {step === 'slug'
-                ? 'Digite o identificador da sua empresa para continuar.'
-                : 'Insira suas credenciais para acessar o sistema.'}
-            </p>
-          </div>
-
-          {/* STEP 1: Tenant slug */}
-          {step === 'slug' && (
-            <form onSubmit={handleSlugNext} className="space-y-5 animate-slide-up">
-              <div>
-                <label className="label">Identificador da empresa</label>
-                <div className="relative">
-                  <input
-                    autoFocus
-                    data-testid="login-tenant-input"
-                    value={form.tenantSlug}
-                    onChange={e => setForm(f => ({ ...f, tenantSlug: e.target.value.toLowerCase().replace(/\s/g, '-') }))}
-                    placeholder="mecanica-do-joao"
-                    className="input pr-32"
-                    style={{ paddingLeft: 14 }}
-                  />
-                  <span style={{
-                    position: 'absolute', right: 12, top: '50%', transform: 'translateY(-50%)',
-                    fontSize: 11, color: '#8892B8', fontFamily: 'var(--font-jetbrains)',
-                    background: 'rgba(26,51,120,0.05)', padding: '2px 8px', borderRadius: 6,
-                    border: '1px solid rgba(26,51,120,0.1)',
-                  }}>
-                    .nexoone.com
-                  </span>
-                </div>
-                <p style={{ fontSize: 11, color: '#B0B8D8', marginTop: 5 }}>
-                  Fornecido no seu e-mail de cadastro
-                </p>
-              </div>
-              <button type="submit" data-testid="login-continue-btn" className="btn-primary w-full justify-center py-3" style={{ fontSize: 14 }}>
-                Continuar
-                <ArrowRight size={15} />
-              </button>
-            </form>
-          )}
-
-          {/* STEP 2: Email + Password */}
-          {step === 'credentials' && (
-            <form onSubmit={handleLogin} className="space-y-5 animate-slide-up">
-              {/* Error */}
-              {error && (
-                <div style={{
-                  padding: '12px 14px', borderRadius: 10,
-                  background: '#FFF1F1', border: '1px solid rgba(197,48,48,0.2)',
-                  fontSize: 13, color: '#C53030', fontWeight: 500,
-                }}>
-                  {error}
-                </div>
-              )}
-
-              <div>
-                <label className="label">E-mail</label>
-                <input
-                  type="email"
-                  autoFocus
-                  data-testid="login-email-input"
-                  value={form.email}
-                  onChange={e => setForm(f => ({ ...f, email: e.target.value }))}
-                  placeholder="joao@mecanicadojoao.com.br"
-                  className="input"
-                  required
-                />
-              </div>
-
-              <div>
-                <div className="flex items-center justify-between mb-1.5">
-                  <label className="label" style={{ marginBottom: 0 }}>Senha</label>
-                  <button type="button" style={{ fontSize: 12, color: '#1A47C8', fontWeight: 600, background: 'none', border: 'none', cursor: 'pointer' }}>
-                    Esqueci a senha
-                  </button>
-                </div>
-                <div className="relative">
-                  <input
-                    type={showPass ? 'text' : 'password'}
-                    data-testid="login-password-input"
-                    value={form.password}
-                    onChange={e => setForm(f => ({ ...f, password: e.target.value }))}
-                    placeholder="••••••••"
-                    className="input pr-11"
-                    required
-                  />
-                  <button
-                    type="button"
-                    onClick={() => setShowPass(v => !v)}
-                    style={{ position: 'absolute', right: 12, top: '50%', transform: 'translateY(-50%)', background: 'none', border: 'none', cursor: 'pointer', color: '#8892B8' }}
-                  >
-                    {showPass ? <EyeOff size={16} /> : <Eye size={16} />}
-                  </button>
-                </div>
-              </div>
-
-              <button
-                type="submit"
-                disabled={loading}
-                data-testid="login-submit-btn"
-                className="btn-primary w-full justify-center py-3"
-                style={{ fontSize: 14, marginTop: 8 }}
-              >
-                {loading ? (
-                  <div style={{ width: 16, height: 16, border: '2px solid rgba(255,255,255,0.3)', borderTopColor: '#fff', borderRadius: '50%', animation: 'spin 0.7s linear infinite' }} />
-                ) : (
-                  <>Entrar no sistema <ArrowRight size={15} /></>
-                )}
-              </button>
-
-              <button
-                type="button"
-                onClick={() => { setStep('slug'); setError('') }}
-                className="btn-ghost w-full justify-center"
-                style={{ fontSize: 13 }}
-              >
-                ← Trocar empresa
-              </button>
-            </form>
-          )}
-
-          {/* Security note */}
-          <div className="mt-8 flex items-center gap-2 justify-center">
-            <Lock size={12} style={{ color: '#B0B8D8' }} />
-            <p style={{ fontSize: 11, color: '#B0B8D8' }}>
-              Conexão segura · Dados criptografados · LGPD compliant
-            </p>
-          </div>
         </div>
-      </div>
 
-      <style jsx global>{`
-        @keyframes spin { to { transform: rotate(360deg); } }
-      `}</style>
+        {/* Animações CSS */}
+        <style>{`
+          @keyframes pulseBtn {
+            0%   { box-shadow: 0 0 0 0 rgba(10,61,143,0.4); }
+            60%  { box-shadow: 0 0 0 12px rgba(10,61,143,0); }
+            100% { box-shadow: 0 0 0 0 rgba(10,61,143,0); }
+          }
+          @keyframes dotPulse {
+            0%,100% { opacity: 1; transform: scale(1); }
+            50%      { opacity: 0.6; transform: scale(0.85); }
+          }
+          @media (max-width: 768px) {
+            div[style*="width: 46%"] {
+              width: 100% !important;
+            }
+          }
+        `}</style>
+      </div>
     </div>
   )
 }
