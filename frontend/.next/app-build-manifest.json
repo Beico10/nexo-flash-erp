@@ -12,10 +12,10 @@
       "static/chunks/fd9d1056-b778a18b0daf24fe.js",
       "static/chunks/23-a16bb9430840aab5.js",
       "static/chunks/main-app-7a50ec93c874a729.js",
-      "static/css/370ad74a210cbd3f.css",
-      "static/chunks/230-dbb96ec5ca2855b8.js",
-      "static/chunks/482-5ea669711a097ad9.js",
-      "static/chunks/app/layout-552e17955c8fd42c.js"
+      "static/css/09dabca72015fdb8.css",
+      "static/chunks/95-acea4b07514b09e7.js",
+      "static/chunks/768-b84af3bae468a06c.js",
+      "static/chunks/app/layout-dc02d105b3a65689.js"
     ],
     "/admin/plans/page": [
       "static/chunks/webpack-c84e7b3dbc67fa68.js",
@@ -50,15 +50,15 @@
       "static/chunks/fd9d1056-b778a18b0daf24fe.js",
       "static/chunks/23-a16bb9430840aab5.js",
       "static/chunks/main-app-7a50ec93c874a729.js",
-      "static/chunks/app/copilot/page-ac30a8bbc6636500.js"
+      "static/chunks/app/copilot/page-6e5a07d2ea5c9e99.js"
     ],
     "/dashboard/expenses/page": [
       "static/chunks/webpack-c84e7b3dbc67fa68.js",
       "static/chunks/fd9d1056-b778a18b0daf24fe.js",
       "static/chunks/23-a16bb9430840aab5.js",
       "static/chunks/main-app-7a50ec93c874a729.js",
-      "static/chunks/230-dbb96ec5ca2855b8.js",
-      "static/chunks/app/dashboard/expenses/page-e34c89e1b6e1efc0.js"
+      "static/chunks/95-acea4b07514b09e7.js",
+      "static/chunks/app/dashboard/expenses/page-b928a61b0fe49c6c.js"
     ],
     "/dashboard/expenses/scan/page": [
       "static/chunks/webpack-c84e7b3dbc67fa68.js",
@@ -102,6 +102,15 @@
       "static/chunks/main-app-7a50ec93c874a729.js",
       "static/chunks/app/industry/page-df9e6fda98326f10.js"
     ],
+    "/enterprise/page": [
+      "static/chunks/webpack-c84e7b3dbc67fa68.js",
+      "static/chunks/fd9d1056-b778a18b0daf24fe.js",
+      "static/chunks/23-a16bb9430840aab5.js",
+      "static/chunks/main-app-7a50ec93c874a729.js",
+      "static/chunks/95-acea4b07514b09e7.js",
+      "static/chunks/768-b84af3bae468a06c.js",
+      "static/chunks/app/enterprise/page-ddad5f854ca323ce.js"
+    ],
     "/inventory/page": [
       "static/chunks/webpack-c84e7b3dbc67fa68.js",
       "static/chunks/fd9d1056-b778a18b0daf24fe.js",
@@ -136,7 +145,7 @@
       "static/chunks/fd9d1056-b778a18b0daf24fe.js",
       "static/chunks/23-a16bb9430840aab5.js",
       "static/chunks/main-app-7a50ec93c874a729.js",
-      "static/chunks/app/onboarding/page-23736649f8f85d33.js"
+      "static/chunks/app/onboarding/page-d1528824c446c57c.js"
     ],
     "/page": [
       "static/chunks/webpack-c84e7b3dbc67fa68.js",
@@ -178,7 +187,7 @@
       "static/chunks/fd9d1056-b778a18b0daf24fe.js",
       "static/chunks/23-a16bb9430840aab5.js",
       "static/chunks/main-app-7a50ec93c874a729.js",
-      "static/chunks/app/settings/page-12af617767a035dd.js"
+      "static/chunks/app/settings/page-3fc123deb6e82fe3.js"
     ],
     "/shoes/page": [
       "static/chunks/webpack-c84e7b3dbc67fa68.js",
