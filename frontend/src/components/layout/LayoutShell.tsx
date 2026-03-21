@@ -18,6 +18,7 @@ const ROUTE_MAP: Record<string, string> = {
   '/tax-engine': '/dashboard',
   '/simulator':  '/dashboard',
   '/nfe':        '/dashboard',
+  '/expenses':   '/finance',
   '/payments':   '/dashboard',
   '/settings':   '/dashboard',
   '/enterprise': '/dashboard',
@@ -112,7 +113,7 @@ const SIDEBAR_GROUPS = [
 function Sidebar({ businessType }: { businessType: string }) {
   const router = useRouter()
   const pathname = usePathname()
-  const [collapsed, setCollapsed] = useState<string[]>([])
+  const [collapsed, setCollapsed] = useState<string[]>(['FISCAL', 'INTELIGÊNCIA', 'SISTEMA'])
 
   const toggleGroup = (label: string) => {
     setCollapsed(prev => prev.includes(label) ? prev.filter(l => l !== label) : [...prev, label])
@@ -125,7 +126,7 @@ function Sidebar({ businessType }: { businessType: string }) {
   }
 
   return (
-    <div style={{ width: 200, flexShrink: 0, background: 'white', borderRight: '0.5px solid #e8e8e8', height: '100vh', overflowY: 'auto', display: 'flex', flexDirection: 'column', position: 'sticky', top: 0 }}>
+    <div style={{ width: 200, flexShrink: 0, background: 'white', borderRight: '0.5px solid #e8e8e8', height: '100vh', overflowY: 'auto', display: 'flex', flexDirection: 'column', position: 'sticky', top: 0, minHeight: 0 }}>
       {/* Logo */}
       <div style={{ padding: '14px 14px 10px', borderBottom: '0.5px solid #f0f0f0' }}>
         <div style={{ display: 'flex', alignItems: 'center', gap: 8 }}>

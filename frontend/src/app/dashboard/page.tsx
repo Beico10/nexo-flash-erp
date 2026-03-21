@@ -169,7 +169,7 @@ export default function DashboardPage() {
         <div style={{ display: 'flex', alignItems: 'flex-start', justifyContent: 'space-between', marginBottom: 24, flexWrap: 'wrap', gap: 12 }}>
           <div>
             <p style={{ fontSize: 22, fontWeight: 800, color: '#1C1917', margin: '0 0 4px', letterSpacing: -0.5 }}>
-              {greeting()}, {userName}! 👋
+              {greeting()}, {userName}! 👋 · {NICHO_LABELS[businessType]}
             </p>
             <p style={{ fontSize: 13, color: '#94a3b8', margin: 0, textTransform: 'capitalize' }}>{today}</p>
           </div>
@@ -214,10 +214,12 @@ export default function DashboardPage() {
             </div>
           </div>
 
-          {/* Card OS */}
+          {/* Card OS — label muda por nicho */}
           <div style={{ background: 'white', borderRadius: 16, padding: '22px 20px', border: '0.5px solid #e8e8e8' }}>
             <div style={{ display: 'flex', justifyContent: 'space-between', marginBottom: 14 }}>
-              <span style={{ fontSize: 11, fontWeight: 600, color: '#94a3b8', textTransform: 'uppercase', letterSpacing: '0.06em' }}>Ordens de Serviço</span>
+              <span style={{ fontSize: 11, fontWeight: 600, color: '#94a3b8', textTransform: 'uppercase', letterSpacing: '0.06em' }}>
+                {businessType === 'logistics' ? 'Entregas hoje' : businessType === 'bakery' ? 'Pedidos hoje' : businessType === 'aesthetics' ? 'Agendamentos' : 'Ordens de Serviço'}
+              </span>
               <span style={{ background: '#FEF9C3', color: '#854D0E', fontSize: 10, fontWeight: 700, padding: '3px 8px', borderRadius: 100 }}>hoje</span>
             </div>
             <p style={{ fontSize: 32, fontWeight: 800, color: '#1C1917', margin: '0 0 4px', letterSpacing: -1 }}>5</p>
