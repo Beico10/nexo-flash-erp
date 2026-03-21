@@ -9,7 +9,7 @@ import json
 from datetime import datetime
 
 class DetailedNexoAPITester:
-    def __init__(self, base_url: str = "https://fastapi-router-setup.preview.emergentagent.com"):
+    def __init__(self, base_url: str = "https://dispatch-module.preview.emergentagent.com"):
         self.base_url = base_url
         self.access_token = None
         self.session = requests.Session()

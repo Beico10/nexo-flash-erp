@@ -12,6 +12,7 @@ const navGroups = [
     { label: 'Contas a Receber', icon: HandCoins, href: '/receivables' },
     { label: 'Financeiro', icon: TrendingUp, href: '/finance' },
     { label: 'Estoque', icon: Package, href: '/inventory' },
+    { label: 'Despacho em Lote', icon: Truck, href: '/dispatch' },
     { label: 'Emissao NF-e', icon: FileText, href: '/nfe' },
     { label: 'Co-Piloto IA', icon: Sparkles, href: '/copilot' },
     { label: 'Simulador Fiscal', icon: Calculator, href: '/simulador-fiscal' },
