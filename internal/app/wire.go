@@ -21,6 +21,10 @@ import (
 	"github.com/nexoone/nexo-one/internal/modules/logistics"
 	"github.com/nexoone/nexo-one/internal/modules/mechanic"
 	"github.com/nexoone/nexo-one/internal/modules/shoes"
+	"github.com/nexoone/nexo-one/internal/payables"
+	"github.com/nexoone/nexo-one/internal/receivables"
+	"github.com/nexoone/nexo-one/internal/finance"
+	"github.com/nexoone/nexo-one/internal/inventory"
 	"github.com/nexoone/nexo-one/internal/repository/memory"
 	"github.com/nexoone/nexo-one/internal/tax"
 	"github.com/nexoone/nexo-one/internal/trial"
@@ -53,6 +57,10 @@ type Container struct {
 	NFEHandler         *handlers.NFEHandler
 	ExpenseHandler     *handlers.ExpenseHandler
 	CopilotHandler     *handlers.CopilotHandler
+	PayablesHandler    *handlers.PayablesHandler
+	ReceivablesHandler *handlers.ReceivablesHandler
+	FinanceHandler     *handlers.FinanceHandler
+	InventoryHandler   *handlers.InventoryHandler
 	PageHandler        *web.PageHandler
 	TemplateRenderer   *web.TemplateRenderer
 	DashboardProvider  handlers.DashboardDataProvider
@@ -83,6 +91,10 @@ func Wire(cfg Config) (*Container, error) {
 	expenseRepo := memory.NewExpenseRepo()
 	industryRepo := memory.NewIndustryRepo()
 	shoesRepo := memory.NewShoesRepo()
+	payablesRepo := memory.NewPayablesRepo()
+	receivablesRepo := memory.NewReceivablesRepo()
+	financeRepo := memory.NewFinanceRepo()
+	inventoryRepo := memory.NewInventoryRepo()
 	tokenStore := auth.NewRedisTokenStore(cache)
 
 	// Servicos
@@ -104,6 +116,10 @@ func Wire(cfg Config) (*Container, error) {
 	expenseSvc := expenses.NewService(expenseRepo, sefazScraper)
 	pcpSvc := industry.NewPCPService(&memory.BOMAdapter{R: industryRepo}, industryRepo, industryRepo)
 	gridSvc := shoes.NewGridService(shoesRepo)
+	payablesSvc := payables.NewService(payablesRepo, nil)
+	receivablesSvc := receivables.NewService(receivablesRepo, nil)
+	financeSvc := finance.NewService(financeRepo)
+	inventorySvc := inventory.NewService(inventoryRepo, nil)
 	
 	// Cliente Gemini (Co-Piloto IA)
 	geminiClient := gemini.NewClient("")
@@ -140,6 +156,10 @@ func Wire(cfg Config) (*Container, error) {
 		ShoesHandler:       handlers.NewShoesHandler(gridSvc, shoesRepo),
 		NFEHandler:         handlers.NewNFEHandler(),
 		CopilotHandler:     handlers.NewCopilotHandler(geminiClient),
+		PayablesHandler:    handlers.NewPayablesHandler(payablesSvc),
+		ReceivablesHandler: handlers.NewReceivablesHandler(receivablesSvc),
+		FinanceHandler:     handlers.NewFinanceHandler(financeSvc),
+		InventoryHandler:   handlers.NewInventoryHandler(inventorySvc),
 		PageHandler:        web.NewPageHandler(templateRenderer, dashboardProvider),
 		TemplateRenderer:   templateRenderer,
 		DashboardProvider:  dashboardProvider,
