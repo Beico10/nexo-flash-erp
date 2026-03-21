@@ -1,7 +1,6 @@
 'use client'
 import { useState, useEffect } from 'react'
 import { useRouter } from 'next/navigation'
-import Head from 'next/head'
 
 export default function LoginPage() {
   const router = useRouter()
@@ -19,30 +18,55 @@ export default function LoginPage() {
     setError('')
 
     try {
-      const res = await fetch('/api/v1/auth/login', {
-        method: 'POST',
-        headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({ email, password }),
-      })
+      // Detectar tenant_slug pelo email automaticamente
+      // Se email for admin@demo.com → tenant_slug = 'demo'
+      // Senão tentar extrair do domínio do email
+      let tenantSlug = 'demo'
+      if (email && email.includes('@')) {
+        const domain = email.split('@')[1]?.split('.')[0] || 'demo'
+        tenantSlug = domain === 'demo' ? 'demo' : domain
+      }
+
+      // Tentar login com tenant detectado
+      const tryLogin = async (slug: string) => {
+        return fetch('/api/v1/auth/login', {
+          method: 'POST',
+          headers: { 'Content-Type': 'application/json' },
+          body: JSON.stringify({ email, password, tenant_slug: slug }),
+        })
+      }
+
+      let res = await tryLogin(tenantSlug)
+
+      // Se falhou e não era demo, tentar com 'demo'
+      if (!res.ok && tenantSlug !== 'demo') {
+        res = await tryLogin('demo')
+      }
 
       const data = await res.json()
 
       if (!res.ok) {
-        setError(data.error || 'E-mail ou senha incorretos')
+        // Mensagem de erro amigável
+        if (res.status === 401) {
+          setError('E-mail ou senha incorretos. Verifique seus dados.')
+        } else if (res.status === 404) {
+          setError('Empresa não encontrada. Verifique seu e-mail.')
+        } else {
+          setError(data.error || 'Erro ao fazer login. Tente novamente.')
+        }
         return
       }
 
       // Salvar token e redirecionar
       if (typeof window !== 'undefined') {
         localStorage.setItem('nexo_token', data.access_token)
-        if (data.tenant_slug) {
-          localStorage.setItem('nexo_tenant', data.tenant_slug)
-        }
+        localStorage.setItem('nexo_tenant', data.tenant_slug || tenantSlug)
+        localStorage.removeItem('nexo_demo_mode') // limpar demo mode
       }
 
       router.push('/dashboard')
     } catch {
-      setError('Erro de conexão. Tente novamente.')
+      setError('Erro de conexão. Verifique sua internet e tente novamente.')
     } finally {
       setLoading(false)
     }
@@ -54,34 +78,28 @@ export default function LoginPage() {
       localStorage.setItem('nexo_token', 'demo-token')
       localStorage.setItem('nexo_tenant', 'demo')
       localStorage.setItem('nexo_demo_mode', 'true')
-      sessionStorage.setItem('access_token', 'demo-token')
-      window.location.href = '/dashboard'
     }
+    router.push('/dashboard')
   }
 
   const handleTrial = () => {
-    // Por enquanto, entra em modo demo também
     if (typeof window !== 'undefined') {
       localStorage.setItem('nexo_token', 'demo-token')
       localStorage.setItem('nexo_tenant', 'demo')
       localStorage.setItem('nexo_demo_mode', 'true')
-      sessionStorage.setItem('access_token', 'demo-token')
-      window.location.href = '/dashboard'
+      localStorage.setItem('nexo_trial_intent', 'true')
     }
+    router.push('/dashboard')
   }
 
   if (!mounted) return null
 
   return (
-    <>
-      <Head>
-        <link href='https://fonts.googleapis.com/css2?family=Montserrat:wght@800;900&display=swap' rel='stylesheet' />
-      </Head>
-      <div style={{
-        display: 'flex',
-        minHeight: '100vh',
-        fontFamily: '-apple-system, BlinkMacSystemFont, "Segoe UI", sans-serif',
-      }}>
+    <div style={{
+      display: 'flex',
+      minHeight: '100vh',
+      fontFamily: '-apple-system, BlinkMacSystemFont, "Segoe UI", sans-serif',
+    }}>
 
       {/* ── LADO ESQUERDO — azul ── */}
       <div style={{
@@ -124,7 +142,7 @@ export default function LoginPage() {
 
             {/* Headline */}
             <div style={{ flex: 1 }}>
-              <p style={{ fontSize: 26, fontWeight: 900, fontFamily: "'Montserrat', sans-serif", color: 'white', lineHeight: 1.3, margin: '0 0 12px' }}>
+              <p style={{ fontSize: 26, fontWeight: 500, color: 'white', lineHeight: 1.3, margin: '0 0 12px' }}>
                 Você trabalha.<br />A gente cuida<br />da gestão.
               </p>
               <p style={{ fontSize: 13, color: 'rgba(255,255,255,0.6)', lineHeight: 1.65, margin: 0 }}>
@@ -227,9 +245,7 @@ export default function LoginPage() {
 
           {/* BOTÃO PRINCIPAL — explorar sem login */}
           <button
-            type="button"
             onClick={handleExplore}
-            data-testid="explore-btn"
             style={{
               width: '100%',
               background: '#0A3D8F',
@@ -237,19 +253,19 @@ export default function LoginPage() {
               padding: '15px 18px', textAlign: 'center',
               cursor: 'pointer', marginBottom: 8,
               animation: 'pulseBtn 2s infinite',
-              color: 'white',
-              fontSize: 14,
-              fontWeight: 500,
             }}
           >
-            Explorar o sistema agora →
+            <p style={{ fontSize: 14, fontWeight: 500, margin: '0 0 3px', color: 'white' }}>
+              Explorar o sistema agora →
+            </p>
+            <p style={{ fontSize: 11, color: 'rgba(255,255,255,0.65)', margin: 0 }}>
+              Sem cadastro · Entre e conheça à vontade
+            </p>
           </button>
 
           {/* Trial */}
           <button
-            type="button"
             onClick={handleTrial}
-            data-testid="trial-btn"
             style={{
               width: '100%',
               background: 'white',
@@ -257,12 +273,14 @@ export default function LoginPage() {
               borderRadius: 8, padding: '12px 16px',
               textAlign: 'center', cursor: 'pointer',
               marginBottom: 20,
-              color: '#0A3D8F',
-              fontSize: 13,
-              fontWeight: 500,
             }}
           >
-            Começar grátis por 7 dias
+            <p style={{ fontSize: 13, fontWeight: 500, color: '#0A3D8F', margin: '0 0 3px' }}>
+              Começar grátis por 7 dias
+            </p>
+            <p style={{ fontSize: 11, color: '#64748b', margin: 0 }}>
+              Sem cadastro de cartão · Cancele quando quiser
+            </p>
           </button>
 
           {/* Divisor */}
@@ -362,6 +380,5 @@ export default function LoginPage() {
         `}</style>
       </div>
     </div>
-    </>
   )
 }
