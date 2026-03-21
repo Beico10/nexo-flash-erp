@@ -25,6 +25,7 @@ import (
 	"github.com/nexoone/nexo-one/internal/receivables"
 	"github.com/nexoone/nexo-one/internal/finance"
 	"github.com/nexoone/nexo-one/internal/inventory"
+	modules_marketplace "github.com/nexoone/nexo-one/internal/modules_marketplace"
 	"github.com/nexoone/nexo-one/internal/repository/memory"
 	"github.com/nexoone/nexo-one/internal/tax"
 	"github.com/nexoone/nexo-one/internal/trial"
@@ -62,6 +63,7 @@ type Container struct {
 	FinanceHandler     *handlers.FinanceHandler
 	InventoryHandler   *handlers.InventoryHandler
 	DispatchHandler    *handlers.DispatchHandler
+	ModulesHandler     *handlers.ModulesHandler
 	PageHandler        *web.PageHandler
 	TemplateRenderer   *web.TemplateRenderer
 	DashboardProvider  handlers.DashboardDataProvider
@@ -96,6 +98,7 @@ func Wire(cfg Config) (*Container, error) {
 	receivablesRepo := memory.NewReceivablesRepo()
 	financeRepo := memory.NewFinanceRepo()
 	inventoryRepo := memory.NewInventoryRepo()
+	modulesRepo := memory.NewModulesRepo()
 	tokenStore := auth.NewRedisTokenStore(cache)
 
 	// Servicos
@@ -121,6 +124,7 @@ func Wire(cfg Config) (*Container, error) {
 	receivablesSvc := receivables.NewService(receivablesRepo, nil)
 	financeSvc := finance.NewService(financeRepo)
 	inventorySvc := inventory.NewService(inventoryRepo, nil)
+	modulesSvc := modules_marketplace.NewService(modulesRepo)
 	
 	// Cliente Gemini (Co-Piloto IA)
 	geminiClient := gemini.NewClient("")
@@ -162,6 +166,7 @@ func Wire(cfg Config) (*Container, error) {
 		FinanceHandler:     handlers.NewFinanceHandler(financeSvc),
 		InventoryHandler:   handlers.NewInventoryHandler(inventorySvc),
 		DispatchHandler:    handlers.NewDispatchHandler(),
+		ModulesHandler:     handlers.NewModulesHandler(modulesSvc),
 		PageHandler:        web.NewPageHandler(templateRenderer, dashboardProvider),
 		TemplateRenderer:   templateRenderer,
 		DashboardProvider:  dashboardProvider,

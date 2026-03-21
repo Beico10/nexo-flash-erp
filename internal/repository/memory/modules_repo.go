@@ -7,7 +7,7 @@ import (
 	"time"
 
 	"github.com/google/uuid"
-	"github.com/nexoone/nexo-one/internal/modules"
+	modules "github.com/nexoone/nexo-one/internal/modules_marketplace"
 )
 
 type ModulesRepo struct {

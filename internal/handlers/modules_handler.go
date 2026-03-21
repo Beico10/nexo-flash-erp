@@ -5,7 +5,7 @@ import (
 	"encoding/json"
 	"net/http"
 
-	"github.com/nexoone/nexo-one/internal/modules"
+	modules "github.com/nexoone/nexo-one/internal/modules_marketplace"
 	"github.com/nexoone/nexo-one/pkg/middleware"
 )
 

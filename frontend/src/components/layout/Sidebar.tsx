@@ -1,7 +1,7 @@
 'use client'
 import Link from 'next/link'
 import { usePathname } from 'next/navigation'
-import { LayoutDashboard, Wrench, ShoppingBag, Factory, Truck, Scissors, Wheat, Brain, CreditCard, Settings, ChevronRight, Zap, LogOut, Activity, Calculator, Crown, Compass, SlidersHorizontal, Receipt, FileText, Sparkles, Wallet, HandCoins, TrendingUp, Package } from 'lucide-react'
+import { LayoutDashboard, Wrench, ShoppingBag, Factory, Truck, Scissors, Wheat, Brain, CreditCard, Settings, ChevronRight, Zap, LogOut, Activity, Calculator, Crown, Compass, SlidersHorizontal, Receipt, FileText, Sparkles, Wallet, HandCoins, TrendingUp, Package, Puzzle } from 'lucide-react'
 import clsx from 'clsx'
 
 const navGroups = [
@@ -28,6 +28,7 @@ const navGroups = [
     { label: 'Calçados', icon: ShoppingBag, href: '/shoes' },
   ]},
   { label: 'Sistema', items: [
+    { label: 'Módulos', icon: Puzzle, href: '/modules' },
     { label: 'Minha Assinatura', icon: Crown, href: '/dashboard/subscription' },
     { label: 'Onboarding', icon: Compass, href: '/onboarding' },
     { label: 'Gestao de Planos', icon: SlidersHorizontal, href: '/admin/plans' },
