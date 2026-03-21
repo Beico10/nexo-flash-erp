@@ -1,6 +1,7 @@
 'use client'
 import { useState, useEffect } from 'react'
 import { useRouter } from 'next/navigation'
+import Head from 'next/head'
 
 export default function LoginPage() {
   const router = useRouter()
@@ -64,11 +65,15 @@ export default function LoginPage() {
   if (!mounted) return null
 
   return (
-    <div style={{
-      display: 'flex',
-      minHeight: '100vh',
-      fontFamily: '-apple-system, BlinkMacSystemFont, "Segoe UI", sans-serif',
-    }}>
+    <>
+      <Head>
+        <link href='https://fonts.googleapis.com/css2?family=Montserrat:wght@800;900&display=swap' rel='stylesheet' />
+      </Head>
+      <div style={{
+        display: 'flex',
+        minHeight: '100vh',
+        fontFamily: '-apple-system, BlinkMacSystemFont, "Segoe UI", sans-serif',
+      }}>
 
       {/* ── LADO ESQUERDO — azul ── */}
       <div style={{
@@ -111,7 +116,7 @@ export default function LoginPage() {
 
             {/* Headline */}
             <div style={{ flex: 1 }}>
-              <p style={{ fontSize: 26, fontWeight: 500, color: 'white', lineHeight: 1.3, margin: '0 0 12px' }}>
+              <p style={{ fontSize: 26, fontWeight: 900, fontFamily: "'Montserrat', sans-serif", color: 'white', lineHeight: 1.3, margin: '0 0 12px' }}>
                 Você trabalha.<br />A gente cuida<br />da gestão.
               </p>
               <p style={{ fontSize: 13, color: 'rgba(255,255,255,0.6)', lineHeight: 1.65, margin: 0 }}>
@@ -349,5 +354,6 @@ export default function LoginPage() {
         `}</style>
       </div>
     </div>
+    </>
   )
 }
