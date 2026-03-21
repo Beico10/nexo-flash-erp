@@ -65,15 +65,6 @@ const SIDEBAR_GROUPS = [
     items: [{ href: '/dashboard', label: 'Dashboard' }],
   },
   {
-    label: 'FINANCEIRO',
-    items: [
-      { href: '/finance', label: 'Visão Geral' },
-      { href: '/payables', label: 'Contas a Pagar' },
-      { href: '/receivables', label: 'Contas a Receber' },
-      { href: '/expenses', label: 'Despesas' },
-    ],
-  },
-  {
     label: 'OPERACIONAL',
     items: [
       { href: '/mechanic',   label: 'Mecânica',   nicho: 'mechanic' },
@@ -82,30 +73,18 @@ const SIDEBAR_GROUPS = [
       { href: '/logistics',  label: 'Logística',   nicho: 'logistics' },
       { href: '/aesthetics', label: 'Estética',    nicho: 'aesthetics' },
       { href: '/shoes',      label: 'Calçados',    nicho: 'shoes' },
-      { href: '/inventory',  label: 'Estoque' },
-      { href: '/dispatch',   label: 'Despacho em Lote' },
-    ],
-  },
-  {
-    label: 'FISCAL',
-    items: [
-      { href: '/tax-engine', label: 'Motor IBS/CBS 2026' },
-      { href: '/nfe',        label: 'Emissão NF-e' },
-      { href: '/simulator',  label: 'Simulador Fiscal' },
     ],
   },
   {
     label: 'INTELIGÊNCIA',
     items: [
-      { href: '/copilot',      label: 'Co-Piloto IA' },
       { href: '/ai-approvals', label: 'Aprovações IA' },
     ],
   },
   {
     label: 'SISTEMA',
     items: [
-      { href: '/modules',   label: 'Módulos' },
-      { href: '/settings',  label: 'Configurações' },
+      { href: '/settings', label: 'Configurações' },
     ],
   },
 ]
@@ -113,7 +92,7 @@ const SIDEBAR_GROUPS = [
 function Sidebar({ businessType }: { businessType: string }) {
   const router = useRouter()
   const pathname = usePathname()
-  const [collapsed, setCollapsed] = useState<string[]>(['FISCAL', 'INTELIGÊNCIA', 'SISTEMA'])
+  const [collapsed, setCollapsed] = useState<string[]>([])
 
   const toggleGroup = (label: string) => {
     setCollapsed(prev => prev.includes(label) ? prev.filter(l => l !== label) : [...prev, label])

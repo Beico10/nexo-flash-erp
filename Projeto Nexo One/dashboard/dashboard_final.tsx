@@ -56,7 +56,8 @@ function CoPilotoOnboarding({ businessType, onComplete }: { businessType: string
     setDone(true)
     localStorage.setItem('nexo_dash_configured', 'true')
     localStorage.setItem('nexo_dash_concerns', JSON.stringify(selected))
-    setTimeout(onComplete, 1200)
+    // Fechar rapidamente para mostrar o dashboard personalizado
+    setTimeout(onComplete, 800)
   }
 
   return (
@@ -169,9 +170,12 @@ export default function DashboardPage() {
         <div style={{ display: 'flex', alignItems: 'flex-start', justifyContent: 'space-between', marginBottom: 24, flexWrap: 'wrap', gap: 12 }}>
           <div>
             <p style={{ fontSize: 22, fontWeight: 800, color: '#1C1917', margin: '0 0 4px', letterSpacing: -0.5 }}>
-              {greeting()}, {userName}! 👋 · {NICHO_LABELS[businessType]}
+              {greeting()}, {userName}! 👋
             </p>
             <p style={{ fontSize: 13, color: '#94a3b8', margin: 0, textTransform: 'capitalize' }}>{today}</p>
+            <span style={{ fontSize: 11, background: '#F0F4FF', color: '#0A3D8F', padding: '2px 10px', borderRadius: 100, fontWeight: 600, marginTop: 4, display: 'inline-block' }}>
+              {NICHO_LABELS[businessType]}
+            </span>
           </div>
           <div style={{ background: '#FFFBEB', border: '1px solid #FDE68A', borderRadius: 12, padding: '10px 16px', display: 'flex', alignItems: 'center', gap: 10 }}>
             <span style={{ fontSize: 18 }}>🌙</span>
