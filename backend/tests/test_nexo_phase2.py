@@ -16,7 +16,7 @@ import requests
 import os
 
 # Use environment variable or preview URL
-BASE_URL = os.environ.get('REACT_APP_BACKEND_URL', 'https://fastapi-router-setup.preview.emergentagent.com').rstrip('/')
+BASE_URL = os.environ.get('REACT_APP_BACKEND_URL', 'https://dispatch-module.preview.emergentagent.com').rstrip('/')
 
 # Test credentials
 TENANT_SLUG = 'demo'

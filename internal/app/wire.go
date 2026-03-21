@@ -61,6 +61,7 @@ type Container struct {
 	ReceivablesHandler *handlers.ReceivablesHandler
 	FinanceHandler     *handlers.FinanceHandler
 	InventoryHandler   *handlers.InventoryHandler
+	DispatchHandler    *handlers.DispatchHandler
 	PageHandler        *web.PageHandler
 	TemplateRenderer   *web.TemplateRenderer
 	DashboardProvider  handlers.DashboardDataProvider
@@ -160,6 +161,7 @@ func Wire(cfg Config) (*Container, error) {
 		ReceivablesHandler: handlers.NewReceivablesHandler(receivablesSvc),
 		FinanceHandler:     handlers.NewFinanceHandler(financeSvc),
 		InventoryHandler:   handlers.NewInventoryHandler(inventorySvc),
+		DispatchHandler:    handlers.NewDispatchHandler(),
 		PageHandler:        web.NewPageHandler(templateRenderer, dashboardProvider),
 		TemplateRenderer:   templateRenderer,
 		DashboardProvider:  dashboardProvider,
