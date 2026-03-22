@@ -1,4 +1,4 @@
-'use client'
+﻿'use client'
 import { useState, useEffect } from 'react'
 import { useRouter, usePathname } from 'next/navigation'
 
@@ -8,19 +8,11 @@ const NO_LAYOUT_ROUTES = ['/', '/login', '/cadastro', '/checkout']
 // Mapa de rotas do sidebar para rotas reais existentes no sistema
 // Se a rota não existe, redireciona para o módulo mais próximo
 const ROUTE_MAP: Record<string, string> = {
-  '/aesthetics': '/mechanic',  // usa mechanic como fallback até criar aesthetics
-  '/shoes':      '/mechanic',
-  '/industry':   '/mechanic',
-  '/logistics':  '/dispatch',
-  '/bakery':     '/mechanic',
   '/copilot':    '/dashboard',
-  '/ai-approvals': '/dashboard',
   '/tax-engine': '/dashboard',
   '/simulator':  '/dashboard',
   '/nfe':        '/dashboard',
-  '/expenses':   '/finance',
   '/payments':   '/dashboard',
-  '/settings':   '/dashboard',
   '/enterprise': '/dashboard',
 }
 
@@ -254,3 +246,4 @@ export default function LayoutShell({ children }: { children: React.ReactNode })
     </div>
   )
 }
+
