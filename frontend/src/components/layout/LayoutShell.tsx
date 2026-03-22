@@ -147,7 +147,7 @@ function Sidebar({ businessType }: { businessType: string }) {
         {SIDEBAR_GROUPS.map(group => {
           const isCollapsed = collapsed.includes(group.label)
           // Filtrar por nicho — só mostra o nicho do usuário
-          const items = group.items.filter(item => !item.nicho || item.nicho === businessType)
+          const items = group.items.filter((item: any) => !item.nicho || item.nicho === businessType)
           if (items.length === 0) return null
 
           return (
