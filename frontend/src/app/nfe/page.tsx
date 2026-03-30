@@ -1,4 +1,5 @@
-'use client'
+﻿'use client'
+import { isDemoMode, promptLogin } from '@/lib/demo'
 import { useState, useEffect } from 'react'
 import { FileText, Send, AlertCircle, CheckCircle2, Clock, XCircle } from 'lucide-react'
 
@@ -28,7 +29,7 @@ export default function NFePage() {
 
   useEffect(() => {
     const token = getToken()
-    if (!token) { window.location.href = '/login'; return }
+    if (isDemoMode()) { setDocs([{ id: '1', type: 'nfe', number: '000001', series: '1', access_key: '35260311111111000100550010000000011000000010', recipient_name: 'Cliente Exemplo Ltda', recipient_cnpj: '11.111.111/0001-00', total: 1250.00, status: 'authorized', issued_at: new Date().toISOString() },{ id: '2', type: 'nfce', number: '000002', series: '1', access_key: '35260311111111000100650010000000021000000020', recipient_name: 'Consumidor Final', recipient_cnpj: '000.000.000-00', total: 89.90, status: 'authorized', issued_at: new Date().toISOString() },{ id: '3', type: 'nfe', number: '000003', series: '1', access_key: '35260311111111000100550010000000031000000030', recipient_name: 'Distribuidora ABC', recipient_cnpj: '22.222.222/0001-00', total: 4500.00, status: 'draft', issued_at: new Date().toISOString() }]); setLoading(false); return } if (!token) { promptLogin(); setLoading(false); return }
     fetch('/api/v1/nfe/documents', { headers: { Authorization: `Bearer ${token}` } })
       .then(r => { if (r.status === 401) { window.location.href = '/login'; return null }; return r.json() })
       .then(d => { if (d) { setDocs(d.documents || []); setLoading(false) } })
@@ -136,3 +137,4 @@ export default function NFePage() {
     </div>
   )
 }
+

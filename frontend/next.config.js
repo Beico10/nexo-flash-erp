@@ -1,5 +1,7 @@
 /** @type {import('next').NextConfig} */
 const nextConfig = {
+  output: 'standalone',
+
   // Proxy todas as chamadas /api/* para o backend Go (porta 8001)
   // Isso resolve o problema de CORS e conecta o frontend ao backend
   async rewrites() {

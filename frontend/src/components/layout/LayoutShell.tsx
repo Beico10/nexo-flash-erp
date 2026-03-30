@@ -1,4 +1,4 @@
-﻿'use client'
+'use client'
 import { useState, useEffect } from 'react'
 import { useRouter, usePathname } from 'next/navigation'
 
@@ -11,7 +11,6 @@ const ROUTE_MAP: Record<string, string> = {
   '/copilot':    '/dashboard',
   '/tax-engine': '/dashboard',
   '/simulator':  '/dashboard',
-  '/nfe':        '/dashboard',
   '/payments':   '/dashboard',
   '/enterprise': '/dashboard',
 }
@@ -50,6 +49,15 @@ function LoginModal({ onClose }: { onClose: () => void }) {
   )
 }
 
+const BUSINESS_DISPLAY: Record<string, { name: string; initial: string }> = {
+  mechanic:   { name: 'Mecânica do João',    initial: 'M' },
+  bakery:     { name: 'Padaria da Ana',       initial: 'P' },
+  aesthetics: { name: 'Studio da Maria',      initial: 'S' },
+  logistics:  { name: 'TransRápido Ltda',     initial: 'T' },
+  industry:   { name: 'Indústria Silva',      initial: 'I' },
+  shoes:      { name: 'Calçados Moda',        initial: 'C' },
+}
+
 // Sidebar organizado em grupos
 const SIDEBAR_GROUPS = [
   {
@@ -71,6 +79,29 @@ const SIDEBAR_GROUPS = [
     label: 'INTELIGÊNCIA',
     items: [
       { href: '/ai-approvals', label: 'Aprovações IA' },
+    ],
+  },
+  {
+    label: 'FISCAL',
+    items: [
+      { href: '/nfe', label: 'NF-e / CT-e' },
+      { href: '/dispatch', label: 'Importação em Lote' },
+      { href: '/simulador-fiscal', label: 'Simulador Fiscal' },
+    ],
+  },
+  {
+    label: 'FINANCEIRO',
+    items: [
+      { href: '/expenses', label: 'Despesas' },
+      { href: '/finance', label: 'Financeiro' },
+      { href: '/payables', label: 'Contas a Pagar' },
+      { href: '/receivables', label: 'Contas a Receber' },
+    ],
+  },
+  {
+    label: 'OPERACOES',
+    items: [
+      { href: '/inventory', label: 'Estoque', nicho: 'industry' },
     ],
   },
   {
@@ -124,14 +155,19 @@ function Sidebar({ businessType }: { businessType: string }) {
 
       {/* Tenant */}
       <div style={{ padding: '10px 14px', borderBottom: '0.5px solid #f0f0f0' }}>
-        <div style={{ display: 'flex', alignItems: 'center', gap: 8 }}>
-          <div style={{ width: 28, height: 28, background: '#E3F2FD', borderRadius: 8, display: 'flex', alignItems: 'center', justifyContent: 'center', fontSize: 12, fontWeight: 700, color: '#0A3D8F', flexShrink: 0 }}>M</div>
-          <div>
-            <div style={{ fontSize: 12, fontWeight: 600, color: '#1C1917' }}>Mecânica do João</div>
-            <div style={{ fontSize: 10, color: '#94a3b8' }}>Modo demonstração</div>
-          </div>
-          <div style={{ width: 6, height: 6, borderRadius: '50%', background: '#16A34A', marginLeft: 'auto', flexShrink: 0 }} />
-        </div>
+        {(() => {
+          const biz = BUSINESS_DISPLAY[businessType] || BUSINESS_DISPLAY.mechanic
+          return (
+            <div style={{ display: 'flex', alignItems: 'center', gap: 8 }}>
+              <div style={{ width: 28, height: 28, background: '#E3F2FD', borderRadius: 8, display: 'flex', alignItems: 'center', justifyContent: 'center', fontSize: 12, fontWeight: 700, color: '#0A3D8F', flexShrink: 0 }}>{biz.initial}</div>
+              <div>
+                <div style={{ fontSize: 12, fontWeight: 600, color: '#1C1917' }}>{biz.name}</div>
+                <div style={{ fontSize: 10, color: '#94a3b8' }}>Modo demonstração</div>
+              </div>
+              <div style={{ width: 6, height: 6, borderRadius: '50%', background: '#16A34A', marginLeft: 'auto', flexShrink: 0 }} />
+            </div>
+          )
+        })()}
       </div>
 
       {/* Grupos */}
@@ -246,4 +282,7 @@ export default function LayoutShell({ children }: { children: React.ReactNode })
     </div>
   )
 }
+
+
+
 

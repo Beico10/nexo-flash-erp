@@ -1,8 +1,9 @@
-'use client'
+﻿'use client'
+import { isDemoMode, promptLogin } from '@/lib/demo'
 import { useState, useEffect, useRef, useCallback } from 'react'
 import { Navigation, MapPin, Clock, Route, ChevronRight, ChevronLeft, RotateCcw, Play, Pause, AlertTriangle, CheckCircle2, Truck } from 'lucide-react'
 
-// ── TIPOS ─────────────────────────────────────────────────────────────────────
+// â”€â”€ TIPOS â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€
 interface Stop {
   rank: number
   label: string
@@ -37,7 +38,7 @@ interface RouteData {
   algorithm: string
 }
 
-// ── COMPONENTE PRINCIPAL ─────────────────────────────────────────────────────
+// â”€â”€ COMPONENTE PRINCIPAL â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€
 export default function RoteirizadorPage() {
   const mapRef = useRef<any>(null)
   const leafletRef = useRef<any>(null)
@@ -50,16 +51,16 @@ export default function RoteirizadorPage() {
   const [currentStop, setCurrentStop] = useState(0)
   const [completedStops, setCompletedStops] = useState<number[]>([])
   const [mapReady, setMapReady] = useState(false)
-  const [originInput, setOriginInput] = useState('Centro de Distribuição SP')
+  const [originInput, setOriginInput] = useState('Centro de DistribuiÃ§Ã£o SP')
   const [destinations, setDestinations] = useState([
-    { label: 'Cliente A — Vila Mariana', lat: -23.5931, lng: -46.6395, weight_kg: 150 },
-    { label: 'Cliente B — Pinheiros',    lat: -23.5631, lng: -46.6911, weight_kg: 80  },
-    { label: 'Cliente C — Lapa',         lat: -23.5223, lng: -46.7070, weight_kg: 200 },
-    { label: 'Cliente D — Santo André',  lat: -23.6644, lng: -46.5382, weight_kg: 120 },
-    { label: 'Cliente E — Guarulhos',    lat: -23.4543, lng: -46.5337, weight_kg: 95  },
+    { label: 'Cliente A â€” Vila Mariana', lat: -23.5931, lng: -46.6395, weight_kg: 150 },
+    { label: 'Cliente B â€” Pinheiros',    lat: -23.5631, lng: -46.6911, weight_kg: 80  },
+    { label: 'Cliente C â€” Lapa',         lat: -23.5223, lng: -46.7070, weight_kg: 200 },
+    { label: 'Cliente D â€” Santo AndrÃ©',  lat: -23.6644, lng: -46.5382, weight_kg: 120 },
+    { label: 'Cliente E â€” Guarulhos',    lat: -23.4543, lng: -46.5337, weight_kg: 95  },
   ])
 
-  // ── INICIALIZAR MAPA ──────────────────────────────────────────────────────
+  // â”€â”€ INICIALIZAR MAPA â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€
   useEffect(() => {
     if (typeof window === 'undefined' || mapReady) return
 
@@ -85,12 +86,12 @@ export default function RoteirizadorPage() {
       const L = (window as any).L
       leafletRef.current = L
 
-      // Inicializar mapa centrado em São Paulo
+      // Inicializar mapa centrado em SÃ£o Paulo
       const map = L.map('nexo-map', { zoomControl: true }).setView([-23.5505, -46.6333], 11)
 
-      // Tiles OpenStreetMap — gratuito, sem API key
+      // Tiles OpenStreetMap â€” gratuito, sem API key
       L.tileLayer('https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png', {
-        attribution: '© OpenStreetMap contributors',
+        attribution: 'Â© OpenStreetMap contributors',
         maxZoom: 19,
       }).addTo(map)
 
@@ -101,7 +102,7 @@ export default function RoteirizadorPage() {
     loadLeaflet()
   }, [mapReady])
 
-  // ── DESENHAR ROTA NO MAPA ────────────────────────────────────────────────
+  // â”€â”€ DESENHAR ROTA NO MAPA â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€
   const drawRoute = useCallback((routeData: RouteData) => {
     const L = leafletRef.current
     const map = mapRef.current
@@ -165,8 +166,8 @@ export default function RoteirizadorPage() {
     if (route && mapReady) drawRoute(route)
   }, [route, mapReady, drawRoute])
 
-  // ── CALCULAR ROTA ─────────────────────────────────────────────────────────
-  const calcularRota = async () => {
+  // â”€â”€ CALCULAR ROTA â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€
+  const calcularRota = async () => { if (isDemoMode()) { setLoading(true); setTimeout(() => { setRoute({ total_distance_km: 127.4, total_duration_min: 198, total_duration_h: '3h 18min', total_stops: 5, total_weight_kg: 645, stops_ordered: destinations.map((d, i) => ({ rank: i + 1, label: d.label, lat: d.lat, lng: d.lng, weight_kg: d.weight_kg, priority: i + 1 })), legs: [], geometry: null, source: 'demo', algorithm: '2-opt' }); setCurrentStop(0); setCompletedStops([]); setLoading(false) }, 1200); return }
     setLoading(true)
     try {
       const body = {
@@ -194,13 +195,13 @@ export default function RoteirizadorPage() {
     }
   }
 
-  // ── NAVEGAÇÃO PASSO A PASSO ───────────────────────────────────────────────
+  // â”€â”€ NAVEGAÃ‡ÃƒO PASSO A PASSO â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€
   const proximaParada = () => {
     if (!route) return
     setCompletedStops(prev => [...prev, currentStop])
     if (currentStop < route.stops_ordered.length - 1) {
       setCurrentStop(prev => prev + 1)
-      // Centralizar no próximo ponto
+      // Centralizar no prÃ³ximo ponto
       const next = route.stops_ordered[currentStop + 1]
       if (mapRef.current) mapRef.current.setView([next.lat, next.lng], 14)
     }
@@ -226,7 +227,7 @@ export default function RoteirizadorPage() {
   return (
     <div className="flex h-screen" style={{ background: '#F0F2F8' }}>
 
-      {/* ── PAINEL LATERAL ── */}
+      {/* â”€â”€ PAINEL LATERAL â”€â”€ */}
       <div style={{ width: 380, background: 'white', borderRight: '1px solid #E0E4F0', display: 'flex', flexDirection: 'column', overflow: 'hidden' }}>
 
         {/* Header */}
@@ -235,10 +236,10 @@ export default function RoteirizadorPage() {
             <Route size={18} />
             <span style={{ fontSize: 15, fontWeight: 700 }}>Roteirizador Inteligente</span>
           </div>
-          <p style={{ fontSize: 11, opacity: 0.7 }}>OSRM • OpenStreetMap • Algoritmo 2-opt</p>
+          <p style={{ fontSize: 11, opacity: 0.7 }}>OSRM â€¢ OpenStreetMap â€¢ Algoritmo 2-opt</p>
         </div>
 
-        {/* Se não tem rota — formulário */}
+        {/* Se nÃ£o tem rota â€” formulÃ¡rio */}
         {!route && (
           <div style={{ padding: 20, flex: 1, overflowY: 'auto' }}>
             <p style={{ fontSize: 12, fontWeight: 700, color: '#424242', marginBottom: 8, textTransform: 'uppercase', letterSpacing: '0.05em' }}>Origem</p>
@@ -282,13 +283,13 @@ export default function RoteirizadorPage() {
           </div>
         )}
 
-        {/* Se tem rota — painel de navegação */}
+        {/* Se tem rota â€” painel de navegaÃ§Ã£o */}
         {route && (
           <>
-            {/* Métricas */}
+            {/* MÃ©tricas */}
             <div style={{ padding: '12px 16px', background: '#F5F7FF', borderBottom: '1px solid #E0E4F0', display: 'grid', gridTemplateColumns: '1fr 1fr 1fr', gap: 8 }}>
               {[
-                { icon: <Route size={14} />, val: `${route.total_distance_km}km`, label: 'Distância' },
+                { icon: <Route size={14} />, val: `${route.total_distance_km}km`, label: 'DistÃ¢ncia' },
                 { icon: <Clock size={14} />, val: route.total_duration_h, label: 'Tempo' },
                 { icon: <MapPin size={14} />, val: `${route.total_stops}`, label: 'Paradas' },
               ].map((m, i) => (
@@ -351,7 +352,7 @@ export default function RoteirizadorPage() {
                       display: 'flex', alignItems: 'center', justifyContent: 'center',
                       fontSize: 11, fontWeight: 700,
                     }}>
-                      {done ? '✓' : stop.rank}
+                      {done ? 'âœ“' : stop.rank}
                     </div>
                     <div style={{ flex: 1 }}>
                       <div style={{ fontSize: 13, fontWeight: 600, color: done ? '#2E7D32' : '#212121' }}>{stop.label}</div>
@@ -362,7 +363,7 @@ export default function RoteirizadorPage() {
               })}
             </div>
 
-            {/* Botões de ação */}
+            {/* BotÃµes de aÃ§Ã£o */}
             <div style={{ padding: 12, borderTop: '1px solid #E0E4F0', display: 'flex', gap: 8 }}>
               <button onClick={reiniciarNavegacao}
                 style={{ flex: 1, padding: '10px', borderRadius: 10, background: '#F5F7FF', border: '1px solid #E0E4F0', cursor: 'pointer', display: 'flex', alignItems: 'center', justifyContent: 'center', gap: 6, fontSize: 12 }}>
@@ -382,7 +383,7 @@ export default function RoteirizadorPage() {
         )}
       </div>
 
-      {/* ── MAPA ── */}
+      {/* â”€â”€ MAPA â”€â”€ */}
       <div style={{ flex: 1, position: 'relative' }}>
         <div id="nexo-map" style={{ width: '100%', height: '100%' }} />
 
@@ -396,8 +397,8 @@ export default function RoteirizadorPage() {
             display: 'flex', alignItems: 'center', gap: 6,
           }}>
             <Truck size={12} />
-            {route.source === 'osrm' ? 'Rota real via OSRM' : 'Rota estimada (OSRM indisponível)'}
-            {' · '}Algoritmo: {route.algorithm === 'exact_tsp' ? 'TSP Exato' : '2-opt'}
+            {route.source === 'osrm' ? 'Rota real via OSRM' : 'Rota estimada (OSRM indisponÃ­vel)'}
+            {' Â· '}Algoritmo: {route.algorithm === 'exact_tsp' ? 'TSP Exato' : '2-opt'}
           </div>
         )}
 
@@ -416,3 +417,4 @@ export default function RoteirizadorPage() {
     </div>
   )
 }
+

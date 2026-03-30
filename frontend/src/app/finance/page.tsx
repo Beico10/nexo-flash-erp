@@ -1,4 +1,5 @@
 'use client'
+import { isDemoMode } from '@/lib/demo'
 import { useState, useEffect } from 'react'
 import { TrendingUp, TrendingDown, DollarSign, BarChart3, Calendar, AlertTriangle } from 'lucide-react'
 
@@ -32,7 +33,15 @@ export default function FinancePage() {
   const [cfDays, setCfDays] = useState(30)
   const token = typeof window !== 'undefined' ? localStorage.getItem('nexo_token') || '' : ''
 
-  useEffect(() => { fetchData() }, [cfDays])
+  useEffect(() => {
+    if (isDemoMode()) {
+      setDre({ year: 2026, month: 3, month_name: 'Marco', gross_revenue: 87400, revenue_lines: [{ category: 'servicos', label: 'Servicos Prestados', amount: 62000, percentage: 70.9, is_positive: true },{ category: 'produtos', label: 'Venda de Pecas e Produtos', amount: 18400, percentage: 21.1, is_positive: true },{ category: 'outros', label: 'Outras Receitas', amount: 7000, percentage: 8.0, is_positive: true }], total_expenses: 61800, expense_lines: [{ category: 'pessoal', label: 'Folha de Pagamento', amount: 24000, percentage: 27.5, is_positive: false },{ category: 'aluguel', label: 'Aluguel e Condominio', amount: 8500, percentage: 9.7, is_positive: false },{ category: 'fornecedores', label: 'Compra de Materiais', amount: 15300, percentage: 17.5, is_positive: false },{ category: 'energia', label: 'Energia e Utilidades', amount: 3200, percentage: 3.7, is_positive: false },{ category: 'marketing', label: 'Marketing e Divulgacao', amount: 4800, percentage: 5.5, is_positive: false },{ category: 'impostos', label: 'Impostos e Taxas', amount: 6000, percentage: 6.9, is_positive: false }], net_result: 25600, net_margin: 29.3, is_profit: true, prev_month_result: 21800, result_variation: 17.4 })
+      setCashflow({ period: 'Marco 2026', total_inflows: 94200, total_outflows: 68600, net_cash_flow: 25600, days: Array.from({length: 30}, (_, i) => { const base = 25600; const variation = (Math.sin(i * 0.5) * 3000); const cumulative = Math.round((base / 30) * (i + 1) + variation); return { date: new Date(Date.now() - (29-i)*86400000).toISOString(), day_label: `${String(i+1).padStart(2,'0')}/03`, inflows: Math.round(3140 + Math.random() * 1000), outflows: Math.round(2287 + Math.random() * 800), balance: Math.round(853 + variation/30), cumulative, is_today: i===29, is_past: i<29 } }), critical_days: [] })
+      setLoading(false)
+      return
+    }
+    fetchData()
+  }, [cfDays])
 
   const fetchData = async () => {
     setLoading(true)

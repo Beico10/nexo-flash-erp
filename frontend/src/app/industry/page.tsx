@@ -1,4 +1,5 @@
-'use client'
+﻿'use client'
+import { isDemoMode, promptLogin } from '@/lib/demo'
 import { useState, useEffect } from 'react'
 import { Factory, Play, Pause, CheckCircle2, Clock, Package, AlertTriangle } from 'lucide-react'
 
@@ -22,7 +23,7 @@ export default function IndustryPage() {
 
   useEffect(() => {
     const token = getToken()
-    if (!token) { window.location.href = '/login'; return }
+    if (isDemoMode()) { setOrders([{ id: "1", number: "OP-001", product_name: "Cadeira Escritorio Premium", planned_qty: 50, produced_qty: 32, status: "in_progress", planned_start: new Date().toISOString(), planned_end: new Date().toISOString(), progress: 64 },{ id: "2", number: "OP-002", product_name: "Mesa de Reuniao", planned_qty: 20, produced_qty: 20, status: "done", planned_start: new Date().toISOString(), planned_end: new Date().toISOString(), progress: 100 },{ id: "3", number: "OP-003", product_name: "Estante Modular", planned_qty: 30, produced_qty: 0, status: "planned", planned_start: new Date().toISOString(), planned_end: new Date().toISOString(), progress: 0 }]); setBoms([{ id: "1", product_name: "Cadeira Escritorio Premium", version: 2, total_cost: 380.50, items_count: 12 },{ id: "2", product_name: "Mesa de Reuniao", version: 1, total_cost: 620.00, items_count: 8 }]); setMaterials({ "mat-aco-carbono": 245, "mat-espuma-d33": 38, "mat-tecido-mesh": 120, "mat-parafuso-m6": 500 }); setLoading(false); return } if (!token) { promptLogin(); setLoading(false); return }
     const h = { Authorization: `Bearer ${token}` }
     Promise.all([
       fetch('/api/v1/industry/orders', { headers: h }).then(r => r.json()),
@@ -110,3 +111,4 @@ export default function IndustryPage() {
     </div>
   )
 }
+

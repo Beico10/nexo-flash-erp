@@ -1,5 +1,6 @@
 'use client'
-import { useState, useCallback } from 'react'
+import { useState, useCallback, useEffect } from 'react'
+import { isDemoMode, promptLogin } from '@/lib/demo'
 import { Upload, Truck, MapPin, AlertTriangle, CheckCircle2, X, BarChart3, Route, QrCode } from 'lucide-react'
 
 interface DeliveryItem {
@@ -24,6 +25,39 @@ interface Assignment {
   over_weight: boolean; over_cubage: boolean; warnings: string[]
 }
 
+const DEMO_VEHICLES: Vehicle[] = [
+  { id: 'v1', name: 'Fiorino BRA-2E19', type: 'fiorino', plate: 'BRA-2E19', driver: 'Anderson Silva', max_weight_kg: 500, max_cubage_m3: 3.5, max_stops: 15, is_available: true },
+  { id: 'v2', name: 'Sprinter ABC-1D23', type: 'van', plate: 'ABC-1D23', driver: 'Carlos Mendes', max_weight_kg: 1200, max_cubage_m3: 9.0, max_stops: 25, is_available: true },
+  { id: 'v3', name: 'HR DEF-4G56', type: 'truck', plate: 'DEF-4G56', driver: 'Roberto Alves', max_weight_kg: 3500, max_cubage_m3: 18.0, max_stops: 12, is_available: false },
+]
+
+const DEMO_DELIVERIES: DeliveryItem[] = [
+  { id: 'd1', nfe_key: '35260300000000000000550010000000011000000011', nfe_number: 'NF-000.001', recipient_name: 'Eletro Distribuidora', full_address: 'Av. Paulista 1500, Sao Paulo - SP', city: 'Sao Paulo', state: 'SP', lat: -23.5611, lng: -46.6558, geo_status: 'geocoded', weight_kg: 280, cubage_m3: 1.2, volumes: 8, total_value: 14800, status: 'pending', vehicle_id: 'v1', import_source: 'xml' },
+  { id: 'd2', nfe_key: '35260300000000000000550010000000021000000021', nfe_number: 'NF-000.002', recipient_name: 'Moveis & Cia', full_address: 'Rua Augusta 800, Sao Paulo - SP', city: 'Sao Paulo', state: 'SP', lat: -23.5489, lng: -46.6424, geo_status: 'geocoded', weight_kg: 450, cubage_m3: 3.8, volumes: 5, total_value: 8200, status: 'pending', vehicle_id: 'v2', import_source: 'xml' },
+  { id: 'd3', nfe_key: '35260300000000000000550010000000031000000031', nfe_number: 'NF-000.003', recipient_name: 'Supermercado Rede', full_address: 'R. Consolacao 2100, Sao Paulo - SP', city: 'Sao Paulo', state: 'SP', lat: -23.5522, lng: -46.6604, geo_status: 'geocoded', weight_kg: 180, cubage_m3: 0.9, volumes: 12, total_value: 3400, status: 'in_transit', vehicle_id: 'v1', import_source: 'xml' },
+  { id: 'd4', nfe_key: '35260300000000000000550010000000041000000041', nfe_number: 'NF-000.004', recipient_name: 'Atacadao Norte', full_address: 'Av. Brasil 4500, Sao Paulo - SP', city: 'Sao Paulo', state: 'SP', lat: -23.5358, lng: -46.6255, geo_status: 'geocoded', weight_kg: 820, cubage_m3: 5.2, volumes: 20, total_value: 22100, status: 'pending', vehicle_id: 'v2', import_source: 'xml' },
+  { id: 'd5', nfe_key: '35260300000000000000550010000000051000000051', nfe_number: 'NF-000.005', recipient_name: 'Farmacia Popular', full_address: 'R. da Consolacao 500, Sao Paulo - SP', city: 'Sao Paulo', state: 'SP', lat: -23.5578, lng: -46.6598, geo_status: 'geocoded', weight_kg: 45, cubage_m3: 0.3, volumes: 3, total_value: 1850, status: 'delivered', vehicle_id: 'v1', import_source: 'scan' },
+]
+
+const DEMO_ASSIGNMENTS: Assignment[] = [
+  {
+    vehicle: DEMO_VEHICLES[0],
+    items: [DEMO_DELIVERIES[0], DEMO_DELIVERIES[2], DEMO_DELIVERIES[4]],
+    total_stops: 3, total_weight: 505, total_cubage: 2.4,
+    weight_used_pct: 101, cubage_used_pct: 68.6,
+    over_weight: true, over_cubage: false,
+    warnings: ['⚠️ Peso excede capacidade do Fiorino — mover 1 entrega para a Sprinter'],
+  },
+  {
+    vehicle: DEMO_VEHICLES[1],
+    items: [DEMO_DELIVERIES[1], DEMO_DELIVERIES[3]],
+    total_stops: 2, total_weight: 1270, total_cubage: 9.0,
+    weight_used_pct: 105.8, cubage_used_pct: 100,
+    over_weight: true, over_cubage: false,
+    warnings: ['⚠️ Cubagem no limite máximo — verificar antes de carregar'],
+  },
+]
+
 const VEHICLE_ICON: Record<string, string> = {
   fiorino: '🚐', van: '🚌', truck: '🚛', carreta: '🚚', moto: '🏍️'
 }
@@ -44,6 +78,17 @@ export default function DispatchPage() {
   const [newVehicle, setNewVehicle] = useState({ name: '', type: 'van', max_weight_kg: '', max_cubage_m3: '', max_stops: '' })
   const token = typeof window !== 'undefined' ? localStorage.getItem('nexo_token') || '' : ''
 
+  // Carregar demo no mount
+  useEffect(() => {
+    if (isDemoMode()) {
+      setItems(DEMO_DELIVERIES)
+      setVehicles(DEMO_VEHICLES)
+      setAssignments(DEMO_ASSIGNMENTS)
+      setTab('route')
+      setImportResult({ message: '5 entregas importadas com sucesso', total_items: 5, total_weight_kg: 1775, total_cubage_m3: 11.4, total_value: 50350, errors: [] })
+    }
+  }, [])
+
   // Carregar veículos
   const loadVehicles = async () => {
     const res = await fetch('/api/v1/dispatch/vehicles', { headers: { Authorization: `Bearer ${token}` } })
@@ -52,6 +97,7 @@ export default function DispatchPage() {
 
   // Import em lote
   const handleFiles = useCallback(async (files: FileList) => {
+    if (isDemoMode()) { promptLogin(); return }
     setImporting(true)
     const formData = new FormData()
     Array.from(files).forEach(f => formData.append('files', f))

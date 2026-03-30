@@ -1,4 +1,5 @@
 'use client'
+import { isDemoMode, promptLogin, getBusinessType } from '@/lib/demo'
 import { useState, useEffect } from 'react'
 import { Plus, CheckCircle2, AlertTriangle, Clock, TrendingUp, X, DollarSign, Phone, User } from 'lucide-react'
 
@@ -44,6 +45,75 @@ const CATEGORY_LABEL: Record<string, string> = {
   mensalidade: '🔄 Mensalidade', contrato: '📋 Contrato', outros: '💼 Outros'
 }
 
+const DEMO_RECEIVABLES_BY_NICHO: Record<string, { items: Receivable[], summary: Summary }> = {
+  mechanic: {
+    items: [
+      { id: '1', description: 'OS-001 Honda Civic - Troca de oleo', customer_name: 'Joao Silva', customer_phone: '5511999990001', category: 'servico', amount: 280, amount_received: 280, due_date: '2026-03-10', received_at: '2026-03-10', payment_method: 'PIX', installment: 1, total_installments: 1, recurrence: 'none', status: 'received', is_overdue: false, days_until_due: -19 },
+      { id: '2', description: 'OS-002 Toyota Corolla - Amortecedor', customer_name: 'Maria Santos', customer_phone: '5511999990002', category: 'servico', amount: 1850, amount_received: 0, due_date: '2026-03-28', installment: 1, total_installments: 1, recurrence: 'none', status: 'pending', is_overdue: false, days_until_due: 0 },
+      { id: '3', description: 'OS-003 Chevrolet Onix - Revisao', customer_name: 'Carlos Pereira', customer_phone: '5511999990003', category: 'servico', amount: 420, amount_received: 420, due_date: '2026-03-15', received_at: '2026-03-15', payment_method: 'Cartao', installment: 1, total_installments: 1, recurrence: 'none', status: 'received', is_overdue: false, days_until_due: -14 },
+      { id: '4', description: 'OS-004 VW Gol - Correia dentada', customer_name: 'Ana Oliveira', customer_phone: '5511999990004', category: 'servico', amount: 980, amount_received: 0, due_date: '2026-03-20', installment: 1, total_installments: 1, recurrence: 'none', status: 'overdue', is_overdue: true, days_until_due: -9 },
+      { id: '5', description: 'OS-005 Fiat Pulse - Diagnostico', customer_name: 'Roberto Lima', customer_phone: '5511999990005', category: 'servico', amount: 150, amount_received: 0, due_date: '2026-04-05', installment: 1, total_installments: 1, recurrence: 'none', status: 'pending', is_overdue: false, days_until_due: 7 },
+      { id: '6', description: 'OS-006 Honda HRV - Freios', customer_name: 'Fernanda Costa', customer_phone: '5511999990006', category: 'servico', amount: 760, amount_received: 760, due_date: '2026-03-22', received_at: '2026-03-22', payment_method: 'PIX', installment: 1, total_installments: 1, recurrence: 'none', status: 'received', is_overdue: false, days_until_due: -7 },
+    ],
+    summary: { total_pending: 3080, total_overdue: 980, total_received_month: 4210, count_pending: 3, count_overdue: 1, overdue_rate: 14.3 },
+  },
+  bakery: {
+    items: [
+      { id: '1', description: 'Buffet Sabor & Arte - Pedido mensal', customer_name: 'Buffet Sabor & Arte', customer_phone: '5511988880001', category: 'contrato', amount: 2400, amount_received: 2400, due_date: '2026-03-05', received_at: '2026-03-05', payment_method: 'PIX', installment: 1, total_installments: 1, recurrence: 'monthly', status: 'received', is_overdue: false, days_until_due: -24 },
+      { id: '2', description: 'Cafeteria Central - Fornecimento semanal', customer_name: 'Cafeteria Central', customer_phone: '5511988880002', category: 'contrato', amount: 680, amount_received: 0, due_date: '2026-03-28', installment: 1, total_installments: 1, recurrence: 'weekly', status: 'pending', is_overdue: false, days_until_due: 0 },
+      { id: '3', description: 'Encomenda casamento - Bolo 5 andares', customer_name: 'Fernanda & Lucas', customer_phone: '5511988880003', category: 'produto', amount: 1800, amount_received: 900, due_date: '2026-03-15', received_at: '2026-03-10', payment_method: 'PIX', installment: 1, total_installments: 2, recurrence: 'none', status: 'partial', is_overdue: false, days_until_due: -14 },
+      { id: '4', description: 'Restaurante Bom Sabor - Pao artesanal', customer_name: 'Rest. Bom Sabor', customer_phone: '5511988880004', category: 'contrato', amount: 950, amount_received: 0, due_date: '2026-03-18', installment: 1, total_installments: 1, recurrence: 'monthly', status: 'overdue', is_overdue: true, days_until_due: -11 },
+      { id: '5', description: 'Encomenda Pascoa - 30 ovos chocolate', customer_name: 'Patricia Alves', customer_phone: '5511988880005', category: 'produto', amount: 1350, amount_received: 0, due_date: '2026-04-10', installment: 1, total_installments: 1, recurrence: 'none', status: 'pending', is_overdue: false, days_until_due: 11 },
+      { id: '6', description: 'Mercearia Viva - Pao de queijo (semana)', customer_name: 'Mercearia Viva', customer_phone: '5511988880006', category: 'produto', amount: 420, amount_received: 420, due_date: '2026-03-22', received_at: '2026-03-22', payment_method: 'Dinheiro', installment: 1, total_installments: 1, recurrence: 'weekly', status: 'received', is_overdue: false, days_until_due: -7 },
+    ],
+    summary: { total_pending: 3380, total_overdue: 950, total_received_month: 5220, count_pending: 3, count_overdue: 1, overdue_rate: 12.8 },
+  },
+  aesthetics: {
+    items: [
+      { id: '1', description: 'Progressiva + Hidratacao', customer_name: 'Larissa Lima', customer_phone: '5511977770001', category: 'servico', amount: 380, amount_received: 380, due_date: '2026-03-12', received_at: '2026-03-12', payment_method: 'PIX', installment: 1, total_installments: 1, recurrence: 'none', status: 'received', is_overdue: false, days_until_due: -17 },
+      { id: '2', description: 'Coloracao completa + Luzes', customer_name: 'Mariana Oliveira', customer_phone: '5511977770002', category: 'servico', amount: 580, amount_received: 0, due_date: '2026-03-29', installment: 1, total_installments: 1, recurrence: 'none', status: 'pending', is_overdue: false, days_until_due: 1 },
+      { id: '3', description: 'Pacote mensal manicure/pedicure', customer_name: 'Patricia Mendes', customer_phone: '5511977770003', category: 'mensalidade', amount: 240, amount_received: 240, due_date: '2026-03-10', received_at: '2026-03-10', payment_method: 'Cartao', installment: 1, total_installments: 1, recurrence: 'monthly', status: 'received', is_overdue: false, days_until_due: -19 },
+      { id: '4', description: 'Design de sobrancelha + Henna', customer_name: 'Camila Santos', customer_phone: '5511977770004', category: 'servico', amount: 180, amount_received: 0, due_date: '2026-03-19', installment: 1, total_installments: 1, recurrence: 'none', status: 'overdue', is_overdue: true, days_until_due: -10 },
+      { id: '5', description: 'Corte + Escova + Tratamento', customer_name: 'Fernanda Costa', customer_phone: '5511977770005', category: 'servico', amount: 220, amount_received: 0, due_date: '2026-04-03', installment: 1, total_installments: 1, recurrence: 'none', status: 'pending', is_overdue: false, days_until_due: 5 },
+      { id: '6', description: 'Pacote noiva - maquiagem + cabelo', customer_name: 'Juliana Reis', customer_phone: '5511977770006', category: 'servico', amount: 850, amount_received: 425, due_date: '2026-03-25', received_at: '2026-03-20', payment_method: 'PIX', installment: 1, total_installments: 2, recurrence: 'none', status: 'partial', is_overdue: false, days_until_due: -4 },
+    ],
+    summary: { total_pending: 1830, total_overdue: 180, total_received_month: 3860, count_pending: 3, count_overdue: 1, overdue_rate: 6.8 },
+  },
+  logistics: {
+    items: [
+      { id: '1', description: 'CT-e 000.241 - Frete SP > RJ', customer_name: 'Eletro Distribuidora', customer_phone: '5511966660001', category: 'servico', amount: 3200, amount_received: 3200, due_date: '2026-03-08', received_at: '2026-03-08', payment_method: 'Transferencia', installment: 1, total_installments: 1, recurrence: 'none', status: 'received', is_overdue: false, days_until_due: -21 },
+      { id: '2', description: 'CT-e 000.242 - Frete SP > BH', customer_name: 'Atacadao Norte', customer_phone: '5511966660002', category: 'servico', amount: 4800, amount_received: 0, due_date: '2026-03-28', installment: 1, total_installments: 1, recurrence: 'none', status: 'pending', is_overdue: false, days_until_due: 0 },
+      { id: '3', description: 'Contrato mensal - Logistica e-commerce', customer_name: 'Loja Virtual Plus', customer_phone: '5511966660003', category: 'contrato', amount: 8500, amount_received: 8500, due_date: '2026-03-15', received_at: '2026-03-15', payment_method: 'PIX', installment: 1, total_installments: 1, recurrence: 'monthly', status: 'received', is_overdue: false, days_until_due: -14 },
+      { id: '4', description: 'CT-e 000.238 - Frete Campinas > Goiania', customer_name: 'Industria Sao Paulo', customer_phone: '5511966660004', category: 'servico', amount: 5600, amount_received: 0, due_date: '2026-03-17', installment: 1, total_installments: 1, recurrence: 'none', status: 'overdue', is_overdue: true, days_until_due: -12 },
+      { id: '5', description: 'CT-e 000.245 - Frete SP > Curitiba', customer_name: 'Moveis & Cia', customer_phone: '5511966660005', category: 'servico', amount: 2900, amount_received: 0, due_date: '2026-04-05', installment: 1, total_installments: 1, recurrence: 'none', status: 'pending', is_overdue: false, days_until_due: 7 },
+      { id: '6', description: 'Contrato semanal - Cargas refrigeradas', customer_name: 'Laticinio Fresco', customer_phone: '5511966660006', category: 'contrato', amount: 6200, amount_received: 6200, due_date: '2026-03-22', received_at: '2026-03-22', payment_method: 'Transferencia', installment: 1, total_installments: 1, recurrence: 'weekly', status: 'received', is_overdue: false, days_until_due: -7 },
+    ],
+    summary: { total_pending: 13300, total_overdue: 5600, total_received_month: 31400, count_pending: 3, count_overdue: 1, overdue_rate: 10.2 },
+  },
+  industry: {
+    items: [
+      { id: '1', description: 'PED-2024-1038 - Conexoes PVC lote 50', customer_name: 'Construtora Alfa', customer_phone: '5511955550001', category: 'produto', amount: 12400, amount_received: 12400, due_date: '2026-03-10', received_at: '2026-03-10', payment_method: 'Boleto', installment: 1, total_installments: 1, recurrence: 'none', status: 'received', is_overdue: false, days_until_due: -19 },
+      { id: '2', description: 'PED-2024-1042 - Perfis aluminio 200un', customer_name: 'Metalurgica Omega', customer_phone: '5511955550002', category: 'produto', amount: 28700, amount_received: 0, due_date: '2026-03-31', installment: 1, total_installments: 2, recurrence: 'none', status: 'pending', is_overdue: false, days_until_due: 2 },
+      { id: '3', description: 'PED-2024-1039 - Caixas organizadoras', customer_name: 'Supermercado Rede', customer_phone: '5511955550003', category: 'produto', amount: 8900, amount_received: 8900, due_date: '2026-03-15', received_at: '2026-03-14', payment_method: 'Transferencia', installment: 1, total_installments: 1, recurrence: 'none', status: 'received', is_overdue: false, days_until_due: -14 },
+      { id: '4', description: 'PED-2024-1040 - Tampas industriais', customer_name: 'Industria Beta', customer_phone: '5511955550004', category: 'produto', amount: 15600, amount_received: 0, due_date: '2026-03-18', installment: 1, total_installments: 1, recurrence: 'none', status: 'overdue', is_overdue: true, days_until_due: -11 },
+      { id: '5', description: 'PED-2024-1044 - Tubos PVC DN100', customer_name: 'Hidraulica Plus', customer_phone: '5511955550005', category: 'produto', amount: 9800, amount_received: 0, due_date: '2026-04-08', installment: 1, total_installments: 1, recurrence: 'none', status: 'pending', is_overdue: false, days_until_due: 10 },
+      { id: '6', description: 'Contrato trimestral - Porcas e parafusos', customer_name: 'Ferragens Unidas', customer_phone: '5511955550006', category: 'contrato', amount: 22000, amount_received: 22000, due_date: '2026-03-22', received_at: '2026-03-22', payment_method: 'Boleto', installment: 1, total_installments: 3, recurrence: 'none', status: 'received', is_overdue: false, days_until_due: -7 },
+    ],
+    summary: { total_pending: 54100, total_overdue: 15600, total_received_month: 87400, count_pending: 3, count_overdue: 1, overdue_rate: 9.1 },
+  },
+  shoes: {
+    items: [
+      { id: '1', description: 'Venda Loja - Tenis Runner Pro (3 pares)', customer_name: 'Marcos Vieira', customer_phone: '5511944440001', category: 'produto', amount: 897, amount_received: 897, due_date: '2026-03-10', received_at: '2026-03-10', payment_method: 'Cartao', installment: 1, total_installments: 3, recurrence: 'none', status: 'received', is_overdue: false, days_until_due: -19 },
+      { id: '2', description: 'Representante Sul - Pedido grade aberta', customer_name: 'Calçados Sul Ltda', customer_phone: '5511944440002', category: 'produto', amount: 14800, amount_received: 0, due_date: '2026-03-31', installment: 1, total_installments: 2, recurrence: 'none', status: 'pending', is_overdue: false, days_until_due: 2 },
+      { id: '3', description: 'Sandalia Comfort - 15 pares', customer_name: 'Loja Moda Feminina', customer_phone: '5511944440003', category: 'produto', amount: 3600, amount_received: 3600, due_date: '2026-03-14', received_at: '2026-03-14', payment_method: 'PIX', installment: 1, total_installments: 1, recurrence: 'none', status: 'received', is_overdue: false, days_until_due: -15 },
+      { id: '4', description: 'Bota Social - 8 pares', customer_name: 'Boutique Elegance', customer_phone: '5511944440004', category: 'produto', amount: 4720, amount_received: 0, due_date: '2026-03-20', installment: 1, total_installments: 1, recurrence: 'none', status: 'overdue', is_overdue: true, days_until_due: -9 },
+      { id: '5', description: 'Comissao representante - Marco', customer_name: 'Anderson Vendas', customer_phone: '5511944440005', category: 'outros', amount: 2100, amount_received: 0, due_date: '2026-04-05', installment: 1, total_installments: 1, recurrence: 'monthly', status: 'pending', is_overdue: false, days_until_due: 7 },
+      { id: '6', description: 'Venda e-commerce - 22 pedidos', customer_name: 'Clientes Online', customer_phone: '', category: 'produto', amount: 6420, amount_received: 6420, due_date: '2026-03-22', received_at: '2026-03-22', payment_method: 'PIX', installment: 1, total_installments: 1, recurrence: 'none', status: 'received', is_overdue: false, days_until_due: -7 },
+    ],
+    summary: { total_pending: 21620, total_overdue: 4720, total_received_month: 32840, count_pending: 3, count_overdue: 1, overdue_rate: 11.4 },
+  },
+}
+
 export default function ReceivablesPage() {
   const [items, setItems] = useState<Receivable[]>([])
   const [summary, setSummary] = useState<Summary | null>(null)
@@ -61,6 +131,14 @@ export default function ReceivablesPage() {
   })
 
   useEffect(() => {
+    if (isDemoMode()) {
+      const nicho = getBusinessType()
+      const demoData = DEMO_RECEIVABLES_BY_NICHO[nicho] || DEMO_RECEIVABLES_BY_NICHO.mechanic
+      setItems(demoData.items)
+      setSummary(demoData.summary)
+      setLoading(false)
+      return
+    }
     const t = localStorage.getItem('nexo_token') || ''
     setToken(t)
     fetchData(t)

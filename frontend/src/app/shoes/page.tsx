@@ -1,4 +1,5 @@
-'use client'
+﻿'use client'
+import { isDemoMode, promptLogin } from '@/lib/demo'
 import { useState, useEffect } from 'react'
 import { ShoppingBag, TrendingUp, Package, Award } from 'lucide-react'
 
@@ -14,7 +15,7 @@ export default function ShoesPage() {
 
   useEffect(() => {
     const token = getToken()
-    if (!token) { window.location.href = '/login'; return }
+    if (isDemoMode()) { setGrids([{ id: '1', model_code: 'TEN-001', model_name: 'Tenis Running Pro', brand: 'SportMax', colors: ['Preto','Branco','Azul'], sizes: ['37','38','39','40','41','42'], total_skus: 18, in_stock_skus: 15, total_units: 340, total_value: 28900 },{ id: '2', model_code: 'SAN-002', model_name: 'Sandalia Feminina Verao', brand: 'SoftStep', colors: ['Bege','Rosa'], sizes: ['34','35','36','37','38'], total_skus: 15, in_stock_skus: 12, total_units: 210, total_value: 12600 },{ id: '3', model_code: 'SOC-003', model_name: 'Social Masculino Classic', brand: 'ElegantFoot', colors: ['Preto','Marrom'], sizes: ['39','40','41','42','43'], total_skus: 10, in_stock_skus: 7, total_units: 95, total_value: 18050 }]); setCommissions([{ seller_name: 'Carlos Mendes', base_rate: 5, monthly_target: 30000, total_sales: 34500, total_commission: 1725, met_achieved: true },{ seller_name: 'Ana Paula', base_rate: 4.5, monthly_target: 25000, total_sales: 21300, total_commission: 958.50, met_achieved: false }]); setLoading(false); return } if (!token) { promptLogin(); setLoading(false); return }
     const h = { Authorization: `Bearer ${token}` }
     Promise.all([
       fetch('/api/v1/shoes/grids', { headers: h }).then(r => r.json()),
@@ -96,3 +97,5 @@ export default function ShoesPage() {
     </div>
   )
 }
+
+
