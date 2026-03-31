@@ -20,7 +20,7 @@ BEGIN
 END$$;
 
 -- Permissões mínimas para app_user
-GRANT CONNECT ON DATABASE nexoflash TO app_user;
+GRANT CONNECT ON DATABASE nexo_one TO app_user;
 GRANT USAGE ON SCHEMA public TO app_user;
 GRANT SELECT, INSERT, UPDATE, DELETE ON ALL TABLES IN SCHEMA public TO app_user;
 GRANT USAGE, SELECT ON ALL SEQUENCES IN SCHEMA public TO app_user;
@@ -28,6 +28,6 @@ ALTER DEFAULT PRIVILEGES IN SCHEMA public GRANT SELECT, INSERT, UPDATE, DELETE O
 ALTER DEFAULT PRIVILEGES IN SCHEMA public GRANT USAGE, SELECT ON SEQUENCES TO app_user;
 
 -- Segurança: app_user NUNCA bypassa RLS
-REVOKE BYPASSRLS ON SCHEMA public FROM app_user;
+-- (BYPASSRLS é atributo de role, não de schema — controlado na criação do role)
 
 COMMENT ON TABLE schema_migrations IS 'Controle de migrations — gerenciado pelo deploy.sh';

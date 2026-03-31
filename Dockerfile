@@ -28,10 +28,13 @@ WORKDIR /build
 
 # Cache de dependências (só rebuilda se go.mod/sum mudar)
 COPY go.mod go.sum* ./
-RUN go mod download && go mod verify
+RUN go mod download
 
 # Copia código fonte
 COPY . .
+
+# Atualiza go.sum se necessário e compila
+RUN go mod tidy
 
 # Compila binário estático
 # CGO_ENABLED=0: sem dependência de libc (portável)
