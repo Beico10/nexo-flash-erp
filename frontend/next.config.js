@@ -5,7 +5,7 @@ const nextConfig = {
   // Proxy todas as chamadas /api/* para o backend Go (porta 8001)
   // Isso resolve o problema de CORS e conecta o frontend ao backend
   async rewrites() {
-    const backendUrl = process.env.NEXT_PUBLIC_API_URL || 'http://localhost:8001'
+    const backendUrl = process.env.API_URL || 'http://localhost:8080'
     return [
       {
         source: '/api/:path*',
